@@ -12,7 +12,7 @@ echo "🚀 Spúšťam vývojové servery pre Quizwizz..."
 # Spustenie frontendu
 (
   cd frontend 
-  echo "▶️  Spúšťam React frontend..."
+  echo "▶️  Spúšťam React frontend... "
 
   npm start --host 0.0.0.0
 
