@@ -6,7 +6,7 @@ echo "🚀 Spúšťam vývojové servery pre Quizwizz..."
 (
   cd backend/backend 
   echo "▶️  Spúšťam Django backend na porte 8000..."
-    python manage.py runserver 0.0.0.0:8000 | tee ../backend.log
+    python3 manage.py runserver 0.0.0.0:8000 | tee ../backend.log
 ) &
 
 # Spustenie frontendu

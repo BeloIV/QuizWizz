@@ -73,6 +73,8 @@ export function QuizProvider({ children }) {
 
   const createQuiz = useCallback(
     async (quizData) => {
+      console.log('Creating quiz with data:', quizData);
+      
       const response = await fetch(`${API_BASE_URL}/quizzes/`, {
         method: 'POST',
         headers: {
@@ -82,7 +84,22 @@ export function QuizProvider({ children }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Quiz creation error:', errorData);
+        
+        // Format error messages from Django
+        if (errorData && typeof errorData === 'object') {
+          const messages = Object.entries(errorData)
+            .map(([field, errors]) => {
+              if (Array.isArray(errors)) {
+                return `${field}: ${errors.join(', ')}`;
+              }
+              return `${field}: ${errors}`;
+            })
+            .join('\n');
+          throw new Error(messages || `Failed to create quiz (${response.status})`);
+        }
+        
         throw new Error(errorData.detail || `Failed to create quiz (${response.status})`);
       }
 

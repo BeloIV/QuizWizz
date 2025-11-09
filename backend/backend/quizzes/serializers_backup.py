@@ -51,8 +51,6 @@ class ChoiceCreateSerializer(serializers.ModelSerializer):
 
 class QuestionCreateSerializer(serializers.ModelSerializer):
     options = ChoiceCreateSerializer(many=True)
-    # Allow backend to auto-generate IDs when not provided
-    id = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Question
@@ -60,9 +58,6 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         options_data = validated_data.pop("options", [])
-        # Always generate a unique question ID to avoid collisions
-        validated_data.pop("id", None)
-        validated_data["id"] = f"q-{uuid.uuid4().hex[:8]}"
         question = Question.objects.create(**validated_data)
         for option_data in options_data:
             Choice.objects.create(question=question, **option_data)
@@ -70,19 +65,15 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
 
 
 class QuizCreateSerializer(serializers.ModelSerializer):
-    questions = QuestionCreateSerializer(many=True, write_only=True)
+    questions = QuestionCreateSerializer(many=True)
     tags = serializers.ListField(
-        child=serializers.CharField(), required=False, allow_empty=True, write_only=True
+        child=serializers.CharField(), required=False, allow_empty=True
     )
     id = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Quiz
         fields = ("id", "name", "author", "description", "tags", "questions")
-
-    def to_representation(self, instance):
-        # After creation return full QuizSerializer representation
-        return QuizSerializer(instance).data
 
     def create(self, validated_data):
         questions_data = validated_data.pop("questions", [])
@@ -94,18 +85,19 @@ class QuizCreateSerializer(serializers.ModelSerializer):
         
         quiz = Quiz.objects.create(**validated_data)
         
-        # Create tags if they don't exist and set them
+            # Create tags if they don't exist and set them
         tags = []
         for tag_name in tag_names:
-            if isinstance(tag_name, str) and tag_name.strip():
-                tag, created = Tag.objects.get_or_create(name=tag_name.strip())
-                tags.append(tag)
+                if isinstance(tag_name, str) and tag_name.strip():
+                    tag, created = Tag.objects.get_or_create(name=tag_name.strip())
+                    tags.append(tag)
         quiz.tags.set(tags)
         
-        # Create questions
-        for idx, question_data in enumerate(questions_data):
-            question_data['quiz'] = quiz
-            question_data['order'] = idx
-            QuestionCreateSerializer().create(question_data)
+            # Create questions
+            for idx, question_data in enumerate(questions_data):
+                question_data['quiz'] = quiz
+                question_data['order'] = idx
+                QuestionCreateSerializer().create(question_data)
         
         return quiz
+
