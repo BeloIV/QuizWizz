@@ -138,7 +138,10 @@ function Header() {
           </button>
         </div>
       </div>
-      {menuOpen && (
+
+      {false && (
+          // TODO hamburger button off pernamently
+           //menuOpen
         <nav className="app-header__menu" role="menu">
           <Link
             to="/"
@@ -148,18 +151,7 @@ function Header() {
           >
             Home
           </Link>
-          <button
-            type="button"
-            className={`menu-link${searchOpen ? ' active' : ''}`}
-            data-search-toggle="true"
-            role="menuitem"
-            onClick={() => {
-              setMenuOpen(false);
-              openSearch('');
-            }}
-          >
-            Search
-          </button>
+          
         </nav>
       )}
     </>

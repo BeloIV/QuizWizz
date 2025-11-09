@@ -4,13 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import QuizCard from '../components/QuizCard';
 import { useQuizList } from '../context/QuizContext';
 import { useScores } from '../context/ScoresContext';
-import { useSearch } from '../context/SearchContext';
 
 function Home() {
   const navigate = useNavigate();
   const { quizzes, loading, error } = useQuizList();
   const { scores } = useScores();
-  const { openSearch } = useSearch();
 
   const quizzesWithScores = useMemo(() => {
     return quizzes.map((quiz) => {
@@ -29,34 +27,57 @@ function Home() {
       .sort((a, b) => b._takenAt - a._takenAt);
   }, [quizzesWithScores]);
 
-  const items = recent.length ? recent : quizzesWithScores;
+  const recentToDisplay = useMemo(() => {
+    return recent.slice(0, 3);
+  }, [recent]);
+
+  const recentIds = useMemo(() => {
+    return new Set(recentToDisplay.map((quiz) => quiz.id));
+  }, [recentToDisplay]);
+
+  const remaining = useMemo(() => {
+    return quizzesWithScores.filter((quiz) => !recentIds.has(quiz.id));
+  }, [quizzesWithScores, recentIds]);
 
   return (
     <div>
-      <h2 className="section-title">Recently taken</h2>
       {loading && <div className="muted">Loading quizzes...</div>}
       {error && !loading && <div className="empty">{error}</div>}
       {!loading && !error && (
-        <section className="cards" id="recent-list">
-          {items.length === 0 ? (
-            <div className="empty">No quizzes yet. Start with Search.</div>
-          ) : (
-            items.map((quiz) => (
-              <QuizCard
-                key={quiz.id}
-                quiz={quiz}
-                onClick={() => navigate(`/quiz/${quiz.id}`)}
-              />
-            ))
+        <>
+          {recentToDisplay.length > 0 && (
+            <>
+              <h2 className="section-title">Recent</h2>
+              <section className="cards" id="recent-list">
+                {recentToDisplay.map((quiz) => (
+                  <QuizCard
+                    key={quiz.id}
+                    quiz={quiz}
+                    onClick={() => navigate(`/quiz/${quiz.id}`)}
+                  />
+                ))}
+              </section>
+            </>
           )}
-        </section>
+
+          <h2 className="section-title">All</h2>
+          <section className="cards" id="all-list">
+            {quizzesWithScores.length === 0 ? (
+              <div className="empty">No quizzes yet. Start with Search.</div>
+            ) : remaining.length === 0 ? (
+              <div className="empty">All your quizzes are already in Recent.</div>
+            ) : (
+              remaining.map((quiz) => (
+                <QuizCard
+                  key={quiz.id}
+                  quiz={quiz}
+                  onClick={() => navigate(`/quiz/${quiz.id}`)}
+                />
+              ))
+            )}
+          </section>
+        </>
       )}
-      <div className="divider" />
-      <div className="row">
-        <button className="btn primary" type="button" data-action="open-search" onClick={() => openSearch('')}>
-          Find quizzes
-        </button>
-      </div>
     </div>
   );
 }

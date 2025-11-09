@@ -21,6 +21,44 @@ def seed_quizzes(apps, schema_editor):
     Quiz.objects.filter(id__in=legacy_ids).delete()
 
     dataset = [
+    {
+        "id": "q-math-hard",
+        "name": "Math test",
+        "author": "Klara",
+        "tags": ["math", "numbers"],
+        "questions": [
+          {
+            "id": "a",
+            "text": "What equals 11 x 11?",
+            "options": ["121", "111", "131", "120"],
+            "correctIndex": 0,
+        },
+        {
+            "id": "b",
+            "text": "What is 18 divided by 3?",
+            "options": ["9", "3", "6", "8"],
+            "correctIndex": 2,
+        },
+        {
+            "id": "c",
+            "text": "What equals 99 - 35?",
+            "options": ["65", "64", "66", "68"],
+            "correctIndex": 1,
+        },
+          {
+          "id": "d",
+          "text": "What is pi?",
+          "options": ["3", "4.15", "3.14", "-3"],
+          "correctIndex": 2,
+      },
+      {
+            "id": "e",
+            "text": "What is 89 x 4?",
+            "options": ["326", "346", "296", "356"],
+            "correctIndex": 3,
+        }
+        ]     
+         },
         {
             "id": "q-math-basics",
             "name": "Math Sprint",

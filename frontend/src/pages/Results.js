@@ -75,9 +75,6 @@ function Results() {
           <Link className="btn" to="/">
             Home
           </Link>
-          <Link className="btn" to={`/quiz/${quiz.id}`}>
-            Details
-          </Link>
           {wrongCount ? (
             <button id="retryWrong" className="btn success" type="button" onClick={handleRetryWrong}>
               Retry failed

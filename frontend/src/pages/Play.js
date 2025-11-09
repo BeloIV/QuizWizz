@@ -115,7 +115,6 @@ function Play() {
   }
 
   const disabledForQuestion = new Set(disabledOptions[currentQuestion.id] || []);
-  const canSubmit = selectedIndex !== null && !processing && !reveal;
   const progress = `${index + 1} / ${totalQuestions}`;
 
   return (
@@ -158,9 +157,6 @@ function Play() {
         <Link className="btn" to={`/quiz/${quiz.id}`}>
           Quit
         </Link>
-        <button id="nextBtn" className="btn primary" disabled={!canSubmit} onClick={() => handleSubmit()}>
-          Next
-        </button>
       </div>
     </div>
   );
