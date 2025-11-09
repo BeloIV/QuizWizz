@@ -1,14 +1,20 @@
 from rest_framework import mixins, viewsets
 
 from .models import Quiz
-from .serializers import QuizListSerializer, QuizSerializer
+from .serializers import QuizCreateSerializer, QuizListSerializer, QuizSerializer
 
 
-class QuizViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class QuizViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
     lookup_field = "id"
     serializer_action_map = {
         "list": QuizListSerializer,
         "retrieve": QuizSerializer,
+        "create": QuizCreateSerializer,
     }
 
     def get_queryset(self):

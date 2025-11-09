@@ -41,6 +41,18 @@ function Home() {
 
   return (
     <div>
+      <div className="home-header">
+        <h1 className="page-title">QuizWizz</h1>
+        <button
+          className="btn primary fab"
+          onClick={() => navigate('/create')}
+          title="Create new quiz"
+          aria-label="Create new quiz"
+        >
+          <span className="fab-icon">+</span>
+        </button>
+      </div>
+
       {loading && <div className="muted">Loading quizzes...</div>}
       {error && !loading && <div className="empty">{error}</div>}
       {!loading && !error && (
@@ -63,7 +75,7 @@ function Home() {
           <h2 className="section-title">All</h2>
           <section className="cards" id="all-list">
             {quizzesWithScores.length === 0 ? (
-              <div className="empty">No quizzes yet. Start with Search.</div>
+              <div className="empty">No quizzes yet. Create one to get started!</div>
             ) : remaining.length === 0 ? (
               <div className="empty">All your quizzes are already in Recent.</div>
             ) : (

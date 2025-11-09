@@ -9,6 +9,7 @@ const QuizContext = createContext({
   refresh: async () => {},
   getQuiz: async () => undefined,
   registerTemporaryQuiz: () => {},
+  createQuiz: async () => {},
 });
 
 export function QuizProvider({ children }) {
@@ -70,6 +71,28 @@ export function QuizProvider({ children }) {
     setTempQuizzes((prev) => ({ ...prev, [quiz.id]: quiz }));
   }, []);
 
+  const createQuiz = useCallback(
+    async (quizData) => {
+      const response = await fetch(`${API_BASE_URL}/quizzes/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quizData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Failed to create quiz (${response.status})`);
+      }
+
+      const data = await response.json();
+      setQuizzes((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+      return data;
+    },
+    []
+  );
+
   const value = useMemo(
     () => ({
       quizzes,
@@ -78,8 +101,9 @@ export function QuizProvider({ children }) {
       refresh: fetchQuizzes,
       getQuiz,
       registerTemporaryQuiz,
+      createQuiz,
     }),
-    [quizzes, loading, error, fetchQuizzes, getQuiz, registerTemporaryQuiz]
+    [quizzes, loading, error, fetchQuizzes, getQuiz, registerTemporaryQuiz, createQuiz]
   );
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;
@@ -88,3 +112,4 @@ export function QuizProvider({ children }) {
 export function useQuizList() {
   return useContext(QuizContext);
 }
+
