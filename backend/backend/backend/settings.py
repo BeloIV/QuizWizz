@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -50,10 +52,57 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS settings
+# Read from environment or use defaults
+cors_allow_all = os.getenv('CORS_ALLOW_ALL_ORIGINS', '0')
+CORS_ALLOW_ALL_ORIGINS = cors_allow_all == '1' or cors_allow_all.lower() == 'true'
+
+CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', '1') == '1'
+
+# Read CORS origins from environment or use defaults
+cors_whitelist = os.getenv('CORS_ORIGIN_WHITELIST', '')
+if cors_whitelist:
+    CORS_ALLOWED_ORIGINS = cors_whitelist.split(',')
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "https://quiz.bytboyzserver.xyz",
+        "http://quiz.bytboyzserver.xyz",
+        "http://localhost:3000",
+        "http://localhost:80",
+        "http://localhost",
+    ]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+# Additional CORS settings for preflight requests
+CORS_PREFLIGHT_MAX_AGE = 86400
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+
+# CSRF settings for cross-origin requests
+CSRF_TRUSTED_ORIGINS = [
+    "https://quiz.bytboyzserver.xyz",
+    "https://quiz.bytboyzserver.xyz",
+    "http://localhost:3000",
+]
 
 ROOT_URLCONF = "backend.urls"
 

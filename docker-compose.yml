@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  frontend:
+    container_name: quizwizz-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_BASE_URL=http://backend:8080/api
+      - HOST=0.0.0.0
+      - DANGEROUSLY_DISABLE_HOST_CHECK=true
+      - FAST_REFRESH=false
+      - GENERATE_SOURCEMAP=false
+      - REACT_APP_WEBPACK_DISABLE_HMR=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - quizwizz-network
+
+  backend:
+    container_name: quizwizz-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,backend,quizwizzapi.bytboyzserver.xyz
+      - CORS_ALLOW_ALL_ORIGINS=0
+      - CORS_ALLOW_CREDENTIALS=1
+      - CORS_ORIGIN_WHITELIST=http://localhost:3000,http://frontend:3000,https://quiz.bytboyzserver.xyz,http://quiz.bytboyzserver.xyz
+    volumes:
+      - ./backend/backend:/app
+    networks:
+      - quizwizz-network
+    depends_on:
+      - frontend
+
+networks:
+  quizwizz-network:
+    driver: bridge
