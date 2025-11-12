@@ -1,3 +1,5 @@
 .idea
 frontend.log
-backend/backend/quizzes/migrations/__pycache__/0004_seed_quizzes.cpython-39.pyc
+backend/backend/quizzes/migrations/__pycache__/*
+backend/backend/backend/__pycache__/*
+backend/backend/quizzes/__pycache__/*
