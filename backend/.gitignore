@@ -1,3 +1,6 @@
 .venv
 backend/db.sqlite3
 backend/backend/quizzes/migrations/*
+backend/backend/backend/__pycache__
+backend/backend/backend/migrations/__pycache__
+backend/backend/quizzes/__pycache__
