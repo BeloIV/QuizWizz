@@ -1,3 +1,47 @@
+/* Centered Popup */
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 80;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(122, 31, 46, 0.95);
+  color: #fff;
+  border: 1px solid rgba(251, 143, 143, 0.6);
+  box-shadow: 0 24px 44px rgba(7, 14, 32, 0.5);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  animation: popupIn 0.14s ease-out;
+}
+
+.popup--danger {
+  background: rgba(122, 31, 46, 0.95);
+}
+
+@keyframes popupIn {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(0.98); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+body.light .popup {
+  background: #dc2626;
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+/* Top placement modifier */
+.popup--top {
+  top: calc(16px + env(safe-area-inset-top));
+  left: 50%;
+  transform: translate(-50%, 0);
+  animation: popupSlideDown 0.16s ease-out;
+}
+
+@keyframes popupSlideDown {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
 :root {
   --bg: #0d1730;
   --bg-elev: #142449;
@@ -1373,6 +1417,88 @@ body.light .custom-radio-input:checked + .custom-radio {
 body.light .option-text-input {
   background: rgba(226, 232, 240, 0.6);
   color: #1e293b;
+}
+
+
+/* Toast / Snackbar */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 60;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(20, 35, 66, 0.92);
+  color: var(--text);
+  border: 1px solid rgba(118, 139, 180, 0.35);
+  box-shadow: var(--shadow);
+  animation: toastIn 0.18s ease-out;
+}
+
+.toast--danger {
+  border-color: rgba(251, 143, 143, 0.5);
+  box-shadow: 0 18px 34px rgba(122, 31, 46, 0.35);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+body.light .toast {
+  background: rgba(255, 255, 255, 0.98);
+  color: #1e293b;
+  border-color: rgba(203, 213, 225, 0.75);
+}
+
+body.light .toast--danger {
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 18px 34px rgba(239, 68, 68, 0.2);
+}
+
+/* Modal dialog */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 10, 22, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: menuFadeIn 0.18s ease-out;
+}
+
+.dialog {
+  width: min(420px, 96%);
+  background: var(--card-strong);
+  border: 1px solid rgba(118, 139, 180, 0.45);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.dialog__title {
+  margin: 0 0 8px;
+}
+
+.dialog__body {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+.dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+body.light .dialog {
+  background: #ffffff;
+  border-color: #e2e8f0;
 }
 
 
