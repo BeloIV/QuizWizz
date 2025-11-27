@@ -7,22 +7,28 @@ from .models import Choice, Question, Quiz, Tag
 class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
-        fields = ("index", "text")
+        fields = ("index", "text", "is_correct")
 
 
 class QuestionSerializer(serializers.ModelSerializer):
     options = ChoiceSerializer(many=True)
     correct_index = serializers.SerializerMethodField()
+    correct_indices = serializers.SerializerMethodField()  # For multiple correct answers
 
     class Meta:
         model = Question
-        fields = ("id", "text", "options", "correct_index")
+        fields = ("id", "text", "options", "correct_index", "correct_indices")
 
     def get_correct_index(self, obj: Question) -> int:
+        """Returns first correct index for backward compatibility"""
         try:
             return next(option.index for option in obj.options.all() if option.is_correct)
         except StopIteration:
             return -1
+
+    def get_correct_indices(self, obj: Question) -> list:
+        """Returns all correct indices for multi-answer support"""
+        return [option.index for option in obj.options.all() if option.is_correct]
 
 
 class QuizSerializer(serializers.ModelSerializer):
