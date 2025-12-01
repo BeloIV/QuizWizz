@@ -22,10 +22,11 @@ function CreateQuiz() {
 
   // Question type selection state - Basic is selected by default
   const [questionTypeSelected, setQuestionTypeSelected] = useState(true);
-  const [selectedQuestionType, setSelectedQuestionType] = useState('basic'); // 'basic' or 'other'
+  const [selectedQuestionType, setSelectedQuestionType] = useState('MULTIPLE_CHOICE'); // 'MULTIPLE_CHOICE' or 'FILL_IN_THE_GAP'
 
   const [currentQuestion, setCurrentQuestion] = useState({
     text: '',
+    question_type: 'MULTIPLE_CHOICE',
     options: [
       { text: '', is_correct: false },
       { text: '', is_correct: false },
@@ -44,6 +45,24 @@ function CreateQuiz() {
   const handleQuestionChange = useCallback((e) => {
     const { name, value } = e.target;
     setCurrentQuestion((prev) => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleQuestionTypeChange = useCallback((type) => {
+    setSelectedQuestionType(type);
+    setCurrentQuestion(prev => ({
+      ...prev,
+      question_type: type,
+      options: type === 'FILL_IN_THE_GAP' 
+        ? [
+            { text: '', is_correct: true },
+            { text: '', is_correct: false },
+            { text: '', is_correct: false }
+          ]
+        : [
+            { text: '', is_correct: false },
+            { text: '', is_correct: false },
+          ]
+    }));
   }, []);
 
   const handleOptionChange = useCallback((index, field, value) => {
@@ -79,25 +98,41 @@ function CreateQuiz() {
       return;
     }
 
-    if (currentQuestion.options.length < 2) {
-      setError('Please add at least 2 options');
-      return;
-    }
+    if (currentQuestion.question_type === 'MULTIPLE_CHOICE') {
+      if (currentQuestion.options.length < 2) {
+        setError('Please add at least 2 options');
+        return;
+      }
 
-    if (!currentQuestion.options.some((opt) => opt.is_correct)) {
-      setError('Please mark at least one option as correct');
-      return;
-    }
+      if (!currentQuestion.options.some((opt) => opt.is_correct)) {
+        setError('Please mark at least one option as correct');
+        return;
+      }
 
-    if (currentQuestion.options.some((opt) => !opt.text.trim())) {
-      setError('Please fill in all option texts');
-      return;
+      if (currentQuestion.options.some((opt) => !opt.text.trim())) {
+        setError('Please fill in all option texts');
+        return;
+      }
+    } else if (currentQuestion.question_type === 'FILL_IN_THE_GAP') {
+      if (currentQuestion.options.length === 0 || !currentQuestion.options[0].text.trim()) {
+        setError('Please enter the correct answer for the gap');
+        return;
+      }
+      // Ensure at least one incorrect answer is provided
+      const incorrectAnswers = currentQuestion.options
+        .filter((opt, idx) => idx > 0 && opt.text.trim())
+        .length;
+      if (incorrectAnswers < 1) {
+        setError('Please add at least one incorrect answer');
+        return;
+      }
     }
 
     const questionWithId = {
       ...currentQuestion,
       id: `q${formData.questions.length + 1}`,
       order: formData.questions.length,
+      question_type: selectedQuestionType,
       options: currentQuestion.options.map((opt, idx) => ({
         ...opt,
         index: idx,
@@ -111,15 +146,16 @@ function CreateQuiz() {
 
     setCurrentQuestion({
       text: '',
+      question_type: 'MULTIPLE_CHOICE',
       options: [
         { text: '', is_correct: false },
         { text: '', is_correct: false },
       ],
     });
 
-    // Keep question type selected as Basic
+    // Reset question type to default
     setQuestionTypeSelected(true);
-    setSelectedQuestionType('basic');
+    setSelectedQuestionType('MULTIPLE_CHOICE');
 
     setError(null);
   }, [currentQuestion, formData.questions.length]);
@@ -408,90 +444,152 @@ function CreateQuiz() {
                       <div className="question-type-selector-compact">
                         <button
                           type="button"
-                          className={`question-type-btn ${selectedQuestionType === 'basic' ? 'active' : ''}`}
-                          onClick={() => {
-                            setSelectedQuestionType('basic');
-                            setQuestionTypeSelected(true);
-                          }}
+                          className={`question-type-btn ${selectedQuestionType === 'MULTIPLE_CHOICE' ? 'active' : ''}`}
+                          onClick={() => handleQuestionTypeChange('MULTIPLE_CHOICE')}
                           disabled={loading}
                         >
-                          Basic Question
+                          Multiple Choice
                         </button>
                         <button
                           type="button"
-                          className={`question-type-btn ${selectedQuestionType === 'other' ? 'active' : ''}`}
-                          onClick={() => {
-                            setSelectedQuestionType('other');
-                            setError('This question type is not yet available');
-                          }}
+                          className={`question-type-btn ${selectedQuestionType === 'FILL_IN_THE_GAP' ? 'active' : ''}`}
+                          onClick={() => handleQuestionTypeChange('FILL_IN_THE_GAP')}
                           disabled={loading}
                         >
-                          Other
+                          Fill in the Gap
                         </button>
                       </div>
 
-                      {questionTypeSelected && selectedQuestionType === 'basic' && (
+                      {questionTypeSelected && (
                         <>
                       <div className="form-group">
-                        <label htmlFor="question-text">Question Text *</label>
+                        <label htmlFor="question-text">
+                          {selectedQuestionType === 'FILL_IN_THE_GAP' 
+                            ? 'Enter the sentence with _____ for the gap(s) *' 
+                            : 'Question Text *'}
+                        </label>
                         <textarea
                             id="question-text"
                             name="text"
                             value={currentQuestion.text}
                             onChange={handleQuestionChange}
-                            placeholder="Enter the question"
+                            placeholder={
+                              selectedQuestionType === 'FILL_IN_THE_GAP'
+                                ? 'E.g., The capital of France is _____. Use _____ for multiple gaps.'
+                                : 'Enter the question'
+                            }
                             disabled={loading}
-                            rows="3"
+                            rows={selectedQuestionType === 'FILL_IN_THE_GAP' ? 2 : 3}
                         />
                       </div>
 
-                      {/* Options Section with Checkboxes for Multiple Correct Answers */}
-                      <div className="form-group">
-                        <label>Mark the correct answer(s) *</label>
-                        <div className="options-editor">
-                          {currentQuestion.options.map((option, index) => (
+                      {selectedQuestionType === 'MULTIPLE_CHOICE' ? (
+                        <div className="form-group">
+                          <label>Mark the correct answer(s) *</label>
+                          <div className="options-editor">
+                            {currentQuestion.options.map((option, index) => (
                               <div key={index} className="option-input-group">
                                 <label className="custom-checkbox-wrapper">
                                   <input
-                                      type="checkbox"
-                                      checked={option.is_correct}
-                                      onChange={(e) => handleOptionChange(index, 'is_correct', e.target.checked)}
-                                      disabled={loading}
-                                      className="custom-checkbox-input"
+                                    type="checkbox"
+                                    checked={option.is_correct}
+                                    onChange={(e) => handleOptionChange(index, 'is_correct', e.target.checked)}
+                                    disabled={loading}
+                                    className="custom-checkbox-input"
                                   />
                                   <span className="custom-checkbox"></span>
                                   <input
-                                      type="text"
-                                      value={option.text}
-                                      onChange={(e) => handleOptionChange(index, 'text', e.target.value)}
-                                      placeholder={`Option ${index + 1}`}
-                                      disabled={loading}
-                                      className="option-text-input"
+                                    type="text"
+                                    value={option.text}
+                                    onChange={(e) => handleOptionChange(index, 'text', e.target.value)}
+                                    placeholder={`Option ${index + 1}`}
+                                    disabled={loading}
+                                    className="option-text-input"
                                   />
                                 </label>
                                 {currentQuestion.options.length > 2 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeOption(index)}
-                                        disabled={loading}
-                                        className="btn-remove"
-                                    >
-                                      ✕
-                                    </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeOption(index)}
+                                    disabled={loading}
+                                    className="btn-remove"
+                                  >
+                                    ✕
+                                  </button>
                                 )}
                               </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
 
-                        <button
+                          <button
                             type="button"
                             onClick={addOption}
                             disabled={loading}
                             className="btn"
-                        >
-                          + Add Option
-                        </button>
-                      </div>
+                          >
+                            + Add Option
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="form-group">
+                          <label>Correct Answer *</label>
+                          <div className="options-editor">
+                            <div className="option-input-group">
+                              <input
+                                type="text"
+                                value={currentQuestion.options[0]?.text || ''}
+                                onChange={(e) => handleOptionChange(0, 'text', e.target.value)}
+                                placeholder="Enter the correct answer"
+                                disabled={loading}
+                                className="option-text-input"
+                                style={{ width: '100%' }}
+                              />
+                            </div>
+                          </div>
+                          <p className="form-hint" style={{ marginBottom: '16px' }}>
+                            Users will need to type this exact answer to get it right. 
+                            For multiple possible correct answers, separate them with semicolons (e.g., "color; colour").
+                          </p>
+                          
+                          <label>Incorrect Answers *</label>
+                          <div className="options-editor">
+                            {currentQuestion.options.slice(1).map((option, index) => (
+                              <div key={index + 1} className="option-input-group" style={{ marginBottom: '8px' }}>
+                                <input
+                                  type="text"
+                                  value={option.text}
+                                  onChange={(e) => handleOptionChange(index + 1, 'text', e.target.value)}
+                                  placeholder={`Incorrect answer ${index + 1}`}
+                                  disabled={loading}
+                                  className="option-text-input"
+                                  style={{ width: 'calc(100% - 40px)' }}
+                                />
+                                {currentQuestion.options.length > 2 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeOption(index + 1)}
+                                    disabled={loading}
+                                    className="btn-remove"
+                                    style={{ marginLeft: '8px' }}
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <button
+                            type="button"
+                            onClick={addOption}
+                            disabled={loading || currentQuestion.options.length >= 6}
+                            className="btn"
+                            style={{ marginTop: '8px' }}
+                          >
+                            + Add Incorrect Answer
+                          </button>
+                        </div>
+                      )}
 
                       <button
                           type="button"

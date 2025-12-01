@@ -27,10 +27,20 @@ class Quiz(models.Model):
 
 
 class Question(models.Model):
+    QUESTION_TYPES = [
+        ('MULTIPLE_CHOICE', 'Multiple Choice'),
+        ('FILL_IN_THE_GAP', 'Fill in the Gap'),
+    ]
+    
     id = models.CharField(primary_key=True, max_length=100)
     quiz = models.ForeignKey(Quiz, related_name="questions", on_delete=models.CASCADE)
     text = models.TextField()
     order = models.PositiveIntegerField(default=0)
+    question_type = models.CharField(
+        max_length=20,
+        choices=QUESTION_TYPES,
+        default='MULTIPLE_CHOICE',
+    )
 
     class Meta:
         ordering = ["order", "id"]

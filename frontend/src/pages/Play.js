@@ -55,14 +55,20 @@ function Play() {
     return quiz.questions[index] || null;
   }, [quiz, index]);
 
-  // Check if the entire quiz has at least one multi-answer question
+  // Check if the entire quiz has any multi-answer or fill-in-the-gap questions
   const quizHasMultiAnswer = useMemo(() => {
     if (!quiz?.questions) return false;
     return quiz.questions.some(q => {
+      if (q.question_type === 'FILL_IN_THE_GAP') return true;
       const correctCount = q.options?.filter(opt => opt.is_correct).length || 0;
       return correctCount > 1;
     });
   }, [quiz]);
+
+  // Check if the current question is a fill-in-the-gap question
+  const isFillInTheGap = useMemo(() => {
+    return currentQuestion?.question_type === 'FILL_IN_THE_GAP';
+  }, [currentQuestion]);
 
   // Determine if current question has multiple correct answers
   const isMultiAnswer = useMemo(() => {
@@ -86,6 +92,14 @@ function Play() {
     }
   }, [quiz, loading, error, navigate]);
 
+  const handleFillInTheGapSubmit = (e) => {
+    e.preventDefault();
+    if (!selectedIndices[0]?.trim()) {
+      return;
+    }
+    handleSubmit();
+  };
+
   const handleSubmit = (overrideIndex) => {
     if (!quiz || !currentQuestion || processing || reveal) {
       return;
@@ -93,7 +107,27 @@ function Play() {
 
     let isCorrect = false;
 
-    if (quizHasMultiAnswer) {
+    if (isFillInTheGap) {
+      // Handle fill-in-the-gap question
+      const userAnswer = selectedIndices[0]?.toLowerCase().trim();
+      const correctAnswers = currentQuestion.options[0]?.text.split(';').map(s => s.trim().toLowerCase()) || [];
+      
+      // Check if the answer is in the correct answers list
+      isCorrect = correctAnswers.some(answer => answer === userAnswer);
+      
+      // If not correct, check if it matches any incorrect answers
+      if (!isCorrect) {
+        const incorrectAnswers = currentQuestion.options
+          .slice(1) // Skip the first option (correct answers)
+          .map(opt => opt.text.toLowerCase().trim())
+          .filter(Boolean); // Remove empty strings
+          
+        // If the answer matches any incorrect answer, show the correct answer
+        if (incorrectAnswers.includes(userAnswer)) {
+          isCorrect = false;
+        }
+      }
+    } else if (quizHasMultiAnswer) {
       // If quiz has any multi-answer questions, all questions use checkbox mode
       // Check if selectedIndices match correctIndices
       const selectedSet = new Set(selectedIndices);
@@ -167,7 +201,10 @@ function Play() {
       return;
     }
 
-    if (quizHasMultiAnswer) {
+    if (isFillInTheGap) {
+      // For fill-in-the-gap, we don't use this handler
+      return;
+    } else if (quizHasMultiAnswer) {
       // If quiz has any multi-answer questions, all questions use checkbox mode
       // Toggle selection
       setSelectedIndices(prev => {
@@ -206,42 +243,106 @@ function Play() {
         <span className="muted">{progress}</span>
       </div>
       <div className="card">
-        <div className="question">{currentQuestion.text}</div>
-        {quizHasMultiAnswer && (
-          <div className="muted" style={{ fontSize: '14px', marginBottom: '12px' }}>
-            Select all correct answers
-          </div>
-        )}
-        <div className="options" id="options">
-          {currentQuestion.options.map((option) => {
-            const optionIndex = option.index;
-            const classNames = ['option'];
-            if (disabledForQuestion.has(optionIndex)) {
-              classNames.push('incorrect');
-            }
-            if (reveal && correctIndices.includes(optionIndex)) {
-              classNames.push('correct');
-            }
-            if (!reveal && (quizHasMultiAnswer 
-              ? selectedIndices.includes(optionIndex) 
-              : selectedIndex === optionIndex)) {
-              classNames.push('selected');
-            }
-            const isDisabled = processing || reveal || disabledForQuestion.has(optionIndex);
-            return (
-              <button
-                key={optionIndex}
-                type="button"
-                className={classNames.join(' ')}
-                onClick={() => handleOptionClick(optionIndex)}
-                disabled={isDisabled}
+        {isFillInTheGap ? (
+          <>
+            <div className="question">
+              {currentQuestion.text.split('_____').map((part, i, arr) => (
+                <span key={i}>
+                  {part}
+                  {i < arr.length - 1 && (
+                    <span className="gap-underline">
+                      {reveal ? currentQuestion.options[0]?.text.split(';')[0] : '__________'}
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
+            <form onSubmit={handleFillInTheGapSubmit} className="fill-in-gap-form" style={{ marginTop: '20px' }}>
+              <input
+                type="text"
+                value={selectedIndices[0] || ''}
+                onChange={(e) => setSelectedIndices([e.target.value])}
+                placeholder="Type your answer here"
+                disabled={processing || reveal}
+                className="fill-in-gap-input"
+                autoFocus
+                list="possible-answers"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '16px',
+                  borderRadius: '4px',
+                  border: '1px solid #ddd',
+                  marginBottom: '10px'
+                }}
+              />
+              <datalist id="possible-answers">
+                {currentQuestion.options.slice(1).map((option, idx) => (
+                  option.text.trim() && (
+                    <option key={`incorrect-${idx}`} value={option.text} />
+                  )
+                ))}
+              </datalist>
+              <button 
+                type="submit" 
+                className="btn primary"
+                disabled={processing || reveal || !selectedIndices[0]?.trim()}
+                style={{ width: '100%' }}
               >
-                {option.text}
+                Submit
               </button>
-            );
-          })}
-        </div>
-        {quizHasMultiAnswer && !reveal && (
+              {reveal && (
+                <div className="feedback" style={{ 
+                  marginTop: '12px', 
+                  padding: '12px', 
+                  borderRadius: '4px', 
+                  backgroundColor: correctIndices.length > 0 ? '#e8f5e9' : '#ffebee',
+                  color: correctIndices.length > 0 ? '#2e7d32' : '#c62828'
+                }}>
+                  <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>
+                    {correctIndices.length > 0 ? '✅ Correct!' : '❌ Incorrect'}
+                  </p>
+                  <p style={{ margin: 0, fontSize: '0.9em' }}>
+                    The correct answer is: <strong>{currentQuestion.options[0]?.text.split(';')[0]}</strong>
+                  </p>
+                </div>
+              )}
+            </form>
+          </>
+        ) : (
+          <>
+            <div className="question">{currentQuestion.text}</div>
+            <div className="options">
+              {currentQuestion.options.map((option, optionIndex) => {
+                const classNames = ['option'];
+                if (disabledForQuestion.has(optionIndex)) {
+                  classNames.push('incorrect');
+                }
+                if (reveal && correctIndices.includes(optionIndex)) {
+                  classNames.push('correct');
+                }
+                if (!reveal && (quizHasMultiAnswer 
+                  ? selectedIndices.includes(optionIndex) 
+                  : selectedIndex === optionIndex)) {
+                  classNames.push('selected');
+                }
+                const isDisabled = processing || reveal || disabledForQuestion.has(optionIndex);
+                return (
+                  <button
+                    key={optionIndex}
+                    type="button"
+                    className={classNames.join(' ')}
+                    onClick={() => handleOptionClick(optionIndex)}
+                    disabled={isDisabled}
+                  >
+                    {option.text}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+        {!isFillInTheGap && quizHasMultiAnswer && !reveal && (
           <div style={{ marginTop: '16px' }}>
             <button 
               type="button" 
