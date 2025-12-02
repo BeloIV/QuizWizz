@@ -30,6 +30,7 @@ class Question(models.Model):
     QUESTION_TYPES = [
         ('MULTIPLE_CHOICE', 'Multiple Choice'),
         ('FILL_IN_THE_GAP', 'Fill in the Gap'),
+        ('IMAGE', 'Image-based'),
     ]
     
     id = models.CharField(primary_key=True, max_length=100)
@@ -41,6 +42,8 @@ class Question(models.Model):
         choices=QUESTION_TYPES,
         default='MULTIPLE_CHOICE',
     )
+    # Optional relative path to an image served by the backend (e.g. under MEDIA_ROOT)
+    image = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ["order", "id"]
@@ -54,6 +57,8 @@ class Choice(models.Model):
     text = models.CharField(max_length=255)
     index = models.PositiveIntegerField()
     is_correct = models.BooleanField(default=False)
+    # Optional relative path to an image served by the backend (e.g. under MEDIA_ROOT)
+    image = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ["index"]

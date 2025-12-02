@@ -311,7 +311,18 @@ function Play() {
           </>
         ) : (
           <>
-            <div className="question">{currentQuestion.text}</div>
+            <div className="question">
+              {currentQuestion.image && (
+                <div style={{ marginBottom: '12px' }}>
+                  <img
+                    src={currentQuestion.image}
+                    alt={currentQuestion.text || 'Question image'}
+                    style={{ maxWidth: '100%', maxHeight: '260px', objectFit: 'contain' }}
+                  />
+                </div>
+              )}
+              {currentQuestion.text}
+            </div>
             <div className="options">
               {currentQuestion.options.map((option, optionIndex) => {
                 const classNames = ['option'];
@@ -335,25 +346,21 @@ function Play() {
                     onClick={() => handleOptionClick(optionIndex)}
                     disabled={isDisabled}
                   >
+                    {option.image && (
+                      <span style={{ display: 'block', marginBottom: option.text ? 8 : 0 }}>
+                        <img
+                          src={option.image}
+                          alt={option.text || `Option ${optionIndex + 1}`}
+                          style={{ maxWidth: '100%', maxHeight: '180px', objectFit: 'contain' }}
+                        />
+                      </span>
+                    )}
                     {option.text}
                   </button>
                 );
               })}
             </div>
           </>
-        )}
-        {!isFillInTheGap && quizHasMultiAnswer && !reveal && (
-          <div style={{ marginTop: '16px' }}>
-            <button 
-              type="button" 
-              className="btn primary"
-              onClick={() => handleSubmit()}
-              disabled={processing || selectedIndices.length === 0}
-              style={{ width: '100%' }}
-            >
-              Continue
-            </button>
-          </div>
         )}
       </div>
       <div className="footer-actions row" style={{ justifyContent: 'space-between' }}>

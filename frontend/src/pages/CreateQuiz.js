@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { API_BASE_URL } from '../config';
 import { useQuizList } from '../context/QuizContext';
 
 function CreateQuiz() {
@@ -22,20 +23,22 @@ function CreateQuiz() {
 
   // Question type selection state - Basic is selected by default
   const [questionTypeSelected, setQuestionTypeSelected] = useState(true);
-  const [selectedQuestionType, setSelectedQuestionType] = useState('MULTIPLE_CHOICE'); // 'MULTIPLE_CHOICE' or 'FILL_IN_THE_GAP'
+  const [selectedQuestionType, setSelectedQuestionType] = useState('MULTIPLE_CHOICE'); // 'MULTIPLE_CHOICE', 'FILL_IN_THE_GAP', 'IMAGE'
 
   const [currentQuestion, setCurrentQuestion] = useState({
     text: '',
     question_type: 'MULTIPLE_CHOICE',
     options: [
-      { text: '', is_correct: false },
-      { text: '', is_correct: false },
+      { text: '', image: '', is_correct: false },
+      { text: '', image: '', is_correct: false },
     ],
+    image: '',
   });
 
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const handleQuizChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -46,6 +49,64 @@ function CreateQuiz() {
     const { name, value } = e.target;
     setCurrentQuestion((prev) => ({ ...prev, [name]: value }));
   }, []);
+
+  const uploadImage = useCallback(async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/images/`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload image');
+    }
+
+    const data = await response.json();
+    if (!data.url) {
+      throw new Error('Invalid upload response');
+    }
+    return data.url;
+  }, []);
+
+  const handleQuestionImageFileChange = useCallback(async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    try {
+      setImageUploading(true);
+      const url = await uploadImage(file);
+      setCurrentQuestion((prev) => ({ ...prev, image: url }));
+      setError(null);
+    } catch (err) {
+      setError(err.message || 'Failed to upload image');
+    } finally {
+      setImageUploading(false);
+      e.target.value = '';
+    }
+  }, [uploadImage]);
+
+  const handleOptionImageFileChange = useCallback(async (index, e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    try {
+      setImageUploading(true);
+      const url = await uploadImage(file);
+      setCurrentQuestion((prev) => {
+        const options = [...prev.options];
+        options[index] = { ...options[index], image: url };
+        return { ...prev, options };
+      });
+      setError(null);
+    } catch (err) {
+      setError(err.message || 'Failed to upload image');
+    } finally {
+      setImageUploading(false);
+      e.target.value = '';
+    }
+  }, [uploadImage]);
 
   const handleQuestionTypeChange = useCallback((type) => {
     setSelectedQuestionType(type);
@@ -59,8 +120,8 @@ function CreateQuiz() {
             { text: '', is_correct: false }
           ]
         : [
-            { text: '', is_correct: false },
-            { text: '', is_correct: false },
+            { text: '', image: '', is_correct: false },
+            { text: '', image: '', is_correct: false },
           ]
     }));
   }, []);
@@ -81,7 +142,7 @@ function CreateQuiz() {
   const addOption = useCallback(() => {
     setCurrentQuestion((prev) => ({
       ...prev,
-      options: [...prev.options, { text: '', is_correct: false }],
+      options: [...prev.options, { text: '', image: '', is_correct: false }],
     }));
   }, []);
 
@@ -98,7 +159,7 @@ function CreateQuiz() {
       return;
     }
 
-    if (currentQuestion.question_type === 'MULTIPLE_CHOICE') {
+    if (currentQuestion.question_type === 'MULTIPLE_CHOICE' || currentQuestion.question_type === 'IMAGE') {
       if (currentQuestion.options.length < 2) {
         setError('Please add at least 2 options');
         return;
@@ -110,7 +171,7 @@ function CreateQuiz() {
       }
 
       if (currentQuestion.options.some((opt) => !opt.text.trim())) {
-        setError('Please fill in all option texts');
+        setError('Please provide text for all options');
         return;
       }
     } else if (currentQuestion.question_type === 'FILL_IN_THE_GAP') {
@@ -148,9 +209,10 @@ function CreateQuiz() {
       text: '',
       question_type: 'MULTIPLE_CHOICE',
       options: [
-        { text: '', is_correct: false },
-        { text: '', is_correct: false },
+        { text: '', image: '', is_correct: false },
+        { text: '', image: '', is_correct: false },
       ],
+      image: '',
     });
 
     // Reset question type to default
@@ -458,6 +520,14 @@ function CreateQuiz() {
                         >
                           Fill in the Gap
                         </button>
+                        <button
+                          type="button"
+                          className={`question-type-btn ${selectedQuestionType === 'IMAGE' ? 'active' : ''}`}
+                          onClick={() => handleQuestionTypeChange('IMAGE')}
+                          disabled={loading}
+                        >
+                          Image-based
+                        </button>
                       </div>
 
                       {questionTypeSelected && (
@@ -466,7 +536,7 @@ function CreateQuiz() {
                         <label htmlFor="question-text">
                           {selectedQuestionType === 'FILL_IN_THE_GAP' 
                             ? 'Enter the sentence with _____ for the gap(s) *' 
-                            : 'Question Text *'}
+                            : 'Question Text'}
                         </label>
                         <textarea
                             id="question-text"
@@ -479,11 +549,37 @@ function CreateQuiz() {
                                 : 'Enter the question'
                             }
                             disabled={loading}
+                            required
                             rows={selectedQuestionType === 'FILL_IN_THE_GAP' ? 2 : 3}
                         />
+                        {selectedQuestionType === 'IMAGE' && (
+                          <div style={{ marginTop: '8px' }}>
+                            <label htmlFor="question-image-file" style={{ display: 'block', marginBottom: '4px' }}>
+                              Question image
+                            </label>
+                            <div>
+                              <label className="btn" style={{ cursor: loading || imageUploading ? 'not-allowed' : 'pointer' }}>
+                                {imageUploading ? 'Uploading...' : (currentQuestion.image ? 'Change image' : 'Choose image')}
+                                <input
+                                  id="question-image-file"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleQuestionImageFileChange}
+                                  disabled={loading || imageUploading}
+                                  style={{ display: 'none' }}
+                                />
+                              </label>
+                              {currentQuestion.image && (
+                                <span className="muted" style={{ marginLeft: '8px', fontSize: '0.85em' }}>
+                                  Image selected
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {selectedQuestionType === 'MULTIPLE_CHOICE' ? (
+                      {selectedQuestionType === 'MULTIPLE_CHOICE' || selectedQuestionType === 'IMAGE' ? (
                         <div className="form-group">
                           <label>Mark the correct answer(s) *</label>
                           <div className="options-editor">
@@ -506,6 +602,25 @@ function CreateQuiz() {
                                     disabled={loading}
                                     className="option-text-input"
                                   />
+                                  {selectedQuestionType === 'IMAGE' && (
+                                    <span style={{ marginLeft: '8px' }}>
+                                      <label className="btn" style={{ padding: '6px 10px', fontSize: '0.85em', cursor: loading || imageUploading ? 'not-allowed' : 'pointer' }}>
+                                        {imageUploading ? 'Uploading...' : (option.image ? 'Change image' : 'Choose image')}
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          onChange={(e) => handleOptionImageFileChange(index, e)}
+                                          disabled={loading || imageUploading}
+                                          style={{ display: 'none' }}
+                                        />
+                                      </label>
+                                      {option.image && (
+                                        <span className="muted" style={{ marginLeft: '4px', fontSize: '0.8em' }}>
+                                          Image
+                                        </span>
+                                      )}
+                                    </span>
+                                  )}
                                 </label>
                                 {currentQuestion.options.length > 2 && (
                                   <button
