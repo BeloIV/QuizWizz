@@ -175,10 +175,34 @@ function CreateQuiz() {
         return;
       }
     } else if (currentQuestion.question_type === 'FILL_IN_THE_GAP') {
-      if (currentQuestion.options.length === 0 || !currentQuestion.options[0].text.trim()) {
-        setError('Please enter the correct answer for the gap');
+      const questionText = currentQuestion.text || '';
+      const hasTriple = questionText.includes('___');
+      const hasQuint = questionText.includes('_____');
+      const delimiter = hasTriple ? '___' : (hasQuint ? '_____' : null);
+
+      if (!delimiter) {
+        setError('Please include at least one gap using ___ in the sentence');
         return;
       }
+
+      const gapCount = questionText.split(delimiter).length - 1;
+
+      const rawCorrect = currentQuestion.options[0]?.text || '';
+      const correctAnswers = rawCorrect
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      if (correctAnswers.length === 0) {
+        setError('Please enter the correct answer for each gap (comma-separated)');
+        return;
+      }
+
+      if (correctAnswers.length !== gapCount) {
+        setError('The number of gaps and the number of correct answers must match');
+        return;
+      }
+
       // Ensure at least one incorrect answer is provided
       const incorrectAnswers = currentQuestion.options
         .filter((opt, idx) => idx > 0 && opt.text.trim())
@@ -647,14 +671,14 @@ function CreateQuiz() {
                         </div>
                       ) : (
                         <div className="form-group">
-                          <label>Correct Answer *</label>
+                          <label>Correct Answers (comma-separated, in order of gaps) *</label>
                           <div className="options-editor">
                             <div className="option-input-group">
                               <input
                                 type="text"
                                 value={currentQuestion.options[0]?.text || ''}
                                 onChange={(e) => handleOptionChange(0, 'text', e.target.value)}
-                                placeholder="Enter the correct answer"
+                                placeholder="E.g., Paris, Seine"
                                 disabled={loading}
                                 className="option-text-input"
                                 style={{ width: '100%' }}
@@ -662,8 +686,8 @@ function CreateQuiz() {
                             </div>
                           </div>
                           <p className="form-hint" style={{ marginBottom: '16px' }}>
-                            Users will need to type this exact answer to get it right. 
-                            For multiple possible correct answers, separate them with semicolons (e.g., "color; colour").
+                            Enter one correct answer per gap, in order, separated by commas. 
+                            The number of answers must match the number of ___ gaps in the sentence.
                           </p>
                           
                           <label>Incorrect Answers *</label>

@@ -15,6 +15,7 @@ function Play() {
   const [processing, setProcessing] = useState(false);
   const [showTryAgain, setShowTryAgain] = useState(false);
   const [showQuitDialog, setShowQuitDialog] = useState(false);
+  const [fillGapIncorrectIndices, setFillGapIncorrectIndices] = useState([]);
   const initiallyWrongRef = useRef(new Set());
   const timeoutRef = useRef(null);
   const toastTimeoutRef = useRef(null);
@@ -26,6 +27,7 @@ function Play() {
     setDisabledOptions({});
     setReveal(false);
     setProcessing(false);
+    setFillGapIncorrectIndices([]);
     initiallyWrongRef.current = new Set();
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -55,16 +57,6 @@ function Play() {
     return quiz.questions[index] || null;
   }, [quiz, index]);
 
-  // Check if the entire quiz has any multi-answer or fill-in-the-gap questions
-  const quizHasMultiAnswer = useMemo(() => {
-    if (!quiz?.questions) return false;
-    return quiz.questions.some(q => {
-      if (q.question_type === 'FILL_IN_THE_GAP') return true;
-      const correctCount = q.options?.filter(opt => opt.is_correct).length || 0;
-      return correctCount > 1;
-    });
-  }, [quiz]);
-
   // Check if the current question is a fill-in-the-gap question
   const isFillInTheGap = useMemo(() => {
     return currentQuestion?.question_type === 'FILL_IN_THE_GAP';
@@ -76,6 +68,39 @@ function Play() {
     const correctCount = currentQuestion.options.filter(opt => opt.is_correct).length;
     return correctCount > 1;
   }, [currentQuestion]);
+
+  const { choices: fillGapChoices, indices: fillGapChoiceIndices } = useMemo(() => {
+    if (!isFillInTheGap || !currentQuestion?.options || currentQuestion.options.length === 0) {
+      return { choices: [], indices: [] };
+    }
+
+    // Base texts and original indices from options
+    const base = currentQuestion.options.map(opt => (opt.text || '').trim());
+    const originalIndices = currentQuestion.options.map(opt => opt.index);
+
+    // Build an array of positions and shuffle it
+    const order = base.map((_, idx) => idx);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+
+    return {
+      choices: order.map(i => base[i]),
+      indices: order.map(i => originalIndices[i]),
+    };
+  }, [isFillInTheGap, currentQuestion]);
+
+  const fillGapCorrectAnswers = useMemo(() => {
+    if (!isFillInTheGap || !currentQuestion?.options || currentQuestion.options.length === 0) {
+      return [];
+    }
+    const rawCorrect = currentQuestion.options[0]?.text || '';
+    return rawCorrect
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+  }, [isFillInTheGap, currentQuestion]);
 
   const correctIndex = currentQuestion?.correct_index;
   const correctIndices = useMemo(() => {
@@ -92,15 +117,7 @@ function Play() {
     }
   }, [quiz, loading, error, navigate]);
 
-  const handleFillInTheGapSubmit = (e) => {
-    e.preventDefault();
-    if (!selectedIndices[0]?.trim()) {
-      return;
-    }
-    handleSubmit();
-  };
-
-  const handleSubmit = (overrideIndex) => {
+  const handleSubmit = (overrideIndex, fillAnswer) => {
     if (!quiz || !currentQuestion || processing || reveal) {
       return;
     }
@@ -108,27 +125,16 @@ function Play() {
     let isCorrect = false;
 
     if (isFillInTheGap) {
-      // Handle fill-in-the-gap question
-      const userAnswer = selectedIndices[0]?.toLowerCase().trim();
-      const correctAnswers = currentQuestion.options[0]?.text.split(';').map(s => s.trim().toLowerCase()) || [];
-      
-      // Check if the answer is in the correct answers list
-      isCorrect = correctAnswers.some(answer => answer === userAnswer);
-      
-      // If not correct, check if it matches any incorrect answers
-      if (!isCorrect) {
-        const incorrectAnswers = currentQuestion.options
-          .slice(1) // Skip the first option (correct answers)
-          .map(opt => opt.text.toLowerCase().trim())
-          .filter(Boolean); // Remove empty strings
-          
-        // If the answer matches any incorrect answer, show the correct answer
-        if (incorrectAnswers.includes(userAnswer)) {
-          isCorrect = false;
-        }
+      // Treat fill-in-the-gap like a pure single-answer question using correctIndex, with shuffled choices
+      const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
+      if (chosenIndex === null || chosenIndex === undefined) {
+        return;
       }
-    } else if (quizHasMultiAnswer) {
-      // If quiz has any multi-answer questions, all questions use checkbox mode
+
+      const originalIndex = fillGapChoiceIndices[chosenIndex];
+      isCorrect = originalIndex === correctIndex;
+    } else if (isMultiAnswer) {
+      // Multi-answer question: use checkbox mode for this question
       // Check if selectedIndices match correctIndices
       const selectedSet = new Set(selectedIndices);
       const correctSet = new Set(correctIndices);
@@ -146,6 +152,7 @@ function Play() {
     if (isCorrect) {
       setReveal(true);
       setProcessing(true);
+      setFillGapIncorrectIndices([]);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -169,9 +176,14 @@ function Play() {
     } else {
       initiallyWrongRef.current.add(currentQuestion.id);
       
-      if (quizHasMultiAnswer) {
-        // For quiz with multi-answer, just show "Try again" without disabling
-        // User can try again with different selection
+      if (isFillInTheGap) {
+        const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
+        setFillGapIncorrectIndices((prev) => (
+          prev.includes(chosenIndex) ? prev : [...prev, chosenIndex]
+        ));
+      } else if (isMultiAnswer) {
+        // For multi-answer questions, just show "Try again" without disabling
+        // User can try again with different selection for this question
       } else {
         // For pure single-answer quiz, disable the incorrect option
         const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
@@ -204,8 +216,8 @@ function Play() {
     if (isFillInTheGap) {
       // For fill-in-the-gap, we don't use this handler
       return;
-    } else if (quizHasMultiAnswer) {
-      // If quiz has any multi-answer questions, all questions use checkbox mode
+    } else if (isMultiAnswer) {
+      // For multi-answer questions, use checkbox mode for this question
       // Toggle selection
       setSelectedIndices(prev => {
         if (prev.includes(optionIndex)) {
@@ -246,68 +258,63 @@ function Play() {
         {isFillInTheGap ? (
           <>
             <div className="question">
-              {currentQuestion.text.split('_____').map((part, i, arr) => (
-                <span key={i}>
-                  {part}
-                  {i < arr.length - 1 && (
-                    <span className="gap-underline">
-                      {reveal ? currentQuestion.options[0]?.text.split(';')[0] : '__________'}
-                    </span>
-                  )}
-                </span>
-              ))}
+              {(() => {
+                const text = currentQuestion.text || '';
+                const delimiter = /_{2,}/g;
+                const parts = text.split(delimiter);
+
+                return parts.map((part, i, arr) => (
+                  <span key={i}>
+                    {part}
+                    {i < arr.length - 1 && (
+                      <span className="gap-underline">
+                        {reveal
+                          ? (fillGapCorrectAnswers[i] || '__________')
+                          : (selectedIndices[i] || '__________')}
+                      </span>
+                    )}
+                  </span>
+                ));
+              })()}
             </div>
-            <form onSubmit={handleFillInTheGapSubmit} className="fill-in-gap-form" style={{ marginTop: '20px' }}>
-              <input
-                type="text"
-                value={selectedIndices[0] || ''}
-                onChange={(e) => setSelectedIndices([e.target.value])}
-                placeholder="Type your answer here"
-                disabled={processing || reveal}
-                className="fill-in-gap-input"
-                autoFocus
-                list="possible-answers"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  fontSize: '16px',
-                  borderRadius: '4px',
-                  border: '1px solid #ddd',
-                  marginBottom: '10px'
-                }}
-              />
-              <datalist id="possible-answers">
-                {currentQuestion.options.slice(1).map((option, idx) => (
-                  option.text.trim() && (
-                    <option key={`incorrect-${idx}`} value={option.text} />
-                  )
+            <div className="fill-in-gap-form" style={{ marginTop: '20px', width: '100%' }}>
+              <div className="options">
+                {fillGapChoices.map((choice, idx) => (
+                  (() => {
+                    const classNames = ['option'];
+                    const originalIndex = fillGapChoiceIndices[idx];
+
+                    if (reveal && originalIndex === correctIndex) {
+                      classNames.push('correct');
+                    }
+                    if (!reveal && selectedIndex === idx) {
+                      classNames.push('selected');
+                    }
+                    if (!reveal && fillGapIncorrectIndices.includes(idx)) {
+                      classNames.push('incorrect');
+                    }
+
+                    const isDisabled = processing || reveal;
+
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={classNames.join(' ')}
+                        disabled={isDisabled}
+                        onClick={() => {
+                          if (processing || reveal) return;
+                          setSelectedIndex(idx);
+                          handleSubmit(idx);
+                        }}
+                      >
+                        {choice}
+                      </button>
+                    );
+                  })()
                 ))}
-              </datalist>
-              <button 
-                type="submit" 
-                className="btn primary"
-                disabled={processing || reveal || !selectedIndices[0]?.trim()}
-                style={{ width: '100%' }}
-              >
-                Submit
-              </button>
-              {reveal && (
-                <div className="feedback" style={{ 
-                  marginTop: '12px', 
-                  padding: '12px', 
-                  borderRadius: '4px', 
-                  backgroundColor: correctIndices.length > 0 ? '#e8f5e9' : '#ffebee',
-                  color: correctIndices.length > 0 ? '#2e7d32' : '#c62828'
-                }}>
-                  <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>
-                    {correctIndices.length > 0 ? '✅ Correct!' : '❌ Incorrect'}
-                  </p>
-                  <p style={{ margin: 0, fontSize: '0.9em' }}>
-                    The correct answer is: <strong>{currentQuestion.options[0]?.text.split(';')[0]}</strong>
-                  </p>
-                </div>
-              )}
-            </form>
+              </div>
+            </div>
           </>
         ) : (
           <>
@@ -332,7 +339,7 @@ function Play() {
                 if (reveal && correctIndices.includes(optionIndex)) {
                   classNames.push('correct');
                 }
-                if (!reveal && (quizHasMultiAnswer 
+                if (!reveal && (isMultiAnswer 
                   ? selectedIndices.includes(optionIndex) 
                   : selectedIndex === optionIndex)) {
                   classNames.push('selected');
@@ -360,6 +367,18 @@ function Play() {
                 );
               })}
             </div>
+            {isMultiAnswer && (
+              <div className="row" style={{ justifyContent: 'flex-end', marginTop: '16px' }}>
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={() => handleSubmit()}
+                  disabled={processing || reveal || selectedIndices.length === 0}
+                >
+                  Submit
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
