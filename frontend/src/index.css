@@ -1636,5 +1636,94 @@ body.light .question-type-btn.active {
   color: #3b82f6;
 }
 
+.reaction {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
+.reaction-label {
+  font-size: 14px;
+  color: var(--muted);
+}
 
+.reaction-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.reaction-btn {
+  font-size: 24px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(118, 139, 180, 0.35);
+  background: rgba(22, 38, 72, 0.85);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.reaction-btn:hover {
+  transform: translateY(-2px);
+}
+
+.reaction-btn-like:hover {
+  background: rgba(74, 214, 165, 0.22);
+  border-color: rgba(74, 214, 165, 0.55);
+}
+
+.reaction-btn-dislike:hover {
+  background: rgba(251, 143, 143, 0.22);
+  border-color: rgba(251, 143, 143, 0.55);
+}
+
+.reaction-btn-like.active {
+  background: rgba(74, 214, 165, 0.35);
+  border-color: rgba(74, 214, 165, 0.75);
+}
+
+.reaction-btn-dislike.active {
+  background: rgba(251, 143, 143, 0.35);
+  border-color: rgba(251, 143, 143, 0.75);
+}
+
+.reaction-stats {
+  margin-top: 8px;
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.reaction-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reaction-stat-number {
+  font-weight: 600;
+}
+
+.reaction-stat-like .reaction-stat-number {
+  color: var(--success);
+}
+
+.reaction-stat-dislike .reaction-stat-number {
+  color: var(--danger);
+}
+
+.reaction-stat-icon {
+  font-size: 18px;
+}
+
+@media (max-width: 480px) {
+  .reaction-stats {
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .reaction-stat-icon {
+    font-size: 16px;
+  }
+}

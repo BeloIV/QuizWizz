@@ -18,6 +18,8 @@ class Quiz(models.Model):
     description = models.TextField(blank=True)
     tags = models.ManyToManyField(Tag, related_name="quizzes", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    likes = models.PositiveIntegerField(default=0)
+    dislikes = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["name"]

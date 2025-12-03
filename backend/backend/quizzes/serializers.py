@@ -37,7 +37,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ("id", "name", "author", "tags", "questions")
+        fields = ("id", "name", "author", "tags", "questions", "likes", "dislikes")
 
 
 class QuizListSerializer(serializers.ModelSerializer):
@@ -46,7 +46,7 @@ class QuizListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ("id", "name", "author", "tags", "question_count")
+        fields = ("id", "name", "author", "tags", "question_count", "likes", "dislikes")
 
 
 class ChoiceCreateSerializer(serializers.ModelSerializer):

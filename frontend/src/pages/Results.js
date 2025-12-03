@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuizDetail } from '../hooks/useQuizDetail';
 import { useQuizList } from '../context/QuizContext';
 import { useScores } from '../context/ScoresContext';
+import { useReactions } from '../context/ReactionsContext';
 
 function Results() {
   const { quizId } = useParams();
@@ -12,6 +13,9 @@ function Results() {
   const navigate = useNavigate();
   const { registerTemporaryQuiz } = useQuizList();
   const { recordScore } = useScores();
+  const { reactions, recordReaction } = useReactions();
+
+  const currentReaction = reactions[quizId]?.userReaction || null;
 
   const score = useMemo(() => {
     const value = Number(searchParams.get('score') || '0');
@@ -62,22 +66,38 @@ function Results() {
     <div>
       <h2 className="section-title">Your score</h2>
       <div className="card stack">
-        <div style={{ fontSize: '40px', fontWeight: 700 }}>{score}%</div>
+        <div className="row" style={{justifyContent: 'space-between'}}>
+          <div style={{fontSize: '40px', fontWeight: 700}}>{score}%</div>
+
+          <div className="reaction">
+            <div className="reaction-label">Did you like this quiz?</div>
+
+            <div className="reaction-buttons">
+              <button className={"reaction-btn reaction-btn-like" + (currentReaction === "like" ? " active" : "")}
+                      onClick={() => {const newValue = currentReaction === 'like' ? null : 'like';
+                                            recordReaction(quizId, newValue, currentReaction);}}>👍</button>
+              <button className={"reaction-btn reaction-btn-dislike" + (currentReaction === "dislike" ? " active" : "")}
+                      onClick={() => {const newValue = currentReaction === 'dislike' ? null : 'dislike';
+                                            recordReaction(quizId, newValue, currentReaction);}}>👎</button>
+            </div>
+          </div>
+
+        </div>
         <div className="muted">
           {quiz.name} • {quiz.questions.length} questions
         </div>
         {wrongCount ? (
-          <div className="muted">Missed: {wrongCount}</div>
+            <div className="muted">Missed: {wrongCount}</div>
         ) : (
-          <div className="muted">Perfect run!</div>
+            <div className="muted">Perfect run!</div>
         )}
         <div className="row">
           <Link className="btn" to="/">
             Home
           </Link>
           {wrongCount ? (
-            <button id="retryWrong" className="btn success" type="button" onClick={handleRetryWrong}>
-              Retry failed
+              <button id="retryWrong" className="btn success" type="button" onClick={handleRetryWrong}>
+                Retry failed
             </button>
           ) : null}
         </div>
