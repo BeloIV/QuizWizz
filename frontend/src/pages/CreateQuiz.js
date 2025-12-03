@@ -20,13 +20,11 @@ function CreateQuiz() {
   // Changed to string
   const [questionCount, setQuestionCount] = useState('25');
 
-  // Question type selection state - Basic is selected by default
-  const [questionTypeSelected, setQuestionTypeSelected] = useState(true);
-  const [selectedQuestionType, setSelectedQuestionType] = useState('basic'); // 'basic' or 'other'
-
   const [currentQuestion, setCurrentQuestion] = useState({
     text: '',
     options: [
+      { text: '', is_correct: true },
+      { text: '', is_correct: false },
       { text: '', is_correct: false },
       { text: '', is_correct: false },
     ],
@@ -50,8 +48,11 @@ function CreateQuiz() {
     setCurrentQuestion((prev) => {
       let newOptions = [...prev.options];
       if (field === 'is_correct') {
-        // Toggle checkbox - multiple options can be correct
-        newOptions[index] = { ...newOptions[index], is_correct: value };
+        // Only one option can be correct
+        newOptions = newOptions.map((opt, idx) => ({
+          ...opt,
+          is_correct: idx === index,
+        }));
       } else {
         newOptions[index] = { ...newOptions[index], [field]: value };
       }
@@ -85,7 +86,7 @@ function CreateQuiz() {
     }
 
     if (!currentQuestion.options.some((opt) => opt.is_correct)) {
-      setError('Please mark at least one option as correct');
+      setError('Please mark one option as correct');
       return;
     }
 
@@ -112,14 +113,12 @@ function CreateQuiz() {
     setCurrentQuestion({
       text: '',
       options: [
+        { text: '', is_correct: true },
+        { text: '', is_correct: false },
         { text: '', is_correct: false },
         { text: '', is_correct: false },
       ],
     });
-
-    // Keep question type selected as Basic
-    setQuestionTypeSelected(true);
-    setSelectedQuestionType('basic');
 
     setError(null);
   }, [currentQuestion, formData.questions.length]);
@@ -404,34 +403,6 @@ function CreateQuiz() {
                         Add Question {formData.questions.length + 1}
                       </h2>
 
-                      {/* Question Type Selection - Small buttons on top */}
-                      <div className="question-type-selector-compact">
-                        <button
-                          type="button"
-                          className={`question-type-btn ${selectedQuestionType === 'basic' ? 'active' : ''}`}
-                          onClick={() => {
-                            setSelectedQuestionType('basic');
-                            setQuestionTypeSelected(true);
-                          }}
-                          disabled={loading}
-                        >
-                          Basic Question
-                        </button>
-                        <button
-                          type="button"
-                          className={`question-type-btn ${selectedQuestionType === 'other' ? 'active' : ''}`}
-                          onClick={() => {
-                            setSelectedQuestionType('other');
-                            setError('This question type is not yet available');
-                          }}
-                          disabled={loading}
-                        >
-                          Other
-                        </button>
-                      </div>
-
-                      {questionTypeSelected && selectedQuestionType === 'basic' && (
-                        <>
                       <div className="form-group">
                         <label htmlFor="question-text">Question Text *</label>
                         <textarea
@@ -445,21 +416,22 @@ function CreateQuiz() {
                         />
                       </div>
 
-                      {/* Options Section with Checkboxes for Multiple Correct Answers */}
+                      {/* Options Section with Custom Radio Buttons */}
                       <div className="form-group">
-                        <label>Mark the correct answer(s) *</label>
+                        <label>Mark the correct answer *</label>
                         <div className="options-editor">
                           {currentQuestion.options.map((option, index) => (
                               <div key={index} className="option-input-group">
-                                <label className="custom-checkbox-wrapper">
+                                <label className="custom-radio-wrapper">
                                   <input
-                                      type="checkbox"
+                                      type="radio"
+                                      name="correct-option"
                                       checked={option.is_correct}
-                                      onChange={(e) => handleOptionChange(index, 'is_correct', e.target.checked)}
+                                      onChange={() => handleOptionChange(index, 'is_correct', true)}
                                       disabled={loading}
-                                      className="custom-checkbox-input"
+                                      className="custom-radio-input"
                                   />
-                                  <span className="custom-checkbox"></span>
+                                  <span className="custom-radio"></span>
                                   <input
                                       type="text"
                                       value={option.text}
@@ -501,8 +473,6 @@ function CreateQuiz() {
                       >
                         Add Question
                       </button>
-                        </>
-                      )}
                     </section>
                 )}
 
