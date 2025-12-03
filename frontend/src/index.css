@@ -387,13 +387,30 @@ body.menu-open {
 .quiz-card__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 8px;
 }
 
 .quiz-card__title {
   margin: 0;
   font-size: 16px;
+}
+
+.quiz-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.quiz-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .quiz-card__tag {
@@ -405,13 +422,15 @@ body.menu-open {
   font-weight: 600;
 }
 
-.quiz-card__meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 8px;
+.quiz-card__icon {
+  font-size: 20px;
+  line-height: 1;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.quiz-card:hover .quiz-card__icon {
+  transform: scale(1.1);
 }
 
 .row {
@@ -963,6 +982,44 @@ body.light .hamburger-btn.is-open {
 
 .pill-remove:hover {
   opacity: 0.7;
+}
+
+.icon-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.icon-option {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: rgba(20, 35, 66, 0.6);
+  border: 2px solid rgba(118, 139, 180, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 8px;
+}
+
+.icon-option:hover {
+  background: rgba(110, 168, 255, 0.15);
+  border-color: rgba(110, 168, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.icon-option.selected {
+  background: rgba(110, 168, 255, 0.25);
+  border-color: rgba(110, 168, 255, 0.65);
+  box-shadow: 0 0 0 3px rgba(110, 168, 255, 0.15);
+}
+
+.icon-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .questions-list {
@@ -1722,5 +1779,94 @@ body.light .question-type-btn.active {
   }
 }
 
+.reaction {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
+.reaction-label {
+  font-size: 14px;
+  color: var(--muted);
+}
 
+.reaction-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.reaction-btn {
+  font-size: 24px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(118, 139, 180, 0.35);
+  background: rgba(22, 38, 72, 0.85);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.reaction-btn:hover {
+  transform: translateY(-2px);
+}
+
+.reaction-btn-like:hover {
+  background: rgba(74, 214, 165, 0.22);
+  border-color: rgba(74, 214, 165, 0.55);
+}
+
+.reaction-btn-dislike:hover {
+  background: rgba(251, 143, 143, 0.22);
+  border-color: rgba(251, 143, 143, 0.55);
+}
+
+.reaction-btn-like.active {
+  background: rgba(74, 214, 165, 0.35);
+  border-color: rgba(74, 214, 165, 0.75);
+}
+
+.reaction-btn-dislike.active {
+  background: rgba(251, 143, 143, 0.35);
+  border-color: rgba(251, 143, 143, 0.75);
+}
+
+.reaction-stats {
+  margin-top: 8px;
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.reaction-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reaction-stat-number {
+  font-weight: 600;
+}
+
+.reaction-stat-like .reaction-stat-number {
+  color: var(--success);
+}
+
+.reaction-stat-dislike .reaction-stat-number {
+  color: var(--danger);
+}
+
+.reaction-stat-icon {
+  font-size: 18px;
+}
+
+@media (max-width: 480px) {
+  .reaction-stats {
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .reaction-stat-icon {
+    font-size: 16px;
+  }
+}
