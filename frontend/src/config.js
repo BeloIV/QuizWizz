@@ -1,10 +1,14 @@
-// Prefer an explicit environment variable (useful for docker / remote dev).
-// If not set, default to a relative path '/api' so the dev server proxy can handle it.
-const envUrl = (process.env && process.env.REACT_APP_API_BASE_URL) || '';
+// Determine the API base URL based on the hostname
+const hostname = window.location.hostname;
 
-let API_BASE_URL = envUrl || '/api';
+let API_BASE_URL;
 
-// If you're not using a dev proxy, set REACT_APP_API_BASE_URL to an absolute URL
-// (e.g., http://localhost:8080/api or https://your-domain/api) before starting the dev server.
+if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.')) {
+  // Local development - use local backend
+  API_BASE_URL = 'http://192.168.1.250:8080/api';
+} else {
+  // Production/remote - use tunnel backend
+  API_BASE_URL = 'https://quizwizzapi.bytboyzserver.xyz/api';
+}
 
 export { API_BASE_URL };
