@@ -11,28 +11,31 @@ import NotFound from './pages/NotFound';
 import Play from './pages/Play';
 import QuizDetail from './pages/QuizDetail';
 import Results from './pages/Results';
+import {ReactionsProvider} from "./context/ReactionsContext";
 
 function App() {
   return (
     <ThemeProvider>
-      <ScoresProvider>
-        <QuizProvider>
-          <SearchProvider>
-            <HashRouter>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/create" element={<CreateQuiz />} />
-                  <Route path="/quiz/:quizId" element={<QuizDetail />} />
-                  <Route path="/play/:quizId" element={<Play />} />
-                  <Route path="/results/:quizId" element={<Results />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Layout>
-            </HashRouter>
-          </SearchProvider>
-        </QuizProvider>
-      </ScoresProvider>
+      <ReactionsProvider>
+        <ScoresProvider>
+          <QuizProvider>
+            <SearchProvider>
+              <HashRouter>
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/create" element={<CreateQuiz />} />
+                    <Route path="/quiz/:quizId" element={<QuizDetail />} />
+                    <Route path="/play/:quizId" element={<Play />} />
+                    <Route path="/results/:quizId" element={<Results />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Layout>
+              </HashRouter>
+            </SearchProvider>
+          </QuizProvider>
+        </ScoresProvider>
+      </ReactionsProvider>
     </ThemeProvider>
   );
 }
