@@ -9,7 +9,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_API_BASE_URL=http://backend:8080/api
       - HOST=0.0.0.0
       - DANGEROUSLY_DISABLE_HOST_CHECK=true
       - FAST_REFRESH=false
