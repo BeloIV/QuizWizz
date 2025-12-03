@@ -1254,6 +1254,43 @@ body.light .option-check.correct {
   margin-bottom: 24px;
 }
 
+
+/* Actions that sit immediately left of the screen title */
+.screen-header .right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.screen-header .right-actions .btn,
+.screen-header .right-actions button {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .screen-header {
+    gap: 8px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .screen-header .right-actions {
+    order: 1;
+    width: auto;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .screen-header .page-title {
+    order: 0;
+    width: 100%;
+    margin-top: 4px;
+  }
+}
+
 .screen-header .page-title {
   margin: 0;
   display: flex;
@@ -1556,6 +1593,21 @@ body.light .option-text-input {
   color: #1e293b;
 }
 
+/* Align Add Option and Add Question buttons */
+.option-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+  .option-buttons {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+
 
 /* Toast / Snackbar */
 .toast {
@@ -1691,6 +1743,40 @@ body.light .question-type-btn.active {
   background: rgba(59, 130, 246, 0.15);
   border-color: rgba(59, 130, 246, 0.65);
   color: #3b82f6;
+}
+
+/* Floating container for left-corner persistent buttons (Create Quiz) */
+.float-top-left {
+  position: fixed;
+  top: calc(64px + env(safe-area-inset-top));
+  left: 12px;
+  z-index: 120;
+  display: flex;
+  gap: 10px;
+  flex-direction: row;
+  align-items: center;
+  pointer-events: none; /* wrapper doesn't block clicks behind it */
+}
+.float-top-left .btn,
+.float-top-left button {
+  pointer-events: auto;
+  min-width: 110px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+@media (max-width: 640px) {
+  .float-top-left {
+    top: calc(56px + env(safe-area-inset-top));
+    left: 8px;
+    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .float-top-left .btn {
+    min-width: 92px;
+    padding: 8px 10px;
+  }
 }
 
 .reaction {

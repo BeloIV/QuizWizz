@@ -200,6 +200,17 @@ function CreateQuiz() {
     }
   };
 
+  // Helper to determine if the current question editor has valid inputs
+  const canAddQuestion = (
+    currentQuestion &&
+    currentQuestion.text &&
+    currentQuestion.text.trim() &&
+    Array.isArray(currentQuestion.options) &&
+    currentQuestion.options.length >= 2 &&
+    currentQuestion.options.every((opt) => opt.text && opt.text.trim()) &&
+    currentQuestion.options.some((opt) => opt.is_correct)
+  );
+
   return (
       <div className="create-quiz">
         {screen === 'metadata' ? (
@@ -207,15 +218,25 @@ function CreateQuiz() {
             <div>
               <div className="screen-header">
                 <h1 className="page-title">Create New Quiz</h1>
-                <button
+                <div className="right-actions">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/')}
+                    disabled={loading}
+                    className="btn"
+                  >
+                    Cancel
+                  </button>
+                  <button
                     type="button"
                     onClick={handleMetadataSubmit}
                     disabled={loading || !formData.name.trim() || !formData.author.trim()}
                     className="btn primary"
                     aria-label="Continue to questions"
-                >
-                  Continue
-                </button>
+                  >
+                    Continue
+                  </button>
+                </div>
               </div>
 
               {error && <div className="error-banner">{error}</div>}
@@ -347,18 +368,7 @@ function CreateQuiz() {
                   </div>
                 </section>
 
-                <section className="form-section">
-                  <div className="form-actions">
-                    <button
-                        type="button"
-                        onClick={() => navigate('/')}
-                        disabled={loading}
-                        className="btn"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </section>
+                {/* Cancel moved to floating top-left actions */}
               </form>
             </div>
         ) : (
@@ -368,16 +378,34 @@ function CreateQuiz() {
                 <h1 className="page-title">
                   Add Questions <span className="question-counter">({formData.questions.length}/{parseInt(questionCount)})</span>
                 </h1>
-                {formData.questions.length === parseInt(questionCount) && (
+                <div className="right-actions">
+                  <button
+                    type="button"
+                    onClick={() => setScreen('metadata')}
+                    disabled={loading}
+                    className="btn"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/')}
+                    disabled={loading}
+                    className="btn"
+                  >
+                    Cancel
+                  </button>
+                  {formData.questions.length === parseInt(questionCount) && (
                     <button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="btn primary success"
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={loading}
+                      className="btn primary success"
                     >
                       {loading ? 'Creating...' : '✓ Continue'}
                     </button>
-                )}
+                  )}
+                </div>
               </div>
 
               {error && <div className="error-banner">{error}</div>}
@@ -503,42 +531,36 @@ function CreateQuiz() {
                           ))}
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={addOption}
-                            disabled={loading}
-                            className="btn"
-                        >
-                          + Add Option
-                        </button>
+                        <div className="option-buttons">
+                          <button
+                              type="button"
+                              onClick={addOption}
+                              disabled={loading}
+                              className="btn"
+                          >
+                            + Add Option
+                          </button>
+
+                          {formData.questions.length < parseInt(questionCount) && (
+                            <button
+                              type="button"
+                              onClick={addQuestion}
+                              disabled={loading || !canAddQuestion}
+                              className="btn primary"
+                            >
+                              + Add Question
+                            </button>
+                          )}
+                        </div>
                       </div>
 
-                      <button
-                          type="button"
-                          onClick={addQuestion}
-                          disabled={loading}
-                          className="btn primary"
-                      >
-                        Add Question
-                      </button>
+                      {/* in-page Add Question removed — use top + Add Question */}
                         </>
                       )}
                     </section>
                 )}
 
-                {/* Back Button */}
-                <section className="form-section">
-                  <div className="form-actions">
-                    <button
-                        type="button"
-                        onClick={() => setScreen('metadata')}
-                        disabled={loading}
-                        className="btn"
-                    >
-                      ← Back
-                    </button>
-                  </div>
-                </section>
+                
               </div>
             </div>
         )}
