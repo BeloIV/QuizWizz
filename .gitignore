@@ -4,3 +4,5 @@ backend/backend/quizzes/migrations/__pycache__/*
 backend/backend/backend/__pycache__/*
 backend/backend/quizzes/__pycache__/*
 .venv/
+./env/
+
