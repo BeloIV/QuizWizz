@@ -18,6 +18,9 @@ function QuizCard({ quiz, onClick }) {
         }
       }}
     >
+      <div className="quiz-card__icon-wrapper">
+        <span className="quiz-card__icon">{quiz.icon || '📝'}</span>
+      </div>
       <div className="quiz-card__header">
         <h3 className="quiz-card__title">{quiz.name}</h3>
         <span className="quiz-card__tag">{quiz.tags[0] || 'general'}</span>

@@ -13,6 +13,7 @@ function CreateQuiz() {
     name: '',
     author: '',
     description: '',
+    icon: '📝',
     tags: [],
     questions: [],
   });
@@ -261,6 +262,25 @@ function CreateQuiz() {
                         disabled={loading}
                         rows="3"
                     />
+                  </div>
+
+                  {/* Icon Selector */}
+                  <div className="form-group">
+                    <label htmlFor="icon">Quiz Icon</label>
+                    <div className="icon-selector">
+                      {['📝', '🧮', '➕', '🔢', '🌍', '🪐', '🔬', '💻', '⚙️', '🎨', '🎭', '🎵', '📚', '🏆', '☕', '🚀', '💡', '🎯', '🧪', '🎮'].map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          className={`icon-option ${formData.icon === emoji ? 'selected' : ''}`}
+                          onClick={() => setFormData((prev) => ({ ...prev, icon: emoji }))}
+                          disabled={loading}
+                          aria-label={`Select ${emoji} icon`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Question Count */}

@@ -31,7 +31,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ("id", "name", "author", "tags", "questions")
+        fields = ("id", "name", "author", "icon", "tags", "questions")
 
 
 class QuizListSerializer(serializers.ModelSerializer):
@@ -40,7 +40,7 @@ class QuizListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ("id", "name", "author", "tags", "question_count")
+        fields = ("id", "name", "author", "icon", "tags", "question_count")
 
 
 class ChoiceCreateSerializer(serializers.ModelSerializer):
@@ -75,10 +75,11 @@ class QuizCreateSerializer(serializers.ModelSerializer):
         child=serializers.CharField(), required=False, allow_empty=True, write_only=True
     )
     id = serializers.CharField(required=False, allow_blank=True)
+    icon = serializers.CharField(required=False, allow_blank=True, default="📝")
 
     class Meta:
         model = Quiz
-        fields = ("id", "name", "author", "description", "tags", "questions")
+        fields = ("id", "name", "author", "description", "icon", "tags", "questions")
 
     def to_representation(self, instance):
         # After creation return full QuizSerializer representation
