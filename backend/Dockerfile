@@ -22,4 +22,4 @@ RUN mkdir -p quizzes/migrations
 EXPOSE 8080
 
 # Start command
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
+CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8080"]
