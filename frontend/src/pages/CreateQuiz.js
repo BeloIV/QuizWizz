@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { API_BASE_URL } from '../config';
@@ -39,6 +39,18 @@ function CreateQuiz() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const errorTimeoutRef = useRef(null);
+
+  const showError = useCallback((message) => {
+    setError(message);
+    if (errorTimeoutRef.current) {
+      clearTimeout(errorTimeoutRef.current);
+    }
+    errorTimeoutRef.current = setTimeout(() => {
+      setError(null);
+      errorTimeoutRef.current = null;
+    }, 3000);
+  }, []);
 
   const handleQuizChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -155,23 +167,23 @@ function CreateQuiz() {
 
   const addQuestion = useCallback(() => {
     if (!currentQuestion.text.trim()) {
-      setError('Please enter a question');
+      showError('Please enter a question');
       return;
     }
 
     if (currentQuestion.question_type === 'MULTIPLE_CHOICE' || currentQuestion.question_type === 'IMAGE') {
       if (currentQuestion.options.length < 2) {
-        setError('Please add at least 2 options');
+        showError('Please add at least 2 options');
         return;
       }
 
       if (!currentQuestion.options.some((opt) => opt.is_correct)) {
-        setError('Please mark at least one option as correct');
+        showError('Please mark at least one option as correct');
         return;
       }
 
       if (currentQuestion.options.some((opt) => !opt.text.trim())) {
-        setError('Please provide text for all options');
+        showError('Please provide text for all options');
         return;
       }
     } else if (currentQuestion.question_type === 'FILL_IN_THE_GAP') {
@@ -181,7 +193,7 @@ function CreateQuiz() {
       const delimiter = hasTriple ? '___' : (hasQuint ? '_____' : null);
 
       if (!delimiter) {
-        setError('Please include at least one gap using ___ in the sentence');
+        showError('Please include at least one gap using ___ in the sentence');
         return;
       }
 
@@ -194,12 +206,12 @@ function CreateQuiz() {
         .filter(Boolean);
 
       if (correctAnswers.length === 0) {
-        setError('Please enter the correct answer for each gap (comma-separated)');
+        showError('Please enter the correct answer for each gap (comma-separated)');
         return;
       }
 
       if (correctAnswers.length !== gapCount) {
-        setError('The number of gaps and the number of correct answers must match');
+        showError('The number of gaps and the number of correct answers must match');
         return;
       }
 
@@ -208,7 +220,7 @@ function CreateQuiz() {
         .filter((opt, idx) => idx > 0 && opt.text.trim())
         .length;
       if (incorrectAnswers < 1) {
-        setError('Please add at least one incorrect answer');
+        showError('Please add at least one incorrect answer');
         return;
       }
     }
@@ -274,21 +286,20 @@ function CreateQuiz() {
 
   const handleMetadataSubmit = (e) => {
     e.preventDefault();
-    setError(null);
 
     if (!formData.name.trim()) {
-      setError('Please enter a quiz name');
+      showError('Please enter a quiz name');
       return;
     }
 
     if (!formData.author.trim()) {
-      setError('Please enter an author name');
+      showError('Please enter an author name');
       return;
     }
 
     // Updated validation
     if (!questionCount || isNaN(parseInt(questionCount)) || parseInt(questionCount) < 1) {
-      setError('Please enter at least 1 question');
+      showError('Please enter at least 1 question');
       return;
     }
 
@@ -297,11 +308,10 @@ function CreateQuiz() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
 
     // Compare using parseInt
     if (formData.questions.length !== parseInt(questionCount)) {
-      setError(`Please add exactly ${questionCount} questions. You have ${formData.questions.length}.`);
+      showError(`Please add exactly ${questionCount} questions. You have ${formData.questions.length}.`);
       return;
     }
 
