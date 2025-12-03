@@ -594,8 +594,12 @@ function CreateQuiz() {
                                 />
                               </label>
                               {currentQuestion.image && (
-                                <span className="muted" style={{ marginLeft: '8px', fontSize: '0.85em' }}>
-                                  Image selected
+                                <span style={{ marginLeft: '8px', display: 'inline-block', verticalAlign: 'middle' }}>
+                                  <img
+                                    src={currentQuestion.image}
+                                    alt="Question preview"
+                                    style={{ maxHeight: '60px', maxWidth: '120px', objectFit: 'contain', borderRadius: '4px' }}
+                                  />
                                 </span>
                               )}
                             </div>
@@ -639,8 +643,12 @@ function CreateQuiz() {
                                         />
                                       </label>
                                       {option.image && (
-                                        <span className="muted" style={{ marginLeft: '4px', fontSize: '0.8em' }}>
-                                          Image
+                                        <span style={{ marginLeft: '4px', display: 'inline-block', verticalAlign: 'middle' }}>
+                                          <img
+                                            src={option.image}
+                                            alt={`Option ${index + 1} preview`}
+                                            style={{ maxHeight: '40px', maxWidth: '80px', objectFit: 'contain', borderRadius: '4px' }}
+                                          />
                                         </span>
                                       )}
                                     </span>
