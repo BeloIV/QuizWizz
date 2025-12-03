@@ -9,6 +9,7 @@ function Play() {
   const { quiz, loading, error } = useQuizDetail(quizId);
   const [index, setIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [selectedIndices, setSelectedIndices] = useState([]); // For multi-answer questions
   const [disabledOptions, setDisabledOptions] = useState({});
   const [reveal, setReveal] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -21,6 +22,7 @@ function Play() {
   useEffect(() => {
     setIndex(0);
     setSelectedIndex(null);
+    setSelectedIndices([]);
     setDisabledOptions({});
     setReveal(false);
     setProcessing(false);
@@ -53,7 +55,29 @@ function Play() {
     return quiz.questions[index] || null;
   }, [quiz, index]);
 
+  // Check if the entire quiz has at least one multi-answer question
+  const quizHasMultiAnswer = useMemo(() => {
+    if (!quiz?.questions) return false;
+    return quiz.questions.some(q => {
+      const correctCount = q.options?.filter(opt => opt.is_correct).length || 0;
+      return correctCount > 1;
+    });
+  }, [quiz]);
+
+  // Determine if current question has multiple correct answers
+  const isMultiAnswer = useMemo(() => {
+    if (!currentQuestion?.options) return false;
+    const correctCount = currentQuestion.options.filter(opt => opt.is_correct).length;
+    return correctCount > 1;
+  }, [currentQuestion]);
+
   const correctIndex = currentQuestion?.correct_index;
+  const correctIndices = useMemo(() => {
+    if (!currentQuestion?.options) return [];
+    return currentQuestion.options
+      .filter(opt => opt.is_correct)
+      .map(opt => opt.index);
+  }, [currentQuestion]);
   const totalQuestions = quiz?.questions?.length || 0;
 
   useEffect(() => {
@@ -66,12 +90,26 @@ function Play() {
     if (!quiz || !currentQuestion || processing || reveal) {
       return;
     }
-    const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
-    if (chosenIndex === null || chosenIndex === undefined) {
-      return;
+
+    let isCorrect = false;
+
+    if (quizHasMultiAnswer) {
+      // If quiz has any multi-answer questions, all questions use checkbox mode
+      // Check if selectedIndices match correctIndices
+      const selectedSet = new Set(selectedIndices);
+      const correctSet = new Set(correctIndices);
+      isCorrect = selectedSet.size === correctSet.size && 
+        [...selectedSet].every(idx => correctSet.has(idx));
+    } else {
+      // Pure single-answer quiz - use old behavior
+      const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
+      if (chosenIndex === null || chosenIndex === undefined) {
+        return;
+      }
+      isCorrect = chosenIndex === correctIndex;
     }
 
-    if (chosenIndex === correctIndex) {
+    if (isCorrect) {
       setReveal(true);
       setProcessing(true);
       if (timeoutRef.current) {
@@ -90,17 +128,28 @@ function Play() {
           setIndex(nextIndex);
         }
         setSelectedIndex(null);
+        setSelectedIndices([]);
         setReveal(false);
         setProcessing(false);
       }, 900);
     } else {
       initiallyWrongRef.current.add(currentQuestion.id);
-      setDisabledOptions((prev) => {
-        const existing = new Set(prev[currentQuestion.id] || []);
-        existing.add(chosenIndex);
-        return { ...prev, [currentQuestion.id]: Array.from(existing) };
-      });
+      
+      if (quizHasMultiAnswer) {
+        // For quiz with multi-answer, just show "Try again" without disabling
+        // User can try again with different selection
+      } else {
+        // For pure single-answer quiz, disable the incorrect option
+        const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
+        setDisabledOptions((prev) => {
+          const existing = new Set(prev[currentQuestion.id] || []);
+          existing.add(chosenIndex);
+          return { ...prev, [currentQuestion.id]: Array.from(existing) };
+        });
+      }
+      
       setSelectedIndex(null);
+      setSelectedIndices([]);
 
       // Show transient "Try again" toast for incorrect answer
       setShowTryAgain(true);
@@ -117,8 +166,22 @@ function Play() {
     if (processing || reveal) {
       return;
     }
-    setSelectedIndex(optionIndex);
-    handleSubmit(optionIndex);
+
+    if (quizHasMultiAnswer) {
+      // If quiz has any multi-answer questions, all questions use checkbox mode
+      // Toggle selection
+      setSelectedIndices(prev => {
+        if (prev.includes(optionIndex)) {
+          return prev.filter(idx => idx !== optionIndex);
+        } else {
+          return [...prev, optionIndex];
+        }
+      });
+    } else {
+      // Pure single-answer quiz - immediately submit
+      setSelectedIndex(optionIndex);
+      handleSubmit(optionIndex);
+    }
   };
 
   if (loading) {
@@ -144,6 +207,11 @@ function Play() {
       </div>
       <div className="card">
         <div className="question">{currentQuestion.text}</div>
+        {quizHasMultiAnswer && (
+          <div className="muted" style={{ fontSize: '14px', marginBottom: '12px' }}>
+            Select all correct answers
+          </div>
+        )}
         <div className="options" id="options">
           {currentQuestion.options.map((option) => {
             const optionIndex = option.index;
@@ -151,10 +219,12 @@ function Play() {
             if (disabledForQuestion.has(optionIndex)) {
               classNames.push('incorrect');
             }
-            if (reveal && optionIndex === correctIndex) {
+            if (reveal && correctIndices.includes(optionIndex)) {
               classNames.push('correct');
             }
-            if (!reveal && selectedIndex === optionIndex) {
+            if (!reveal && (quizHasMultiAnswer 
+              ? selectedIndices.includes(optionIndex) 
+              : selectedIndex === optionIndex)) {
               classNames.push('selected');
             }
             const isDisabled = processing || reveal || disabledForQuestion.has(optionIndex);
@@ -171,6 +241,19 @@ function Play() {
             );
           })}
         </div>
+        {quizHasMultiAnswer && !reveal && (
+          <div style={{ marginTop: '16px' }}>
+            <button 
+              type="button" 
+              className="btn primary"
+              onClick={() => handleSubmit()}
+              disabled={processing || selectedIndices.length === 0}
+              style={{ width: '100%' }}
+            >
+              Continue
+            </button>
+          </div>
+        )}
       </div>
       <div className="footer-actions row" style={{ justifyContent: 'space-between' }}>
         <button type="button" className="btn" onClick={() => setShowQuitDialog(true)}>
