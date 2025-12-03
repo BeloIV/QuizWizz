@@ -16,6 +16,7 @@ class Quiz(models.Model):
     name = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    icon = models.CharField(max_length=50, blank=True, default="📝")
     tags = models.ManyToManyField(Tag, related_name="quizzes", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     likes = models.PositiveIntegerField(default=0)
