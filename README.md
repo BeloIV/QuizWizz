@@ -33,6 +33,12 @@ The application will be available at:
 
 The backend automatically runs migrations on startup, so the database is ready to use immediately.
 
+**Note:** The frontend requires a `.env` file in the `frontend/` directory with:
+```
+VITE_API_BASE_URL=http://localhost:8080/api
+```
+This tells the frontend where to find the backend API.
+
 API endpoints:
 - `GET /api/quizzes` – list quizzes with basic metadata
 - `GET /api/quizzes/<quiz_id>/` – retrieve one quiz with questions and options
@@ -65,9 +71,15 @@ Open a second terminal:
 
 ```bash
 cd frontend
+
+# Create .env file
+echo "VITE_API_BASE_URL=http://localhost:8000/api" > .env
+
 npm install
 npm start
 ```
+
+**Note:** For manual setup, the backend runs on port 8000, so use `http://localhost:8000/api` in the `.env` file.
 
 #### 3. Using run.sh script (Docker alternative)
 
