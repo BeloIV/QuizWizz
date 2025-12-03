@@ -1357,6 +1357,56 @@ body.light .form-group input[type="number"]:focus {
   line-height: 1;
 }
 
+/* Custom Checkbox Styling for Multiple Correct Answers */
+.custom-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  flex: 1;
+  padding: 12px;
+  background: rgba(20, 35, 66, 0.5);
+  border: 1px solid rgba(118, 139, 180, 0.25);
+  border-radius: 10px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.custom-checkbox-wrapper:hover {
+  background: rgba(20, 35, 66, 0.8);
+  border-color: rgba(110, 168, 255, 0.35);
+}
+
+.custom-checkbox-input {
+  display: none;
+}
+
+.custom-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(118, 139, 180, 0.45);
+  border-radius: 6px;
+  background: transparent;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.custom-checkbox-input:checked + .custom-checkbox {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, rgba(110, 168, 255, 0.9), rgba(75, 234, 211, 0.8));
+  box-shadow: 0 0 0 4px rgba(110, 168, 255, 0.15);
+}
+
+.custom-checkbox-input:checked + .custom-checkbox::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .option-text-input {
   flex: 1;
   padding: 8px 10px;
@@ -1389,6 +1439,16 @@ body.light .form-group input[type="number"]:focus {
     height: 22px;
   }
 
+  .custom-checkbox-wrapper {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .custom-checkbox {
+    width: 22px;
+    height: 22px;
+  }
+
   .option-text-input {
     font-size: 16px; /* Prevent zoom on iOS */
   }
@@ -1409,6 +1469,26 @@ body.light .custom-radio {
 }
 
 body.light .custom-radio-input:checked + .custom-radio {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(34, 197, 94, 0.8));
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+body.light .custom-checkbox-wrapper {
+  background: rgba(229, 231, 235, 0.5);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+body.light .custom-checkbox-wrapper:hover {
+  background: rgba(229, 231, 235, 0.8);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+body.light .custom-checkbox {
+  border-color: rgba(148, 163, 184, 0.55);
+}
+
+body.light .custom-checkbox-input:checked + .custom-checkbox {
   border-color: #3b82f6;
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(34, 197, 94, 0.8));
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
@@ -1499,6 +1579,61 @@ body.light .toast--danger {
 body.light .dialog {
   background: #ffffff;
   border-color: #e2e8f0;
+}
+
+/* Question Type Selector - Compact buttons */
+.question-type-selector-compact {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.question-type-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: rgba(20, 35, 66, 0.6);
+  border: 1px solid rgba(118, 139, 180, 0.35);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.question-type-btn:hover:not(:disabled) {
+  background: rgba(20, 35, 66, 0.9);
+  border-color: rgba(110, 168, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.question-type-btn.active {
+  background: rgba(110, 168, 255, 0.2);
+  border-color: rgba(110, 168, 255, 0.65);
+  color: var(--primary);
+}
+
+.question-type-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Light theme */
+body.light .question-type-btn {
+  background: rgba(226, 232, 240, 0.8);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #1e293b;
+}
+
+body.light .question-type-btn:hover:not(:disabled) {
+  background: rgba(226, 232, 240, 1);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+body.light .question-type-btn.active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.65);
+  color: #3b82f6;
 }
 
 
