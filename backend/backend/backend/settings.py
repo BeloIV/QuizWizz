@@ -70,6 +70,7 @@ else:
         "https://quiz.bytboyzserver.xyz",
         "http://quiz.bytboyzserver.xyz",
         "http://localhost:3000",
+        "http://192.168.1.250:3000",
         "http://localhost:80",
         "http://localhost",
     ]
@@ -102,6 +103,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://quiz.bytboyzserver.xyz",
     "https://quiz.bytboyzserver.xyz",
     "http://localhost:3000",
+    "http://192.168.1.250:3000",
 ]
 
 ROOT_URLCONF = "backend.urls"

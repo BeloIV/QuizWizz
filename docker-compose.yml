@@ -9,16 +9,14 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - HOST=0.0.0.0
-      - DANGEROUSLY_DISABLE_HOST_CHECK=true
-      - FAST_REFRESH=false
-      - GENERATE_SOURCEMAP=false
-      - REACT_APP_WEBPACK_DISABLE_HMR=true
+      - VITE_PROXY_TARGET=http://backend:8080
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
     networks:
       - quizwizz-network
+    depends_on:
+      - backend
 
   backend:
     container_name: quizwizz-backend
@@ -32,14 +30,15 @@ services:
       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,backend,quizwizzapi.bytboyzserver.xyz
       - CORS_ALLOW_ALL_ORIGINS=0
       - CORS_ALLOW_CREDENTIALS=1
-      - CORS_ORIGIN_WHITELIST=http://localhost:3000,http://frontend:3000,https://quiz.bytboyzserver.xyz,http://quiz.bytboyzserver.xyz
+      - CORS_ORIGIN_WHITELIST=http://localhost:3000,http://192.168.1.250:3000,http://frontend:3000,https://quiz.bytboyzserver.xyz,http://quiz.bytboyzserver.xyz
     volumes:
       - ./backend/backend:/app
     networks:
       - quizwizz-network
-    depends_on:
-      - frontend
 
 networks:
   quizwizz-network:
     driver: bridge
+
+volumes:
+  frontend_node_modules:
