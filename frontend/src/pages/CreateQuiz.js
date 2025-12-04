@@ -244,7 +244,7 @@ function CreateQuiz() {
                   <button
                     type="button"
                     onClick={handleMetadataSubmit}
-                    disabled={loading || !formData.name.trim() || !formData.author.trim()}
+                    disabled={loading}
                     className="btn primary"
                     aria-label="Continue to questions"
                   >
@@ -521,7 +521,7 @@ function CreateQuiz() {
                           <button
                             type="button"
                             onClick={addQuestion}
-                            disabled={loading || !canAddQuestion}
+                            disabled={loading}
                             className="btn primary"
                           >
                             + Add Question

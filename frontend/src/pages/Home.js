@@ -93,7 +93,7 @@ function Home() {
 
       <footer className="app-footer">
         <p className="footer-text">
-          QuizWizz • Made by Stevo, Tomas, Alex, Klara and Egor
+          QuizWizz • Made by Štefan Beluško, Tomáš Magula, Alex Juráška, Klára Suchá and Egor Zvonov
         </p>
         <p className="footer-text footer-text--small">
           School Project 2025/2026
