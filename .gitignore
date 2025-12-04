@@ -5,3 +5,6 @@ backend/backend/backend/__pycache__/*
 backend/backend/quizzes/__pycache__/*
 frontend/.env
 backend/media/*
+package-lock.json
+node_modules/
+.venv/

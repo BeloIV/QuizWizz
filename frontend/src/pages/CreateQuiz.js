@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useQuizList } from '../context/QuizContext';
@@ -12,14 +12,12 @@ function CreateQuiz() {
   const [formData, setFormData] = useState({
     name: '',
     author: '',
-    description: '',
     icon: '📝',
     tags: [],
     questions: [],
   });
 
-  // Changed to string
-  const [questionCount, setQuestionCount] = useState('25');
+  // Questions will be added dynamically without pre-set count
 
   // Question type selection state - Basic is selected by default
   const [questionTypeSelected, setQuestionTypeSelected] = useState(true);
@@ -36,6 +34,25 @@ function CreateQuiz() {
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [popup, setPopup] = useState(null); // { message: string, type: 'warning' | 'success' }
+  const popupTimeoutRef = useRef(null);
+
+  // Auto-dismiss popup after 2 seconds
+  useEffect(() => {
+    if (popup) {
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+      popupTimeoutRef.current = setTimeout(() => {
+        setPopup(null);
+      }, 2000);
+    }
+    return () => {
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+    };
+  }, [popup]);
 
   const handleQuizChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -76,22 +93,22 @@ function CreateQuiz() {
 
   const addQuestion = useCallback(() => {
     if (!currentQuestion.text.trim()) {
-      setError('Please enter a question');
+      setPopup({ message: 'Question text is not filled in', type: 'warning' });
       return;
     }
 
     if (currentQuestion.options.length < 2) {
-      setError('Please add at least 2 options');
+      setPopup({ message: 'Please add at least 2 options', type: 'warning' });
       return;
     }
 
     if (!currentQuestion.options.some((opt) => opt.is_correct)) {
-      setError('Please mark at least one option as correct');
+      setPopup({ message: 'No correct answer is chosen', type: 'warning' });
       return;
     }
 
     if (currentQuestion.options.some((opt) => !opt.text.trim())) {
-      setError('Please fill in all option texts');
+      setPopup({ message: 'An option text is not filled in', type: 'warning' });
       return;
     }
 
@@ -156,18 +173,12 @@ function CreateQuiz() {
     setError(null);
 
     if (!formData.name.trim()) {
-      setError('Please enter a quiz name');
+      setPopup({ message: 'No quiz name', type: 'warning' });
       return;
     }
 
     if (!formData.author.trim()) {
-      setError('Please enter an author name');
-      return;
-    }
-
-    // Updated validation
-    if (!questionCount || isNaN(parseInt(questionCount)) || parseInt(questionCount) < 1) {
-      setError('Please enter at least 1 question');
+      setPopup({ message: 'No quiz author name', type: 'warning' });
       return;
     }
 
@@ -178,9 +189,8 @@ function CreateQuiz() {
     e.preventDefault();
     setError(null);
 
-    // Compare using parseInt
-    if (formData.questions.length !== parseInt(questionCount)) {
-      setError(`Please add exactly ${questionCount} questions. You have ${formData.questions.length}.`);
+    if (formData.questions.length === 0) {
+      setError('Please add at least one question.');
       return;
     }
 
@@ -191,9 +201,13 @@ function CreateQuiz() {
         tags: formData.tags.map((tag) => tag),
       };
       const newQuiz = await createQuiz(quizData);
-      navigate(`/quiz/${newQuiz.id}`);
+      setPopup({ message: 'Quiz created successfully', type: 'success' });
+      // Wait for popup to be visible before navigating
+      setTimeout(() => {
+        navigate(`/quiz/${newQuiz.id}`);
+      }, 1500);
     } catch (err) {
-      setError(err.message || 'Failed to create quiz');
+      setPopup({ message: err.message || 'Failed to create quiz', type: 'warning' });
       console.error('Error creating quiz:', err);
     } finally {
       setLoading(false);
@@ -230,7 +244,7 @@ function CreateQuiz() {
                   <button
                     type="button"
                     onClick={handleMetadataSubmit}
-                    disabled={loading || !formData.name.trim() || !formData.author.trim()}
+                    disabled={loading}
                     className="btn primary"
                     aria-label="Continue to questions"
                   >
@@ -273,19 +287,6 @@ function CreateQuiz() {
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="description">Description</label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        value={formData.description}
-                        onChange={handleQuizChange}
-                        placeholder="Optional: describe what this quiz covers"
-                        disabled={loading}
-                        rows="3"
-                    />
-                  </div>
-
                   {/* Icon Selector */}
                   <div className="form-group">
                     <label htmlFor="icon">Quiz Icon</label>
@@ -303,28 +304,6 @@ function CreateQuiz() {
                         </button>
                       ))}
                     </div>
-                  </div>
-
-                  {/* Question Count */}
-                  <div className="form-group">
-                    <label htmlFor="questionCount">Number of Questions *</label>
-                    <input
-                        id="questionCount"
-                        type="number"
-                        value={questionCount}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === '' || /^[0-9\b]+$/.test(value)) {
-                            setQuestionCount(value);
-                          }
-                        }}
-                        placeholder="e.g., 25"
-                        disabled={loading}
-                        min="1"
-                        max="100"
-                        required
-                    />
-                    <p className="form-hint">How many questions do you want to create?</p>
                   </div>
 
                   {/* Tags Section */}
@@ -376,7 +355,7 @@ function CreateQuiz() {
             <div>
               <div className="screen-header">
                 <h1 className="page-title">
-                  Add Questions <span className="question-counter">({formData.questions.length}/{parseInt(questionCount)})</span>
+                  Add Questions <span className="question-counter">({formData.questions.length})</span>
                 </h1>
                 <div className="right-actions">
                   <button
@@ -395,14 +374,14 @@ function CreateQuiz() {
                   >
                     Cancel
                   </button>
-                  {formData.questions.length === parseInt(questionCount) && (
+                  {formData.questions.length > 0 && (
                     <button
                       type="button"
                       onClick={handleSubmit}
                       disabled={loading}
                       className="btn primary success"
                     >
-                      {loading ? 'Creating...' : '✓ Continue'}
+                      {loading ? 'Creating...' : '✓ Finish'}
                     </button>
                   )}
                 </div>
@@ -418,7 +397,6 @@ function CreateQuiz() {
                         {formData.questions.map((question, qIndex) => (
                             <div key={qIndex} className="question-preview">
                               <div className="question-preview__header">
-                                <h4 className="question-preview__number">Question {qIndex + 1}</h4>
                                 <button
                                     type="button"
                                     onClick={() => removeQuestion(qIndex)}
@@ -446,11 +424,10 @@ function CreateQuiz() {
                 )}
 
                 {/* Question Editor */}
-                {formData.questions.length < parseInt(questionCount) && (
-                    <section className="form-section question-editor">
-                      <h2 className="section-title">
-                        Add Question {formData.questions.length + 1}
-                      </h2>
+                <section className="form-section question-editor">
+                  <h2 className="section-title">
+                    Question {formData.questions.length + 1}
+                  </h2>
 
                       {/* Question Type Selection - Small buttons on top */}
                       <div className="question-type-selector-compact">
@@ -541,29 +518,36 @@ function CreateQuiz() {
                             + Add Option
                           </button>
 
-                          {formData.questions.length < parseInt(questionCount) && (
-                            <button
-                              type="button"
-                              onClick={addQuestion}
-                              disabled={loading || !canAddQuestion}
-                              className="btn primary"
-                            >
-                              + Add Question
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={addQuestion}
+                            disabled={loading}
+                            className="btn primary"
+                          >
+                            + Add Question
+                          </button>
                         </div>
                       </div>
 
                       {/* in-page Add Question removed — use top + Add Question */}
                         </>
                       )}
-                    </section>
-                )}
+                </section>
 
                 
               </div>
             </div>
         )}
+
+      {popup && (
+        <div 
+          className={`popup ${popup.type === 'warning' ? 'popup--danger' : 'popup--success'} popup--top`}
+          role="alert" 
+          aria-live="assertive"
+        >
+          {popup.message}
+        </div>
+      )}
       </div>
   );
 }
