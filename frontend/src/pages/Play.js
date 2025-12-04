@@ -15,9 +15,11 @@ function Play() {
   const [processing, setProcessing] = useState(false);
   const [showTryAgain, setShowTryAgain] = useState(false);
   const [showQuitDialog, setShowQuitDialog] = useState(false);
+  const [tempIncorrectIndices, setTempIncorrectIndices] = useState([]); // Temporarily show incorrect answers in red
   const initiallyWrongRef = useRef(new Set());
   const timeoutRef = useRef(null);
   const toastTimeoutRef = useRef(null);
+  const incorrectTimeoutRef = useRef(null);
 
   useEffect(() => {
     setIndex(0);
@@ -26,6 +28,7 @@ function Play() {
     setDisabledOptions({});
     setReveal(false);
     setProcessing(false);
+    setTempIncorrectIndices([]);
     initiallyWrongRef.current = new Set();
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -34,6 +37,10 @@ function Play() {
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
       toastTimeoutRef.current = null;
+    }
+    if (incorrectTimeoutRef.current) {
+      clearTimeout(incorrectTimeoutRef.current);
+      incorrectTimeoutRef.current = null;
     }
   }, [quizId, quiz?.id]);
 
@@ -44,6 +51,9 @@ function Play() {
       }
       if (toastTimeoutRef.current) {
         clearTimeout(toastTimeoutRef.current);
+      }
+      if (incorrectTimeoutRef.current) {
+        clearTimeout(incorrectTimeoutRef.current);
       }
     };
   }, []);
@@ -136,8 +146,24 @@ function Play() {
       initiallyWrongRef.current.add(currentQuestion.id);
 
       if (quizHasMultiAnswer) {
-        // For quiz with multi-answer, just show "Try again" without disabling
-        // User can try again with different selection
+        // For quiz with multi-answer, keep correct selections and show incorrect ones in red temporarily
+        const correctSet = new Set(correctIndices);
+        const incorrectlySelected = selectedIndices.filter(idx => !correctSet.has(idx));
+        const newSelectedIndices = selectedIndices.filter(idx => correctSet.has(idx));
+
+        // Show incorrect answers in red
+        setTempIncorrectIndices(incorrectlySelected);
+
+        // Keep only correct selections
+        setSelectedIndices(newSelectedIndices);
+
+        // Clear incorrect highlighting after 2 seconds
+        if (incorrectTimeoutRef.current) {
+          clearTimeout(incorrectTimeoutRef.current);
+        }
+        incorrectTimeoutRef.current = setTimeout(() => {
+          setTempIncorrectIndices([]);
+        }, 2000);
       } else {
         // For pure single-answer quiz, disable the incorrect option
         const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
@@ -146,10 +172,8 @@ function Play() {
           existing.add(chosenIndex);
           return { ...prev, [currentQuestion.id]: Array.from(existing) };
         });
+        setSelectedIndex(null);
       }
-
-      setSelectedIndex(null);
-      setSelectedIndices([]);
 
       // Show transient "Try again" toast for incorrect answer
       setShowTryAgain(true);
@@ -221,10 +245,18 @@ function Play() {
             if (reveal && correctIndices.includes(optionIndex)) {
               classNames.push('correct');
             }
-            if (!reveal && (quizHasMultiAnswer
-              ? selectedIndices.includes(optionIndex)
-              : selectedIndex === optionIndex)) {
-              classNames.push('selected');
+            if (quizHasMultiAnswer) {
+              if (selectedIndices.includes(optionIndex)) {
+                classNames.push('selected');
+              }
+              // Add temporary incorrect highlighting
+              if (tempIncorrectIndices.includes(optionIndex)) {
+                classNames.push('incorrect');
+              }
+            } else {
+              if (selectedIndex === optionIndex) {
+                classNames.push('selected');
+              }
             }
             const isDisabled = processing || reveal || disabledForQuestion.has(optionIndex);
             return (
