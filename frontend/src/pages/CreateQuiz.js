@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useQuizList } from '../context/QuizContext';
@@ -34,6 +34,25 @@ function CreateQuiz() {
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [popup, setPopup] = useState(null); // { message: string, type: 'warning' | 'success' }
+  const popupTimeoutRef = useRef(null);
+
+  // Auto-dismiss popup after 2 seconds
+  useEffect(() => {
+    if (popup) {
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+      popupTimeoutRef.current = setTimeout(() => {
+        setPopup(null);
+      }, 2000);
+    }
+    return () => {
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+    };
+  }, [popup]);
 
   const handleQuizChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -74,22 +93,22 @@ function CreateQuiz() {
 
   const addQuestion = useCallback(() => {
     if (!currentQuestion.text.trim()) {
-      setError('Please enter a question');
+      setPopup({ message: 'Question text is not filled in', type: 'warning' });
       return;
     }
 
     if (currentQuestion.options.length < 2) {
-      setError('Please add at least 2 options');
+      setPopup({ message: 'Please add at least 2 options', type: 'warning' });
       return;
     }
 
     if (!currentQuestion.options.some((opt) => opt.is_correct)) {
-      setError('Please mark at least one option as correct');
+      setPopup({ message: 'No correct answer is chosen', type: 'warning' });
       return;
     }
 
     if (currentQuestion.options.some((opt) => !opt.text.trim())) {
-      setError('Please fill in all option texts');
+      setPopup({ message: 'An option text is not filled in', type: 'warning' });
       return;
     }
 
@@ -154,12 +173,12 @@ function CreateQuiz() {
     setError(null);
 
     if (!formData.name.trim()) {
-      setError('Please enter a quiz name');
+      setPopup({ message: 'No quiz name', type: 'warning' });
       return;
     }
 
     if (!formData.author.trim()) {
-      setError('Please enter an author name');
+      setPopup({ message: 'No quiz author name', type: 'warning' });
       return;
     }
 
@@ -182,9 +201,13 @@ function CreateQuiz() {
         tags: formData.tags.map((tag) => tag),
       };
       const newQuiz = await createQuiz(quizData);
-      navigate(`/quiz/${newQuiz.id}`);
+      setPopup({ message: 'Quiz created successfully', type: 'success' });
+      // Wait for popup to be visible before navigating
+      setTimeout(() => {
+        navigate(`/quiz/${newQuiz.id}`);
+      }, 1500);
     } catch (err) {
-      setError(err.message || 'Failed to create quiz');
+      setPopup({ message: err.message || 'Failed to create quiz', type: 'warning' });
       console.error('Error creating quiz:', err);
     } finally {
       setLoading(false);
@@ -515,6 +538,16 @@ function CreateQuiz() {
               </div>
             </div>
         )}
+
+      {popup && (
+        <div 
+          className={`popup ${popup.type === 'warning' ? 'popup--danger' : 'popup--success'} popup--top`}
+          role="alert" 
+          aria-live="assertive"
+        >
+          {popup.message}
+        </div>
+      )}
       </div>
   );
 }

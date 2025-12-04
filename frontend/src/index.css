@@ -30,6 +30,16 @@ body.light .popup {
   border-color: rgba(239, 68, 68, 0.55);
 }
 
+body.light .popup--success {
+  background: #16a34a;
+  border-color: rgba(74, 214, 165, 0.55);
+}
+
+.popup--success {
+  background: rgba(28, 98, 58, 0.95);
+  border-color: rgba(74, 214, 165, 0.6);
+}
+
 /* Top placement modifier */
 .popup--top {
   top: calc(16px + env(safe-area-inset-top));
