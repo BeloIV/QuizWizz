@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+import Drawer from './Drawer';
 import { useSearch } from '../context/SearchContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -139,21 +140,7 @@ function Header() {
         </div>
       </div>
 
-      {false && (
-          // TODO hamburger button off pernamently
-           //menuOpen
-        <nav className="app-header__menu" role="menu">
-          <Link
-            to="/"
-            className={`menu-link${route === '/' ? ' active' : ''}`}
-            role="menuitem"
-            onClick={() => setMenuOpen(false)}
-          >
-            Home
-          </Link>
-          
-        </nav>
-      )}
+      <Drawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
     </>
   );
 }

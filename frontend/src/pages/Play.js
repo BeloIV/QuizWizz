@@ -15,9 +15,12 @@ function Play() {
   const [processing, setProcessing] = useState(false);
   const [showTryAgain, setShowTryAgain] = useState(false);
   const [showQuitDialog, setShowQuitDialog] = useState(false);
+  const [tempIncorrectIndices, setTempIncorrectIndices] = useState([]); // Temporarily show incorrect answers in red
+  const [verifiedCorrectIndices, setVerifiedCorrectIndices] = useState([]); // Keep correct answers green
   const initiallyWrongRef = useRef(new Set());
   const timeoutRef = useRef(null);
   const toastTimeoutRef = useRef(null);
+  const incorrectTimeoutRef = useRef(null);
 
   useEffect(() => {
     setIndex(0);
@@ -26,6 +29,8 @@ function Play() {
     setDisabledOptions({});
     setReveal(false);
     setProcessing(false);
+    setTempIncorrectIndices([]);
+    setVerifiedCorrectIndices([]);
     initiallyWrongRef.current = new Set();
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -34,6 +39,10 @@ function Play() {
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
       toastTimeoutRef.current = null;
+    }
+    if (incorrectTimeoutRef.current) {
+      clearTimeout(incorrectTimeoutRef.current);
+      incorrectTimeoutRef.current = null;
     }
   }, [quizId, quiz?.id]);
 
@@ -44,6 +53,9 @@ function Play() {
       }
       if (toastTimeoutRef.current) {
         clearTimeout(toastTimeoutRef.current);
+      }
+      if (incorrectTimeoutRef.current) {
+        clearTimeout(incorrectTimeoutRef.current);
       }
     };
   }, []);
@@ -98,7 +110,7 @@ function Play() {
       // Check if selectedIndices match correctIndices
       const selectedSet = new Set(selectedIndices);
       const correctSet = new Set(correctIndices);
-      isCorrect = selectedSet.size === correctSet.size && 
+      isCorrect = selectedSet.size === correctSet.size &&
         [...selectedSet].every(idx => correctSet.has(idx));
     } else {
       // Pure single-answer quiz - use old behavior
@@ -129,15 +141,37 @@ function Play() {
         }
         setSelectedIndex(null);
         setSelectedIndices([]);
+        setVerifiedCorrectIndices([]); // Reset verified correct answers for next question
         setReveal(false);
         setProcessing(false);
       }, 900);
     } else {
       initiallyWrongRef.current.add(currentQuestion.id);
-      
+
       if (quizHasMultiAnswer) {
-        // For quiz with multi-answer, just show "Try again" without disabling
-        // User can try again with different selection
+        // For quiz with multi-answer, keep correct selections and show incorrect ones in red temporarily
+        const correctSet = new Set(correctIndices);
+        const incorrectlySelected = selectedIndices.filter(idx => !correctSet.has(idx));
+        const newSelectedIndices = selectedIndices.filter(idx => correctSet.has(idx));
+
+        // Show incorrect answers in red
+        setTempIncorrectIndices(incorrectlySelected);
+
+        // Keep only correct selections and mark them as verified correct
+        setSelectedIndices(newSelectedIndices);
+        setVerifiedCorrectIndices((prev) => {
+          const next = new Set(prev);
+          newSelectedIndices.forEach(idx => next.add(idx));
+          return Array.from(next);
+        });
+
+        // Clear incorrect highlighting after 2 seconds
+        if (incorrectTimeoutRef.current) {
+          clearTimeout(incorrectTimeoutRef.current);
+        }
+        incorrectTimeoutRef.current = setTimeout(() => {
+          setTempIncorrectIndices([]);
+        }, 2000);
       } else {
         // For pure single-answer quiz, disable the incorrect option
         const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
@@ -146,10 +180,8 @@ function Play() {
           existing.add(chosenIndex);
           return { ...prev, [currentQuestion.id]: Array.from(existing) };
         });
+        setSelectedIndex(null);
       }
-      
-      setSelectedIndex(null);
-      setSelectedIndices([]);
 
       // Show transient "Try again" toast for incorrect answer
       setShowTryAgain(true);
@@ -168,7 +200,10 @@ function Play() {
     }
 
     if (quizHasMultiAnswer) {
-      // If quiz has any multi-answer questions, all questions use checkbox mode
+      // Prevent deselecting verified correct answers
+      if (verifiedCorrectIndices.includes(optionIndex)) {
+        return;
+      }
       // Toggle selection
       setSelectedIndices(prev => {
         if (prev.includes(optionIndex)) {
@@ -178,9 +213,8 @@ function Play() {
         }
       });
     } else {
-      // Pure single-answer quiz - immediately submit
+      // Pure single-answer quiz - just set selection, don't auto-submit
       setSelectedIndex(optionIndex);
-      handleSubmit(optionIndex);
     }
   };
 
@@ -221,11 +255,22 @@ function Play() {
             }
             if (reveal && correctIndices.includes(optionIndex)) {
               classNames.push('correct');
+            } else if (quizHasMultiAnswer && verifiedCorrectIndices.includes(optionIndex)) {
+              // Keep verified correct answers green
+              classNames.push('correct');
             }
-            if (!reveal && (quizHasMultiAnswer 
-              ? selectedIndices.includes(optionIndex) 
-              : selectedIndex === optionIndex)) {
-              classNames.push('selected');
+            if (quizHasMultiAnswer) {
+              if (selectedIndices.includes(optionIndex)) {
+                classNames.push('selected');
+              }
+              // Add temporary incorrect highlighting
+              if (tempIncorrectIndices.includes(optionIndex)) {
+                classNames.push('incorrect');
+              }
+            } else {
+              if (selectedIndex === optionIndex) {
+                classNames.push('selected');
+              }
             }
             const isDisabled = processing || reveal || disabledForQuestion.has(optionIndex);
             return (
@@ -241,13 +286,13 @@ function Play() {
             );
           })}
         </div>
-        {quizHasMultiAnswer && !reveal && (
+        {!reveal && (
           <div style={{ marginTop: '16px' }}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn primary"
               onClick={() => handleSubmit()}
-              disabled={processing || selectedIndices.length === 0}
+              disabled={processing || (quizHasMultiAnswer ? selectedIndices.length === 0 : selectedIndex === null)}
               style={{ width: '100%' }}
             >
               Continue

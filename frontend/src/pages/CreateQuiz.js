@@ -146,8 +146,8 @@ function CreateQuiz() {
     setFormData((prev) => ({
       ...prev,
       questions: prev.questions
-          .filter((_, i) => i !== index)
-          .map((q, i) => ({ ...q, order: i, id: `q${i + 1}` })),
+        .filter((_, i) => i !== index)
+        .map((q, i) => ({ ...q, order: i, id: `q${i + 1}` })),
     }));
   }, []);
 
@@ -226,329 +226,359 @@ function CreateQuiz() {
   );
 
   return (
-      <div className="create-quiz">
-        {screen === 'metadata' ? (
-            // SCREEN 1: Quiz Metadata
-            <div>
-              <div className="screen-header">
-                <h1 className="page-title">Create New Quiz</h1>
-                <div className="right-actions">
-                  <button
-                    type="button"
-                    onClick={() => navigate('/')}
-                    disabled={loading}
-                    className="btn"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleMetadataSubmit}
-                    disabled={loading}
-                    className="btn primary"
-                    aria-label="Continue to questions"
-                  >
-                    Continue
-                  </button>
+    <div className="create-quiz">
+      {screen === 'metadata' ? (
+        // SCREEN 1: Quiz Metadata
+        <div>
+          <div className="screen-header">
+            <h1 className="page-title">Create New Quiz</h1>
+          </div>
+
+          {error && <div className="error-banner">{error}</div>}
+
+          <form className="quiz-form">
+            <section className="form-section">
+              <h2 className="section-title">Quiz Details</h2>
+
+              <div className="form-group">
+                <label htmlFor="name">Quiz Name *</label>
+                <input
+                  id="name"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleQuizChange}
+                  placeholder="e.g., Python Basics Review"
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="author">Author *</label>
+                <input
+                  id="author"
+                  type="text"
+                  name="author"
+                  value={formData.author}
+                  onChange={handleQuizChange}
+                  placeholder="Your name"
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              {/* Icon Selector */}
+              <div className="form-group">
+                <label htmlFor="icon">Quiz Icon</label>
+                <div className="icon-selector">
+                  {['📝', '🧮', '➕', '🔢', '🌍', '🪐', '🔬', '💻', '⚙️', '🎨', '🎭', '🎵', '📚', '🏆', '☕', '🚀', '💡', '🎯', '🧪', '🎮'].map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      className={`icon-option ${formData.icon === emoji ? 'selected' : ''}`}
+                      onClick={() => setFormData((prev) => ({ ...prev, icon: emoji }))}
+                      disabled={loading}
+                      aria-label={`Select ${emoji} icon`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {error && <div className="error-banner">{error}</div>}
+              {/* Tags Section */}
+              <div className="form-group">
+                <label>Tags</label>
 
-              <form className="quiz-form">
-                <section className="form-section">
-                  <h2 className="section-title">Quiz Details</h2>
+                {/* Predefined Favorite Tags */}
+                <div className="favorite-tags">
+                  {['Math', 'Science', 'History', 'Fun', 'Technology'].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`favorite-tag ${formData.tags.includes(tag) ? 'selected' : ''}`}
+                      onClick={() => {
+                        if (!formData.tags.includes(tag)) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            tags: [...prev.tags, tag],
+                          }));
+                        }
+                      }}
+                      disabled={loading || formData.tags.includes(tag)}
+                      aria-label={`Add ${tag} tag`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
 
-                  <div className="form-group">
-                    <label htmlFor="name">Quiz Name *</label>
-                    <input
-                        id="name"
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleQuizChange}
-                        placeholder="e.g., Python Basics Review"
-                        disabled={loading}
-                        required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="author">Author *</label>
-                    <input
-                        id="author"
-                        type="text"
-                        name="author"
-                        value={formData.author}
-                        onChange={handleQuizChange}
-                        placeholder="Your name"
-                        disabled={loading}
-                        required
-                    />
-                  </div>
-
-                  {/* Icon Selector */}
-                  <div className="form-group">
-                    <label htmlFor="icon">Quiz Icon</label>
-                    <div className="icon-selector">
-                      {['📝', '🧮', '➕', '🔢', '🌍', '🪐', '🔬', '💻', '⚙️', '🎨', '🎭', '🎵', '📚', '🏆', '☕', '🚀', '💡', '🎯', '🧪', '🎮'].map((emoji) => (
-                        <button
-                          key={emoji}
-                          type="button"
-                          className={`icon-option ${formData.icon === emoji ? 'selected' : ''}`}
-                          onClick={() => setFormData((prev) => ({ ...prev, icon: emoji }))}
-                          disabled={loading}
-                          aria-label={`Select ${emoji} icon`}
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Tags Section */}
-                  <div className="form-group">
-                    <label>Tags</label>
-                    <div className="tag-input-group">
-                      <input
-                          type="text"
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              addTag();
-                            }
-                          }}
-                          placeholder="Add a tag and press Enter"
-                          disabled={loading}
-                      />
-                      <button type="button" onClick={addTag} disabled={loading} className="btn">
-                        Add Tag
-                      </button>
-                    </div>
-                    {formData.tags.length > 0 && (
-                        <div className="tags-list">
-                          {formData.tags.map((tag, index) => (
-                              <span key={index} className="pill">
+                <div className="tag-input-group">
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addTag();
+                      }
+                    }}
+                    placeholder="Or add a custom tag and press Enter"
+                    disabled={loading}
+                  />
+                  <button type="button" onClick={addTag} disabled={loading} className="btn">
+                    Add Tag
+                  </button>
+                </div>
+                {formData.tags.length > 0 && (
+                  <div className="tags-list">
+                    {formData.tags.map((tag, index) => (
+                      <span key={index} className="pill">
                         {tag}
-                                <button
-                                    type="button"
-                                    onClick={() => removeTag(index)}
-                                    disabled={loading}
-                                    className="pill-remove"
-                                >
+                        <button
+                          type="button"
+                          onClick={() => removeTag(index)}
+                          disabled={loading}
+                          className="pill-remove"
+                        >
                           ×
                         </button>
                       </span>
-                          ))}
-                        </div>
-                    )}
+                    ))}
                   </div>
-                </section>
-
-                {/* Cancel moved to floating top-left actions */}
-              </form>
-            </div>
-        ) : (
-            // SCREEN 2: Add Questions
-            <div>
-              <div className="screen-header">
-                <h1 className="page-title">
-                  Add Questions <span className="question-counter">({formData.questions.length})</span>
-                </h1>
-                <div className="right-actions">
-                  <button
-                    type="button"
-                    onClick={() => setScreen('metadata')}
-                    disabled={loading}
-                    className="btn"
-                  >
-                    ← Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/')}
-                    disabled={loading}
-                    className="btn"
-                  >
-                    Cancel
-                  </button>
-                  {formData.questions.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={loading}
-                      className="btn primary success"
-                    >
-                      {loading ? 'Creating...' : '✓ Finish'}
-                    </button>
-                  )}
-                </div>
+                )}
               </div>
+            </section>
+          </form>
 
-              {error && <div className="error-banner">{error}</div>}
+          {/* Bottom action buttons */}
+          <div className="footer-actions row" style={{ justifyContent: 'space-between', marginTop: '24px' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              disabled={loading}
+              className="btn"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleMetadataSubmit}
+              disabled={loading}
+              className="btn primary"
+              aria-label="Continue to questions"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      ) : (
+        // SCREEN 2: Add Questions
+        <div>
+          <div className="screen-header">
+            <h1 className="page-title">
+              Add Questions <span className="question-counter">({formData.questions.length})</span>
+            </h1>
+          </div>
 
-              <div className="questions-container">
-                {formData.questions.length > 0 && (
-                    <section className="form-section">
-                      <h2 className="section-title">Added Questions ({formData.questions.length})</h2>
-                      <div className="questions-list">
-                        {formData.questions.map((question, qIndex) => (
-                            <div key={qIndex} className="question-preview">
-                              <div className="question-preview__header">
-                                <button
-                                    type="button"
-                                    onClick={() => removeQuestion(qIndex)}
-                                    disabled={loading}
-                                    className="btn danger"
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                              <p className="question-preview__text">{question.text}</p>
-                              <div className="question-preview__options">
-                                {question.options.map((option, oIndex) => (
-                                    <div key={oIndex} className="option-preview">
-                              <span className={`option-check ${option.is_correct ? 'correct' : ''}`}>
-                                {option.is_correct ? '✓' : ''}
-                              </span>
-                                      <span>{option.text}</span>
-                                    </div>
-                                ))}
-                              </div>
-                            </div>
+          {error && <div className="error-banner">{error}</div>}
+
+          <div className="questions-container">
+            {formData.questions.length > 0 && (
+              <section className="form-section">
+                <h2 className="section-title">Added Questions ({formData.questions.length})</h2>
+                <div className="questions-list">
+                  {formData.questions.map((question, qIndex) => (
+                    <div key={qIndex} className="question-preview">
+                      <div className="question-preview__header">
+                        <p className="question-preview__text">{question.text}</p>
+                        <button
+                          type="button"
+                          onClick={() => removeQuestion(qIndex)}
+                          disabled={loading}
+                          className="btn-remove"
+                          aria-label="Remove question"
+                          title="Remove question"
+                        >
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="question-preview__options">
+                        {question.options.map((option, oIndex) => (
+                          <div key={oIndex} className="option-preview">
+                            <span className={`option-check ${option.is_correct ? 'correct' : ''}`}>
+                              {option.is_correct ? '✓' : ''}
+                            </span>
+                            <span>{option.text}</span>
+                          </div>
                         ))}
                       </div>
-                    </section>
-                )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
-                {/* Question Editor */}
-                <section className="form-section question-editor">
-                  <h2 className="section-title">
-                    Question {formData.questions.length + 1}
-                  </h2>
+            {/* Question Editor */}
+            <section className="form-section question-editor">
+              <h2 className="section-title">
+                Question {formData.questions.length + 1}
+              </h2>
 
-                      {/* Question Type Selection - Small buttons on top */}
-                      <div className="question-type-selector-compact">
-                        <button
-                          type="button"
-                          className={`question-type-btn ${selectedQuestionType === 'basic' ? 'active' : ''}`}
-                          onClick={() => {
-                            setSelectedQuestionType('basic');
-                            setQuestionTypeSelected(true);
-                          }}
-                          disabled={loading}
-                        >
-                          Basic Question
-                        </button>
-                        <button
-                          type="button"
-                          className={`question-type-btn ${selectedQuestionType === 'other' ? 'active' : ''}`}
-                          onClick={() => {
-                            setSelectedQuestionType('other');
-                            setError('This question type is not yet available');
-                          }}
-                          disabled={loading}
-                        >
-                          Other
-                        </button>
-                      </div>
-
-                      {questionTypeSelected && selectedQuestionType === 'basic' && (
-                        <>
-                      <div className="form-group">
-                        <label htmlFor="question-text">Question Text *</label>
-                        <textarea
-                            id="question-text"
-                            name="text"
-                            value={currentQuestion.text}
-                            onChange={handleQuestionChange}
-                            placeholder="Enter the question"
-                            disabled={loading}
-                            rows="3"
-                        />
-                      </div>
-
-                      {/* Options Section with Checkboxes for Multiple Correct Answers */}
-                      <div className="form-group">
-                        <label>Mark the correct answer(s) *</label>
-                        <div className="options-editor">
-                          {currentQuestion.options.map((option, index) => (
-                              <div key={index} className="option-input-group">
-                                <label className="custom-checkbox-wrapper">
-                                  <input
-                                      type="checkbox"
-                                      checked={option.is_correct}
-                                      onChange={(e) => handleOptionChange(index, 'is_correct', e.target.checked)}
-                                      disabled={loading}
-                                      className="custom-checkbox-input"
-                                  />
-                                  <span className="custom-checkbox"></span>
-                                  <input
-                                      type="text"
-                                      value={option.text}
-                                      onChange={(e) => handleOptionChange(index, 'text', e.target.value)}
-                                      placeholder={`Option ${index + 1}`}
-                                      disabled={loading}
-                                      className="option-text-input"
-                                  />
-                                </label>
-                                {currentQuestion.options.length > 2 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeOption(index)}
-                                        disabled={loading}
-                                        className="btn-remove"
-                                    >
-                                      ✕
-                                    </button>
-                                )}
-                              </div>
-                          ))}
-                        </div>
-
-                        <div className="option-buttons">
-                          <button
-                              type="button"
-                              onClick={addOption}
-                              disabled={loading}
-                              className="btn"
-                          >
-                            + Add Option
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={addQuestion}
-                            disabled={loading}
-                            className="btn primary"
-                          >
-                            + Add Question
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* in-page Add Question removed — use top + Add Question */}
-                        </>
-                      )}
-                </section>
-
-                
+              {/* Question Type Selection - Small buttons on top */}
+              <div className="question-type-selector-compact">
+                <button
+                  type="button"
+                  className={`question-type-btn ${selectedQuestionType === 'basic' ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedQuestionType('basic');
+                    setQuestionTypeSelected(true);
+                  }}
+                  disabled={loading}
+                >
+                  Basic Question
+                </button>
+                <button
+                  type="button"
+                  className={`question-type-btn ${selectedQuestionType === 'other' ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedQuestionType('other');
+                    setError('This question type is not yet available');
+                  }}
+                  disabled={loading}
+                >
+                  Other
+                </button>
               </div>
+
+              {questionTypeSelected && selectedQuestionType === 'basic' && (
+                <>
+                  <div className="form-group">
+                    <label htmlFor="question-text">Question Text *</label>
+                    <textarea
+                      id="question-text"
+                      name="text"
+                      value={currentQuestion.text}
+                      onChange={handleQuestionChange}
+                      placeholder="Enter the question"
+                      disabled={loading}
+                      rows="3"
+                    />
+                  </div>
+
+                  {/* Options Section with Checkboxes for Multiple Correct Answers */}
+                  <div className="form-group">
+                    <label>Mark the correct answer(s) *</label>
+                    <div className="options-editor">
+                      {currentQuestion.options.map((option, index) => (
+                        <div key={index} className="option-input-group">
+                          <label className="custom-checkbox-wrapper">
+                            <input
+                              type="checkbox"
+                              checked={option.is_correct}
+                              onChange={(e) => handleOptionChange(index, 'is_correct', e.target.checked)}
+                              disabled={loading}
+                              className="custom-checkbox-input"
+                            />
+                            <span className="custom-checkbox"></span>
+                            <input
+                              type="text"
+                              value={option.text}
+                              onChange={(e) => handleOptionChange(index, 'text', e.target.value)}
+                              placeholder={`Option ${index + 1}`}
+                              disabled={loading}
+                              className="option-text-input"
+                            />
+                          </label>
+                          {currentQuestion.options.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={() => removeOption(index)}
+                              disabled={loading}
+                              className="btn-remove"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="option-buttons">
+                      <button
+                        type="button"
+                        onClick={addOption}
+                        disabled={loading}
+                        className="btn"
+                      >
+                        + Add Option
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={addQuestion}
+                        disabled={loading}
+                        className="btn primary"
+                      >
+                        + Add Question
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* in-page Add Question removed — use top + Add Question */}
+                </>
+              )}
+            </section>
+          </div>
+
+          {/* Bottom action buttons */}
+          <div className="footer-actions row" style={{ justifyContent: 'space-between', marginTop: '24px' }}>
+            <div className="row" style={{ gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setScreen('metadata')}
+                disabled={loading}
+                className="btn"
+              >
+                ← Back
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                disabled={loading}
+                className="btn"
+              >
+                Cancel
+              </button>
             </div>
-        )}
+            {formData.questions.length > 0 && (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="btn primary success"
+              >
+                {loading ? 'Creating...' : '✓ Finish'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {popup && (
-        <div 
+        <div
           className={`popup ${popup.type === 'warning' ? 'popup--danger' : 'popup--success'} popup--top`}
-          role="alert" 
+          role="alert"
           aria-live="assertive"
         >
           {popup.message}
         </div>
       )}
-      </div>
+    </div>
   );
 }
 
