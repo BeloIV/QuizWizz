@@ -736,16 +736,15 @@ function CreateQuiz() {
                               + Add Option
                             </button>
 
-                            {formData.questions.length < parseInt(questionCount) && (
-                              <button
-                                type="button"
-                                onClick={addQuestion}
-                                disabled={loading || !canAddQuestion}
-                                className="btn primary"
-                              >
-                                + Add Question
-                              </button>
-                            )}
+                            <button
+                              type="button"
+                              onClick={addQuestion}
+                              disabled={loading || !canAddQuestion}
+                              className="btn primary"
+                            >
+                              + Add Question
+                            </button>
+                            
                           </div>
                         </div>
                       ) : (
@@ -797,15 +796,26 @@ function CreateQuiz() {
                             ))}
                           </div>
                           
-                          <button
-                            type="button"
-                            onClick={addOption}
-                            disabled={loading || currentQuestion.options.length >= 6}
-                            className="btn"
-                            style={{ marginTop: '8px' }}
-                          >
-                            + Add Incorrect Answer
-                          </button>
+                          <div className="option-buttons">
+                            <button
+                              type="button"
+                              onClick={addOption}
+                              disabled={loading || currentQuestion.options.length >= 6}
+                              className="btn"
+                              style={{ marginTop: '8px' }}
+                            >
+                              + Add Incorrect Answer
+                            </button>
+                            <button
+                              type="button"
+                              onClick={addQuestion}
+                              disabled={loading || !canAddQuestion}
+                              className="btn primary"
+                              style={{ marginTop: '8px' }}
+                            >
+                              + Add Question
+                            </button>
+                          </div>
                         </div>
                       )}
 
