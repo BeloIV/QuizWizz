@@ -1,21 +1,24 @@
 #!/bin/bash
 
-echo "🚀 Spúšťam vývojové servery pre Quizwizz..."
+echo "🚀 Spúšťam QuizWizz cez Docker Compose..."
 
-# Spustenie backendu
-(
-  cd backend/backend 
-  echo "▶️  Spúšťam Django backend na porte 8000..."
-    python3 manage.py runserver 0.0.0.0:8000 | tee ../backend.log
-) &
+# Stop existing containers
+echo "🛑 Zastavujem existujúce kontajnery..."
+sudo docker compose down
 
-# Spustenie frontendu
-(
-  cd frontend 
-  echo "▶️  Spúšťam React frontend... "
+# Build and start all services
+echo "🏗️  Building a spúšťam všetky služby..."
+sudo docker compose up --build -d
 
-  npm start --host 0.0.0.0
+# Show logs
+echo ""
+echo "✅ Služby spustené!"
+echo ""
+echo "📍 Frontend: http://localhost:3000"
+echo "📍 Backend API: http://localhost:8080/api"
+echo ""
+echo "📋 Sledovanie logov (Ctrl+C pre ukončenie sledovania, služby ostanú bežať):"
+echo ""
 
-) &
-
-wait
+# Follow logs
+sudo docker compose logs -f
