@@ -22,4 +22,5 @@ RUN mkdir -p quizzes/migrations
 EXPOSE 8080
 
 # Start command
-CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8080"]
+#CMD ["sh", "-c", "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8080"]
+CMD ["sh", "-c", "echo '🔄 Running makemigrations...' && python manage.py makemigrations  && echo '✅ Migrations complete!' && echo '🔄 For force migrating database... docker exec -it quizwizz-backend python manage.py migrate --run-syncdb' && python manage.py runserver 0.0.0.0:8080 "]
