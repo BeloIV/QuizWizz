@@ -472,7 +472,7 @@ body.menu-open {
 .btn {
   padding: 12px 18px;
   border: 1px solid rgba(118, 139, 180, 0.35);
-  background: rgba(22, 38, 72, 0.85);
+  background: rgb(22, 38, 72);
   color: var(--text);
   border-radius: 16px;
   cursor: pointer;
@@ -741,6 +741,7 @@ body.light .option {
 }
 
 body.light .btn {
+  background: #ffffff;
   border-color: rgba(107, 114, 128, 0.3);
   color: #111827;
 }
@@ -1084,10 +1085,14 @@ body.light .icon-btn {
 
 .question-preview__header {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.question-preview__header .btn-remove {
+  margin-left: auto;
 }
 
 .question-preview__number {
@@ -1098,8 +1103,11 @@ body.light .icon-btn {
 }
 
 .question-preview__text {
-  margin: 8px 0;
+  margin: 0;
   color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
+  flex: 1;
 }
 
 .question-preview__options {
@@ -1112,8 +1120,8 @@ body.light .icon-btn {
 .option-preview {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 10px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -1187,20 +1195,23 @@ body.light .icon-btn {
 }
 
 .btn-remove {
-  background: none;
+  background: rgba(251, 143, 143, 0.1);
   border: 1px solid rgba(251, 143, 143, 0.35);
   color: rgba(251, 143, 143, 0.95);
-  border-radius: 6px;
-  padding: 4px 8px;
+  border-radius: 8px;
+  padding: 6px;
   cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: all 0.2s ease;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-remove:hover {
-  background: rgba(251, 143, 143, 0.1);
-  border-color: rgba(251, 143, 143, 0.5);
+  background: rgba(251, 143, 143, 0.2);
+  border-color: rgba(251, 143, 143, 0.55);
+  transform: translateY(-1px);
 }
 
 .form-actions {

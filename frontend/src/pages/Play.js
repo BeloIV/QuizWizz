@@ -16,6 +16,7 @@ function Play() {
   const [showTryAgain, setShowTryAgain] = useState(false);
   const [showQuitDialog, setShowQuitDialog] = useState(false);
   const [tempIncorrectIndices, setTempIncorrectIndices] = useState([]); // Temporarily show incorrect answers in red
+  const [verifiedCorrectIndices, setVerifiedCorrectIndices] = useState([]); // Keep correct answers green
   const initiallyWrongRef = useRef(new Set());
   const timeoutRef = useRef(null);
   const toastTimeoutRef = useRef(null);
@@ -29,6 +30,7 @@ function Play() {
     setReveal(false);
     setProcessing(false);
     setTempIncorrectIndices([]);
+    setVerifiedCorrectIndices([]);
     initiallyWrongRef.current = new Set();
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -139,6 +141,7 @@ function Play() {
         }
         setSelectedIndex(null);
         setSelectedIndices([]);
+        setVerifiedCorrectIndices([]); // Reset verified correct answers for next question
         setReveal(false);
         setProcessing(false);
       }, 900);
@@ -154,8 +157,13 @@ function Play() {
         // Show incorrect answers in red
         setTempIncorrectIndices(incorrectlySelected);
 
-        // Keep only correct selections
+        // Keep only correct selections and mark them as verified correct
         setSelectedIndices(newSelectedIndices);
+        setVerifiedCorrectIndices((prev) => {
+          const next = new Set(prev);
+          newSelectedIndices.forEach(idx => next.add(idx));
+          return Array.from(next);
+        });
 
         // Clear incorrect highlighting after 2 seconds
         if (incorrectTimeoutRef.current) {
@@ -192,7 +200,10 @@ function Play() {
     }
 
     if (quizHasMultiAnswer) {
-      // If quiz has any multi-answer questions, all questions use checkbox mode
+      // Prevent deselecting verified correct answers
+      if (verifiedCorrectIndices.includes(optionIndex)) {
+        return;
+      }
       // Toggle selection
       setSelectedIndices(prev => {
         if (prev.includes(optionIndex)) {
@@ -243,6 +254,9 @@ function Play() {
               classNames.push('incorrect');
             }
             if (reveal && correctIndices.includes(optionIndex)) {
+              classNames.push('correct');
+            } else if (quizHasMultiAnswer && verifiedCorrectIndices.includes(optionIndex)) {
+              // Keep verified correct answers green
               classNames.push('correct');
             }
             if (quizHasMultiAnswer) {
