@@ -7,3 +7,4 @@ frontend/.env
 backend/media/*
 package-lock.json
 node_modules/
+.venv/
