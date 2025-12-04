@@ -127,9 +127,7 @@ function SearchOverlay() {
           </div>
         </form>
         <div className="search-bubble__results" role="listbox" aria-label="Search results">
-          {normalizedTerm === '' ? (
-            <div className="search-bubble__empty muted">Type to search by name or tag.</div>
-          ) : matches.length ? (
+          {matches.length ? (
             matches.map((quiz) => (
               <button
                 key={quiz.id}
@@ -144,7 +142,7 @@ function SearchOverlay() {
               </button>
             ))
           ) : (
-            <div className="search-bubble__empty muted">No matches yet.</div>
+            <div className="search-bubble__empty muted">No quizzes found.</div>
           )}
         </div>
       </div>

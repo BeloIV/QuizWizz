@@ -98,7 +98,7 @@ function Play() {
       // Check if selectedIndices match correctIndices
       const selectedSet = new Set(selectedIndices);
       const correctSet = new Set(correctIndices);
-      isCorrect = selectedSet.size === correctSet.size && 
+      isCorrect = selectedSet.size === correctSet.size &&
         [...selectedSet].every(idx => correctSet.has(idx));
     } else {
       // Pure single-answer quiz - use old behavior
@@ -134,7 +134,7 @@ function Play() {
       }, 900);
     } else {
       initiallyWrongRef.current.add(currentQuestion.id);
-      
+
       if (quizHasMultiAnswer) {
         // For quiz with multi-answer, just show "Try again" without disabling
         // User can try again with different selection
@@ -147,7 +147,7 @@ function Play() {
           return { ...prev, [currentQuestion.id]: Array.from(existing) };
         });
       }
-      
+
       setSelectedIndex(null);
       setSelectedIndices([]);
 
@@ -178,9 +178,8 @@ function Play() {
         }
       });
     } else {
-      // Pure single-answer quiz - immediately submit
+      // Pure single-answer quiz - just set selection, don't auto-submit
       setSelectedIndex(optionIndex);
-      handleSubmit(optionIndex);
     }
   };
 
@@ -222,8 +221,8 @@ function Play() {
             if (reveal && correctIndices.includes(optionIndex)) {
               classNames.push('correct');
             }
-            if (!reveal && (quizHasMultiAnswer 
-              ? selectedIndices.includes(optionIndex) 
+            if (!reveal && (quizHasMultiAnswer
+              ? selectedIndices.includes(optionIndex)
               : selectedIndex === optionIndex)) {
               classNames.push('selected');
             }
@@ -241,13 +240,13 @@ function Play() {
             );
           })}
         </div>
-        {quizHasMultiAnswer && !reveal && (
+        {!reveal && (
           <div style={{ marginTop: '16px' }}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn primary"
               onClick={() => handleSubmit()}
-              disabled={processing || selectedIndices.length === 0}
+              disabled={processing || (quizHasMultiAnswer ? selectedIndices.length === 0 : selectedIndex === null)}
               style={{ width: '100%' }}
             >
               Continue

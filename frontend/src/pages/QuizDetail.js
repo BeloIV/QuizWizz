@@ -20,6 +20,12 @@ function QuizDetail() {
     return <div className="empty">Quiz not found.</div>;
   }
 
+  // Determine if quiz has multi-answer questions
+  const hasMultiAnswer = quiz.questions.some(q => {
+    const correctCount = q.options?.filter(opt => opt.is_correct).length || 0;
+    return correctCount > 1;
+  });
+
   return (
     <div>
       <h2 className="section-title">{quiz.name}</h2>
@@ -29,17 +35,20 @@ function QuizDetail() {
           <span className="muted">by {quiz.author}</span>
         </div>
         <div>{quiz.questions.length} questions</div>
+        <div className="muted" style={{ fontSize: '14px' }}>
+          {hasMultiAnswer ? '⚠️ One or more answers can be correct' : '✓ Single answer per question'}
+        </div>
         {scoreEntry?.value !== undefined && (
-            <div className="muted">Last score: {scoreEntry.value}%</div>
+          <div className="muted">Last score: {scoreEntry.value}%</div>
         )}
-        <div className="row" style={{justifyContent: 'space-between'}}>
+        <div className="row" style={{ justifyContent: 'space-between' }}>
           <div className="row">
-          <Link className="btn cta" to={`/play/${quiz.id}`}>
-            Start
-          </Link>
-          <Link className="btn" to="/">
-            Back
-          </Link>
+            <Link className="btn cta" to={`/play/${quiz.id}`}>
+              Start
+            </Link>
+            <Link className="btn" to="/">
+              Back
+            </Link>
           </div>
 
           <div className="reaction-stats">
