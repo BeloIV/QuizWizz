@@ -90,6 +90,15 @@ function Home() {
           </section>
         </>
       )}
+
+      <footer className="app-footer">
+        <p className="footer-text">
+          QuizWizz • Made by Stevo, Tomas, Alex, Klara and Egor
+        </p>
+        <p className="footer-text footer-text--small">
+          School Project 2025/2026
+        </p>
+      </footer>
     </div>
   );
 }

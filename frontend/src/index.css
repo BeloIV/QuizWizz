@@ -696,7 +696,7 @@ body.menu-open {
 }
 
 body.light {
-  --bg: #eef3ff;
+  --bg: #f0f4ff;
   --bg-elev: #ffffff;
   --card: rgba(255, 255, 255, 0.95);
   --card-strong: rgba(255, 255, 255, 0.98);
@@ -704,6 +704,7 @@ body.light {
   --muted: #4b5563;
   --border: rgba(118, 139, 180, 0.35);
   --shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
+  background: linear-gradient(118deg, #e8f0ff 0%, #f5f8ff 45%, #ffffff 100%);
 }
 
 body.light .btn,
@@ -782,6 +783,23 @@ body.light .icon-btn--ghost:focus-visible,
 body.light .icon-btn--ghost.active,
 body.light .hamburger-btn.is-open {
   background: rgba(15, 23, 42, 0.08);
+}
+
+body.light .app-header {
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom-color: rgba(148, 163, 184, 0.3);
+}
+
+body.light .header-brand {
+  background: rgba(239, 242, 255, 0.9);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #16203b;
+}
+
+body.light .icon-btn {
+  background: rgba(239, 242, 255, 0.9);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #16203b;
 }
 
 @media (max-width: 640px) {
@@ -1040,7 +1058,7 @@ body.light .hamburger-btn.is-open {
 .question-preview__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   margin-bottom: 8px;
 }
@@ -1869,4 +1887,29 @@ body.light .question-type-btn.active {
   .reaction-stat-icon {
     font-size: 16px;
   }
+}
+
+/* Footer Styles */
+.app-footer {
+  margin-top: 48px;
+  padding: 24px;
+  text-align: center;
+  border-top: 1px solid rgba(118, 139, 180, 0.25);
+}
+
+.footer-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.footer-text--small {
+  font-size: 12px;
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+body.light .app-footer {
+  border-top-color: rgba(148, 163, 184, 0.35);
 }
