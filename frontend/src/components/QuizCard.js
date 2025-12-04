@@ -20,7 +20,6 @@ function QuizCard({ quiz, onClick }) {
     >
       <div className="quiz-card__header">
         <h3 className="quiz-card__title">{quiz.name}</h3>
-        <span className="quiz-card__tag">{quiz.tags[0] || 'general'}</span>
       </div>
       <div className="quiz-card__meta">
         <span className="quiz-card__author">by {quiz.author}</span>
@@ -29,6 +28,10 @@ function QuizCard({ quiz, onClick }) {
             ? `Last score: ${quiz.lastScore}%`
             : 'Not taken yet'}
         </span>
+      </div>
+      <div className="quiz-card__footer">
+        <span className="quiz-card__tag">{quiz.tags[0] || 'general'}</span>
+        <span className="quiz-card__icon">{quiz.icon || '📝'}</span>
       </div>
     </article>
   );
