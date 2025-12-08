@@ -1320,8 +1320,8 @@ body.light .icon-btn {
 }
 
 @media (max-width: 640px) {
-  .option-input-group {
-    gap: 10px;
+  .options-editor {
+    gap: 32px;
   }
 }
 
@@ -1721,7 +1721,8 @@ body.light .form-group input[type="number"]:focus {
     height: 22px;
   }
 
-  .custom-checkbox-wrapper {
+  body .custom-checkbox-wrapper {
+    margin-bottom: 0;
     padding: 10px;
     gap: 10px;
   }
