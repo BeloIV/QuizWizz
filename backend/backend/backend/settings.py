@@ -173,6 +173,15 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# Media files (user-uploaded images for quizzes)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Upload limits (protect against very large files)
+# 50 MB max per file; allow small overhead for request wrapper
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52 * 1024 * 1024
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

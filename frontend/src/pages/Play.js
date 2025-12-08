@@ -240,6 +240,11 @@ function Play() {
         <span className="muted">{progress}</span>
       </div>
       <div className="card">
+        {currentQuestion.image_url && (
+          <div className="question-image-wrapper">
+            <img src={currentQuestion.image_url} alt="Question" className="question-image" />
+          </div>
+        )}
         <div className="question">{currentQuestion.text}</div>
         {quizHasMultiAnswer && (
           <div className="muted" style={{ fontSize: '14px', marginBottom: '12px' }}>
@@ -281,7 +286,12 @@ function Play() {
                 onClick={() => handleOptionClick(optionIndex)}
                 disabled={isDisabled}
               >
-                {option.text}
+                {option.image_url && (
+                  <span className="option-image-wrapper">
+                    <img src={option.image_url} alt={option.text} className="option-image" />
+                  </span>
+                )}
+                <span className="option-text">{option.text}</span>
               </button>
             );
           })}

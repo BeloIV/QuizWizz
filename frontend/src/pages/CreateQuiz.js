@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useQuizList } from '../context/QuizContext';
+import { API_BASE_URL } from '../config';
 
 function CreateQuiz() {
   const navigate = useNavigate();
@@ -25,9 +26,10 @@ function CreateQuiz() {
 
   const [currentQuestion, setCurrentQuestion] = useState({
     text: '',
+    image_url: '',
     options: [
-      { text: '', is_correct: false },
-      { text: '', is_correct: false },
+      { text: '', is_correct: false, image_url: '' },
+      { text: '', is_correct: false, image_url: '' },
     ],
   });
 
@@ -36,6 +38,9 @@ function CreateQuiz() {
   const [error, setError] = useState(null);
   const [popup, setPopup] = useState(null); // { message: string, type: 'warning' | 'success' }
   const popupTimeoutRef = useRef(null);
+
+  const fileInputRef = useRef(null);
+  const [imageTarget, setImageTarget] = useState(null); // { type: 'question' | 'option', index?: number }
 
   // Auto-dismiss popup after 2 seconds
   useEffect(() => {
@@ -59,6 +64,111 @@ function CreateQuiz() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
+  const uploadImage = useCallback(
+    async (file) => {
+      const maxSize = 50 * 1024 * 1024;
+
+      if (!file) {
+        throw new Error('No file selected');
+      }
+
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Selected file is not an image');
+      }
+
+      if (file.size > maxSize) {
+        throw new Error('Image is too large (max 50MB)');
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(`${API_BASE_URL}/upload-image/`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const detail = errorData.detail || `Image upload failed (${response.status})`;
+        throw new Error(detail);
+      }
+
+      const data = await response.json();
+      if (!data.url) {
+        throw new Error('Upload response did not contain image URL');
+      }
+
+      return data.url;
+    },
+    []
+  );
+
+  const handleImageFileChange = useCallback(
+    async (e) => {
+      const file = e.target.files && e.target.files[0];
+      // Reset input so the same file can be chosen again
+      e.target.value = '';
+
+      if (!file || !imageTarget) {
+        return;
+      }
+
+      try {
+        const url = await uploadImage(file);
+
+        if (imageTarget.type === 'question') {
+          setCurrentQuestion((prev) => ({ ...prev, image_url: url }));
+        } else if (imageTarget.type === 'option' && typeof imageTarget.index === 'number') {
+          setCurrentQuestion((prev) => {
+            const options = [...prev.options];
+            if (options[imageTarget.index]) {
+              options[imageTarget.index] = {
+                ...options[imageTarget.index],
+                image_url: url,
+              };
+            }
+            return { ...prev, options };
+          });
+        }
+      } catch (err) {
+        setPopup({ message: err.message || 'Failed to upload image', type: 'warning' });
+      } finally {
+        setImageTarget(null);
+      }
+    },
+    [imageTarget, uploadImage]
+  );
+
+  const handleImageButtonClick = useCallback(
+    (target) => {
+      if (target.type === 'question') {
+        if (currentQuestion.image_url) {
+          setCurrentQuestion((prev) => ({ ...prev, image_url: '' }));
+          return;
+        }
+      } else if (target.type === 'option' && typeof target.index === 'number') {
+        const existing = currentQuestion.options[target.index];
+        if (existing?.image_url) {
+          setCurrentQuestion((prev) => {
+            const options = [...prev.options];
+            if (options[target.index]) {
+              options[target.index] = { ...options[target.index], image_url: '' };
+            }
+            return { ...prev, options };
+          });
+          return;
+        }
+      }
+
+      setImageTarget(target);
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
+    },
+    [currentQuestion]
+  );
+
   const handleQuestionChange = useCallback((e) => {
     const { name, value } = e.target;
     setCurrentQuestion((prev) => ({ ...prev, [name]: value }));
@@ -80,7 +190,7 @@ function CreateQuiz() {
   const addOption = useCallback(() => {
     setCurrentQuestion((prev) => ({
       ...prev,
-      options: [...prev.options, { text: '', is_correct: false }],
+      options: [...prev.options, { text: '', is_correct: false, image_url: '' }],
     }));
   }, []);
 
@@ -129,9 +239,10 @@ function CreateQuiz() {
 
     setCurrentQuestion({
       text: '',
+      image_url: '',
       options: [
-        { text: '', is_correct: false },
-        { text: '', is_correct: false },
+        { text: '', is_correct: false, image_url: '' },
+        { text: '', is_correct: false, image_url: '' },
       ],
     });
 
@@ -227,6 +338,13 @@ function CreateQuiz() {
 
   return (
     <div className="create-quiz">
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleImageFileChange}
+      />
       {screen === 'metadata' ? (
         // SCREEN 1: Quiz Metadata
         <div>
@@ -459,15 +577,33 @@ function CreateQuiz() {
                 <>
                   <div className="form-group">
                     <label htmlFor="question-text">Question Text *</label>
-                    <textarea
-                      id="question-text"
-                      name="text"
-                      value={currentQuestion.text}
-                      onChange={handleQuestionChange}
-                      placeholder="Enter the question"
-                      disabled={loading}
-                      rows="3"
-                    />
+                    <div className="question-input-row">
+                      <textarea
+                        id="question-text"
+                        name="text"
+                        value={currentQuestion.text}
+                        onChange={handleQuestionChange}
+                        placeholder="Enter the question"
+                        disabled={loading}
+                        rows="3"
+                      />
+                      <button
+                        type="button"
+                        className={`image-upload-square ${currentQuestion.image_url ? 'image-upload-square--has-image' : ''}`}
+                        onClick={() => handleImageButtonClick({ type: 'question' })}
+                        disabled={loading}
+                        aria-label={currentQuestion.image_url ? 'Remove question image' : 'Add image to question'}
+                      >
+                        {currentQuestion.image_url ? (
+                          <>
+                            <img src={currentQuestion.image_url} alt="Question" className="image-upload-square__img" />
+                            <span className="image-upload-square__remove">×</span>
+                          </>
+                        ) : (
+                          <span className="image-upload-square__placeholder">Img</span>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Options Section with Checkboxes for Multiple Correct Answers */}
@@ -494,6 +630,22 @@ function CreateQuiz() {
                               className="option-text-input"
                             />
                           </label>
+                          <button
+                            type="button"
+                            className={`image-upload-square option-image-square ${option.image_url ? 'image-upload-square--has-image' : ''}`}
+                            onClick={() => handleImageButtonClick({ type: 'option', index })}
+                            disabled={loading}
+                            aria-label={option.image_url ? `Remove image for option ${index + 1}` : `Add image to option ${index + 1}`}
+                          >
+                            {option.image_url ? (
+                              <>
+                                <img src={option.image_url} alt={`Option ${index + 1}`} className="image-upload-square__img" />
+                                <span className="image-upload-square__remove">×</span>
+                              </>
+                            ) : (
+                              <span className="image-upload-square__placeholder">Img</span>
+                            )}
+                          </button>
                           {currentQuestion.options.length > 2 && (
                             <button
                               type="button"
