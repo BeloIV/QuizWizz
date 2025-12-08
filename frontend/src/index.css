@@ -549,6 +549,7 @@ body.menu-open {
 .question-image {
   display: block;
   width: auto;
+  max-width: 100%;
   max-height: 50vh;
   object-fit: contain;
   background: #020617;
@@ -586,6 +587,7 @@ body.menu-open {
 .option-image {
   display: block;
   width: auto;
+  max-width: 100%;
   max-height: 50vh;
   object-fit: contain;
   background: #020617;
