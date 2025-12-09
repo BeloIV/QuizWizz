@@ -228,7 +228,12 @@ function CreateQuiz() {
       if (field === 'is_correct') {
         updatedOption = { ...existing, is_correct: value };
       } else {
-        updatedOption = { ...existing, [field]: value };
+        let nextValue = value;
+        if (field === 'text' && typeof nextValue === 'string') {
+          // For fill-in-the-gap options, do not allow underscore characters in the visible text
+          nextValue = nextValue.replace(/_/g, '-');
+        }
+        updatedOption = { ...existing, [field]: nextValue };
       }
 
       options[optionIndex] = updatedOption;
