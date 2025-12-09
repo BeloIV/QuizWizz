@@ -34,7 +34,6 @@ class Question(models.Model):
     quiz = models.ForeignKey(Quiz, related_name="questions", on_delete=models.CASCADE)
     text = models.TextField()
     order = models.PositiveIntegerField(default=0)
-    image_url = models.CharField(max_length=512, blank=True)
 
     class Meta:
         ordering = ["order", "id"]
@@ -48,7 +47,6 @@ class Choice(models.Model):
     text = models.CharField(max_length=255)
     index = models.PositiveIntegerField()
     is_correct = models.BooleanField(default=False)
-    image_url = models.CharField(max_length=512, blank=True)
 
     class Meta:
         ordering = ["index"]
