@@ -71,7 +71,8 @@ class QuizViewSet(
 
 class UploadImageView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-    MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
+    # Use Django's configured upload limit; fall back to 5 MB if not set
+    MAX_FILE_SIZE = getattr(settings, "FILE_UPLOAD_MAX_MEMORY_SIZE", 5 * 1024 * 1024)
 
     def post(self, request, *args, **kwargs):
         file_obj = request.FILES.get("file")
@@ -87,8 +88,9 @@ class UploadImageView(APIView):
             )
 
         if file_obj.size > self.MAX_FILE_SIZE:
+            max_mb = round(self.MAX_FILE_SIZE / (1024 * 1024))
             return Response(
-                {"detail": "Image is too large (max 50MB)."},
+                {"detail": f"Image is too large (max {max_mb}MB)."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
