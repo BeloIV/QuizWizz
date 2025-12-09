@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound';
 import Play from './pages/Play';
 import QuizDetail from './pages/QuizDetail';
 import Results from './pages/Results';
+import Review from './pages/Review';
 import {ReactionsProvider} from "./context/ReactionsContext";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
                     <Route path="/quiz/:quizId" element={<QuizDetail />} />
                     <Route path="/play/:quizId" element={<Play />} />
                     <Route path="/results/:quizId" element={<Results />} />
+                    <Route path="/review/:quizId" element={<Review />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Layout>

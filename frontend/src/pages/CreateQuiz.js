@@ -27,6 +27,7 @@ function CreateQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState({
     text: '',
     image_url: '',
+    explanation: '',
     options: [
       { text: '', is_correct: false, image_url: '' },
       { text: '', is_correct: false, image_url: '' },
@@ -396,6 +397,7 @@ function CreateQuiz() {
     setCurrentQuestion({
       text: '',
       image_url: '',
+      explanation: '',
       options: [
         { text: '', is_correct: false, image_url: '' },
         { text: '', is_correct: false, image_url: '' },
@@ -801,6 +803,20 @@ function CreateQuiz() {
                     </div>
                   </div>
 
+                  {/* Explanation Section */}
+                  <div className="form-group">
+                    <label htmlFor="question-explanation">Explanation (optional)</label>
+                    <textarea
+                      id="question-explanation"
+                      name="explanation"
+                      value={currentQuestion.explanation}
+                      onChange={handleQuestionChange}
+                      placeholder="Explain why this is the correct answer..."
+                      disabled={loading}
+                      rows="3"
+                    />
+                  </div>
+
                   {/* Options Section with Checkboxes for Multiple Correct Answers */}
                   <div className="form-group">
                     <label>Mark the correct answer(s) *</label>
@@ -914,6 +930,20 @@ function CreateQuiz() {
                     </div>
                   </div>
 
+                  {/* Explanation Section */}
+                  <div className="form-group">
+                    <label htmlFor="question-explanation-fill-gap">Explanation (optional)</label>
+                    <textarea
+                      id="question-explanation-fill-gap"
+                      name="explanation"
+                      value={currentQuestion.explanation}
+                      onChange={handleQuestionChange}
+                      placeholder="Explain why this is the correct answer..."
+                      disabled={loading}
+                      rows="3"
+                    />
+                  </div>
+
                   <div className="form-group">
                     <label>Gap Options *</label>
                     <p className="muted" style={{ fontSize: '14px', marginBottom: '8px' }}>
@@ -993,6 +1023,20 @@ function CreateQuiz() {
                         </div>
                       );
                     })()}
+                  </div>
+
+                  {/* Explanation Section */}
+                  <div className="form-group">
+                    <label htmlFor="question-explanation-gap">Explanation (optional)</label>
+                    <textarea
+                      id="question-explanation-gap"
+                      name="explanation"
+                      value={currentQuestion.explanation}
+                      onChange={handleQuestionChange}
+                      placeholder="Explain why these are the correct answers..."
+                      disabled={loading}
+                      rows="3"
+                    />
                   </div>
 
                   <div className="option-buttons">

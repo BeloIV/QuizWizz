@@ -18,6 +18,8 @@ function Play() {
   const [tempIncorrectIndices, setTempIncorrectIndices] = useState([]); // Temporarily show incorrect answers in red
   const [verifiedCorrectIndices, setVerifiedCorrectIndices] = useState([]); // Keep correct answers green
   const initiallyWrongRef = useRef(new Set());
+  const userAnswersRef = useRef({}); // Track user's final answers for each question
+  const incorrectAttemptsRef = useRef({}); // Track all incorrect attempts for each question
   const timeoutRef = useRef(null);
   const toastTimeoutRef = useRef(null);
   const incorrectTimeoutRef = useRef(null);
@@ -32,6 +34,8 @@ function Play() {
     setTempIncorrectIndices([]);
     setVerifiedCorrectIndices([]);
     initiallyWrongRef.current = new Set();
+    userAnswersRef.current = {};
+    incorrectAttemptsRef.current = {};
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -103,7 +107,9 @@ function Play() {
 
   useEffect(() => {
     if (quiz && quiz.questions && quiz.questions.length === 0 && !loading && !error) {
-      navigate(`/results/${quiz.id}?score=0&wrong=`);
+      const answersParam = encodeURIComponent(JSON.stringify(userAnswersRef.current));
+      const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
+      navigate(`/results/${quiz.id}?score=0&wrong=&answers=${answersParam}&incorrect=${incorrectParam}`);
     }
   }, [quiz, loading, error, navigate]);
 
@@ -164,6 +170,9 @@ function Play() {
 
       isCorrect = newlyIncorrectGaps.length === 0;
 
+      // Save user's answer for this question
+      userAnswersRef.current[currentQuestion.id] = { ...gapSelections };
+
       if (isCorrect) {
         // Mark all gaps as correctly answered so their dropdowns highlight in green
         setGapVerifiedCorrect(Array.from(gapIndices));
@@ -182,7 +191,9 @@ function Play() {
             const score = totalQuestions
               ? Math.round(((totalQuestions - wrongCount) / totalQuestions) * 100)
               : 0;
-            navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}`);
+            const answersParam = encodeURIComponent(JSON.stringify(userAnswersRef.current));
+            const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
+            navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
           } else {
             setIndex(nextIndex);
           }
@@ -197,6 +208,12 @@ function Play() {
         }, 900);
       } else {
         initiallyWrongRef.current.add(currentQuestion.id);
+
+        // Record incorrect gap attempts
+        if (!incorrectAttemptsRef.current[currentQuestion.id]) {
+          incorrectAttemptsRef.current[currentQuestion.id] = [];
+        }
+        incorrectAttemptsRef.current[currentQuestion.id].push({ ...gapSelections });
 
         setGapTempIncorrect(newlyIncorrectGaps);
         setGapVerifiedCorrect((prev) => {
@@ -231,6 +248,9 @@ function Play() {
       const correctSet = new Set(correctIndices);
       isCorrect = selectedSet.size === correctSet.size &&
         [...selectedSet].every(idx => correctSet.has(idx));
+      
+      // Save user's answer
+      userAnswersRef.current[currentQuestion.id] = [...selectedIndices];
     } else {
       // Pure single-answer quiz - use old behavior
       const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
@@ -238,6 +258,9 @@ function Play() {
         return;
       }
       isCorrect = chosenIndex === correctIndex;
+      
+      // Save user's answer
+      userAnswersRef.current[currentQuestion.id] = chosenIndex;
     }
 
     if (isCorrect) {
@@ -254,7 +277,9 @@ function Play() {
           const score = totalQuestions
             ? Math.round(((totalQuestions - wrongCount) / totalQuestions) * 100)
             : 0;
-          navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}`);
+          const answersParam = encodeURIComponent(JSON.stringify(userAnswersRef.current));
+          const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
+          navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
         } else {
           setIndex(nextIndex);
         }
@@ -268,6 +293,12 @@ function Play() {
       initiallyWrongRef.current.add(currentQuestion.id);
 
       if (quizHasMultiAnswer) {
+        // Record incorrect multi-answer attempt
+        if (!incorrectAttemptsRef.current[currentQuestion.id]) {
+          incorrectAttemptsRef.current[currentQuestion.id] = [];
+        }
+        incorrectAttemptsRef.current[currentQuestion.id].push([...selectedIndices]);
+
         // For quiz with multi-answer, keep correct selections and show incorrect ones in red temporarily
         const correctSet = new Set(correctIndices);
         const incorrectlySelected = selectedIndices.filter(idx => !correctSet.has(idx));
@@ -292,8 +323,14 @@ function Play() {
           setTempIncorrectIndices([]);
         }, 2000);
       } else {
-        // For pure single-answer quiz, disable the incorrect option
+        // Record incorrect single-answer attempt
         const chosenIndex = typeof overrideIndex === 'number' ? overrideIndex : selectedIndex;
+        if (!incorrectAttemptsRef.current[currentQuestion.id]) {
+          incorrectAttemptsRef.current[currentQuestion.id] = [];
+        }
+        incorrectAttemptsRef.current[currentQuestion.id].push(chosenIndex);
+
+        // For pure single-answer quiz, disable the incorrect option
         setDisabledOptions((prev) => {
           const existing = new Set(prev[currentQuestion.id] || []);
           existing.add(chosenIndex);
