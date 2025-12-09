@@ -134,21 +134,19 @@ function Review() {
                   let bgColor = 'rgba(13, 23, 48, 0.4)';
                   let borderColor = 'rgba(118, 139, 180, 0.35)';
                   
-                  // If there were incorrect attempts, only show correct answer styling, not the final correct one
-                  if (hasIncorrectAttempts) {
-                    if (wasIncorrectlySelected) {
-                      bgColor = 'rgba(251, 143, 143, 0.15)';
-                      borderColor = 'rgba(251, 143, 143, 0.5)';
-                    }
-                  } else {
-                    // No incorrect attempts, show normal coloring
-                    if (isCorrect) {
-                      bgColor = 'rgba(74, 214, 165, 0.15)';
-                      borderColor = 'rgba(74, 214, 165, 0.5)';
-                    } else if (wasSelected) {
-                      bgColor = 'rgba(251, 143, 143, 0.15)';
-                      borderColor = 'rgba(251, 143, 143, 0.5)';
-                    }
+                  // Determine styling based on correctness and selection
+                  if (isCorrect) {
+                    // Always show correct answer in green
+                    bgColor = 'rgba(74, 214, 165, 0.15)';
+                    borderColor = 'rgba(74, 214, 165, 0.5)';
+                  } else if (wasIncorrectlySelected) {
+                    // Was selected incorrectly in some attempt
+                    bgColor = 'rgba(251, 143, 143, 0.15)';
+                    borderColor = 'rgba(251, 143, 143, 0.5)';
+                  } else if (!hasIncorrectAttempts && wasSelected) {
+                    // Selected wrong on first try
+                    bgColor = 'rgba(251, 143, 143, 0.15)';
+                    borderColor = 'rgba(251, 143, 143, 0.5)';
                   }
 
                   return (
@@ -165,12 +163,12 @@ function Review() {
                     >
                       <div className="row" style={{ gap: '8px', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div className="row" style={{ gap: '8px', alignItems: 'center' }}>
-                          {!hasIncorrectAttempts && isCorrect && <span style={{ color: 'var(--success)', fontWeight: 'bold', fontSize: '16px' }}>✓</span>}
-                          {wasSelected && hasIncorrectAttempts && <span style={{ color: 'var(--danger)', fontWeight: 'bold', fontSize: '16px' }}>✗</span>}
+                          {isCorrect && <span style={{ color: 'var(--success)', fontWeight: 'bold', fontSize: '16px' }}>✓</span>}
+                          {wasSelected && !isCorrect && <span style={{ color: 'var(--danger)', fontWeight: 'bold', fontSize: '16px' }}>✗</span>}
                           <span style={{ color: 'var(--text)' }}>{option.text}</span>
                         </div>
                         <div className="row" style={{ gap: '8px', alignItems: 'center' }}>
-                          {wasSelected && hasIncorrectAttempts && (
+                          {wasSelected && !isCorrect && (
                             <span style={{ 
                               fontSize: '12px', 
                               color: 'var(--danger)',
@@ -210,13 +208,24 @@ function Review() {
                   });
 
                   const gapIndices = Array.from(gapMap.keys()).sort((a, b) => a - b);
+                  
+                  // Parse gap explanations once
+                  let gapExplanations = {};
+                  if (question.explanation) {
+                    try {
+                      gapExplanations = JSON.parse(question.explanation);
+                    } catch {
+                      // If parsing fails, explanations will be empty
+                    }
+                  }
 
                   return gapIndices.map((gIdx) => {
                     const options = gapMap.get(gIdx);
                     const userGapAnswer = userAnswer?.[gIdx];
+                    const gapExplanation = gapExplanations[gIdx];
 
                     return (
-                      <div key={gIdx} style={{ marginBottom: '12px' }}>
+                      <div key={gIdx} style={{ marginBottom: '16px' }}>
                         <div className="muted" style={{ fontSize: '13px', marginBottom: '6px', fontWeight: 500 }}>
                           Gap {gIdx + 1}:
                         </div>
@@ -231,24 +240,26 @@ function Review() {
                             });
                           }
                           
-                          const wasSelected = hasIncorrectAttempts ? wasIncorrectlySelected : (userGapAnswer === opt.index);
+                          // Check if this is the user's final answer (could be correct or incorrect)
+                          const isFinalAnswer = userGapAnswer === opt.index;
+                          const wasSelected = hasIncorrectAttempts ? wasIncorrectlySelected : isFinalAnswer;
 
                           let bgColor = 'rgba(13, 23, 48, 0.4)';
                           let borderColor = 'rgba(118, 139, 180, 0.35)';
                           
-                          if (hasIncorrectAttempts) {
-                            if (wasIncorrectlySelected) {
-                              bgColor = 'rgba(251, 143, 143, 0.15)';
-                              borderColor = 'rgba(251, 143, 143, 0.5)';
-                            }
-                          } else {
-                            if (isCorrect) {
-                              bgColor = 'rgba(74, 214, 165, 0.15)';
-                              borderColor = 'rgba(74, 214, 165, 0.5)';
-                            } else if (wasSelected) {
-                              bgColor = 'rgba(251, 143, 143, 0.15)';
-                              borderColor = 'rgba(251, 143, 143, 0.5)';
-                            }
+                          // Determine styling based on correctness and selection
+                          if (isCorrect && (isFinalAnswer || !hasIncorrectAttempts)) {
+                            // Correct answer - always show green
+                            bgColor = 'rgba(74, 214, 165, 0.15)';
+                            borderColor = 'rgba(74, 214, 165, 0.5)';
+                          } else if (wasIncorrectlySelected) {
+                            // Was selected incorrectly in some attempt
+                            bgColor = 'rgba(251, 143, 143, 0.15)';
+                            borderColor = 'rgba(251, 143, 143, 0.5)';
+                          } else if (!hasIncorrectAttempts && wasSelected && !isCorrect) {
+                            // Selected wrong on first try
+                            bgColor = 'rgba(251, 143, 143, 0.15)';
+                            borderColor = 'rgba(251, 143, 143, 0.5)';
                           }
 
                           return (
@@ -265,11 +276,11 @@ function Review() {
                             >
                               <div className="row" style={{ gap: '8px', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <div className="row" style={{ gap: '8px', alignItems: 'center' }}>
-                                  {!hasIncorrectAttempts && isCorrect && <span style={{ color: 'var(--success)', fontWeight: 'bold', fontSize: '16px' }}>✓</span>}
-                                  {wasSelected && hasIncorrectAttempts && <span style={{ color: 'var(--danger)', fontWeight: 'bold', fontSize: '16px' }}>✗</span>}
+                                  {isCorrect && <span style={{ color: 'var(--success)', fontWeight: 'bold', fontSize: '16px' }}>✓</span>}
+                                  {wasSelected && hasIncorrectAttempts && !isCorrect && <span style={{ color: 'var(--danger)', fontWeight: 'bold', fontSize: '16px' }}>✗</span>}
                                   <span style={{ color: 'var(--text)' }}>{opt.decodedText}</span>
                                 </div>
-                                {wasSelected && hasIncorrectAttempts && (
+                                {wasSelected && hasIncorrectAttempts && !isCorrect && (
                                   <span style={{ 
                                     fontSize: '12px', 
                                     color: 'var(--danger)',
@@ -285,6 +296,32 @@ function Review() {
                             </div>
                           );
                         })}
+                        
+                        {gapExplanation && (
+                          <div style={{ 
+                            padding: '12px 16px', 
+                            background: 'rgba(110, 168, 255, 0.12)', 
+                            borderRadius: '10px', 
+                            borderLeft: '3px solid var(--primary)',
+                            marginTop: '8px'
+                          }}>
+                            <div style={{ 
+                              fontWeight: 600, 
+                              marginBottom: '6px', 
+                              color: 'var(--primary)',
+                              fontSize: '14px'
+                            }}>
+                              Explanation:
+                            </div>
+                            <div style={{ 
+                              color: 'var(--text)',
+                              fontSize: '14px',
+                              lineHeight: '1.5'
+                            }}>
+                              {gapExplanation}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   });
@@ -292,8 +329,7 @@ function Review() {
               )}
             </div>
 
-            {/* Explanation */}
-            {question.explanation && (
+            {!isFillGap && question.explanation && (
               <div style={{ 
                 padding: '12px 16px', 
                 background: 'rgba(110, 168, 255, 0.12)', 
@@ -320,9 +356,7 @@ function Review() {
             )}
           </div>
         );
-      })}
-
-      <div className="card stack">
+      })}      <div className="card stack">
         <div className="row" style={{ gap: '8px' }}>
           <Link className="btn" to={`/results/${quizId}?score=${searchParams.get('score') || '0'}&wrong=${wrongAnswers.join(',')}&answers=${searchParams.get('answers') || '{}'}&incorrect=${searchParams.get('incorrect') || '{}'}`}>
             ← Back to Results
