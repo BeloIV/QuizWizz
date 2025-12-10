@@ -34,23 +34,7 @@ function QuizDetail() {
           <span className="pill">{quiz.tags.join(' • ')}</span>
           <span className="muted">by {quiz.author}</span>
         </div>
-        <div>{quiz.questions.length} questions</div>
-        <div className="muted" style={{ fontSize: '14px' }}>
-          {hasMultiAnswer ? '⚠️ One or more answers can be correct' : '✓ Single answer per question'}
-        </div>
-        {scoreEntry?.value !== undefined && (
-          <div className="muted">Last score: {scoreEntry.value}%</div>
-        )}
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <div className="row">
-            <Link className="btn cta" to={`/play/${quiz.id}`}>
-              Start
-            </Link>
-            <Link className="btn" to="/">
-              Back
-            </Link>
-          </div>
-
+        <div className="row" style={{ justifyContent: 'flex-end' }}>
           <div className="reaction-stats">
             <div className="reaction-stat reaction-stat-like">
               <span className="reaction-stat-number">{reactionInfo?.likes ?? quiz.likes}</span>
@@ -61,6 +45,21 @@ function QuizDetail() {
               <span className="reaction-stat-icon">👎</span>
             </div>
           </div>
+        </div>
+        <div>{quiz.questions.length} questions</div>
+        <div className="muted" style={{ fontSize: '14px' }}>
+          {hasMultiAnswer ? '⚠️ One or more answers can be correct' : '✓ Single answer per question'}
+        </div>
+        {scoreEntry?.value !== undefined && (
+          <div className="muted">Last score: {scoreEntry.value}%</div>
+        )}
+        <div className="row">
+          <Link className="btn cta" to={`/play/${quiz.id}`}>
+            Start
+          </Link>
+          <Link className="btn" to="/">
+            Back
+          </Link>
         </div>
       </div>
     </div>
