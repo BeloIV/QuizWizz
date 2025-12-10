@@ -40,9 +40,53 @@ function CreateQuiz() {
   const [error, setError] = useState(null);
   const [popup, setPopup] = useState(null); // { message: string, type: 'warning' | 'success' }
   const popupTimeoutRef = useRef(null);
+  const [confirmDialog, setConfirmDialog] = useState(null); // { message: string, onConfirm: function, onCancel: function }
 
   const fileInputRef = useRef(null);
   const [imageTarget, setImageTarget] = useState(null); // { type: 'question' | 'option', index?: number }
+
+  // Helper function to check if current question has any unsaved content
+  const hasUnsavedQuestion = useCallback(() => {
+    // Check if question text is filled
+    if (currentQuestion.text.trim()) {
+      return true;
+    }
+    
+    // Check if any option has text (for basic questions)
+    if (selectedQuestionType === 'basic') {
+      if (currentQuestion.options.some((opt) => opt.text.trim())) {
+        return true;
+      }
+    }
+    
+    // Check if any gap option has text (for fill-in-the-gap questions)
+    if (selectedQuestionType === 'fill_gap') {
+      const gapOptions = Array.isArray(currentQuestion.gapOptions) ? currentQuestion.gapOptions : [];
+      for (const gap of gapOptions) {
+        const options = Array.isArray(gap?.options) ? gap.options : [];
+        if (options.some((opt) => opt.text.trim())) {
+          return true;
+        }
+      }
+    }
+    
+    // Check if question has an image
+    if (currentQuestion.image_url) {
+      return true;
+    }
+    
+    // Check if any option has an image
+    if (currentQuestion.options.some((opt) => opt.image_url)) {
+      return true;
+    }
+    
+    // Check if explanation is filled
+    if (currentQuestion.explanation?.trim()) {
+      return true;
+    }
+    
+    return false;
+  }, [currentQuestion, selectedQuestionType]);
 
   // Auto-dismiss popup after 2 seconds
   useEffect(() => {
@@ -483,6 +527,25 @@ function CreateQuiz() {
       return;
     }
 
+    // Check for unsaved question before submitting
+    if (hasUnsavedQuestion()) {
+      setConfirmDialog({
+        message: 'You have unsaved changes in the current question. Do you want to proceed without saving it?',
+        onConfirm: () => {
+          setConfirmDialog(null);
+          submitQuiz();
+        },
+        onCancel: () => {
+          setConfirmDialog(null);
+        },
+      });
+      return;
+    }
+
+    submitQuiz();
+  };
+
+  const submitQuiz = async () => {
     try {
       setLoading(true);
       const quizData = {
@@ -500,6 +563,40 @@ function CreateQuiz() {
       console.error('Error creating quiz:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBackToMetadata = () => {
+    if (hasUnsavedQuestion()) {
+      setConfirmDialog({
+        message: 'You have unsaved changes in the current question. Do you want to go back without saving it?',
+        onConfirm: () => {
+          setConfirmDialog(null);
+          setScreen('metadata');
+        },
+        onCancel: () => {
+          setConfirmDialog(null);
+        },
+      });
+    } else {
+      setScreen('metadata');
+    }
+  };
+
+  const handleCancel = () => {
+    if (hasUnsavedQuestion()) {
+      setConfirmDialog({
+        message: 'You have unsaved changes in the current question. Do you want to cancel without saving it?',
+        onConfirm: () => {
+          setConfirmDialog(null);
+          navigate('/');
+        },
+        onCancel: () => {
+          setConfirmDialog(null);
+        },
+      });
+    } else {
+      navigate('/');
     }
   };
 
@@ -651,7 +748,7 @@ function CreateQuiz() {
           <div className="footer-actions row" style={{ justifyContent: 'space-between', marginTop: '24px' }}>
             <button
               type="button"
-              onClick={() => navigate('/')}
+              onClick={handleCancel}
               disabled={loading}
               className="btn"
             >
@@ -1073,7 +1170,7 @@ function CreateQuiz() {
             <div className="row" style={{ gap: '8px' }}>
               <button
                 type="button"
-                onClick={() => setScreen('metadata')}
+                onClick={handleBackToMetadata}
                 disabled={loading}
                 className="btn"
               >
@@ -1081,7 +1178,7 @@ function CreateQuiz() {
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/')}
+                onClick={handleCancel}
                 disabled={loading}
                 className="btn"
               >
@@ -1109,6 +1206,31 @@ function CreateQuiz() {
           aria-live="assertive"
         >
           {popup.message}
+        </div>
+      )}
+
+      {confirmDialog && (
+        <div className="modal-overlay" onClick={() => setConfirmDialog(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Unsaved Changes</h3>
+            <p className="modal-message">{confirmDialog.message}</p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                onClick={confirmDialog.onCancel}
+                className="btn"
+              >
+                No, Stay
+              </button>
+              <button
+                type="button"
+                onClick={confirmDialog.onConfirm}
+                className="btn primary"
+              >
+                Yes, Proceed
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
