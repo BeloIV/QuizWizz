@@ -95,6 +95,12 @@ function Results() {
           <Link className="btn" to="/">
             Home
           </Link>
+          <Link 
+            className="btn" 
+            to={`/review/${quizId}?score=${score}&wrong=${wrongAnswers.join(',')}&answers=${searchParams.get('answers') || '{}'}&incorrect=${searchParams.get('incorrect') || '{}'}`}
+          >
+            Review Answers
+          </Link>
           {wrongCount ? (
               <button id="retryWrong" className="btn success" type="button" onClick={handleRetryWrong}>
                 Retry failed

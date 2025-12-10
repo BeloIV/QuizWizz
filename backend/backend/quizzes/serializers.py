@@ -17,7 +17,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ("id", "text", "image_url", "options", "correct_index", "correct_indices")
+        fields = ("id", "text", "image_url", "explanation", "options", "correct_index", "correct_indices")
 
     def get_correct_index(self, obj: Question) -> int:
         """Returns first correct index for backward compatibility"""
@@ -62,7 +62,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ("id", "text", "image_url", "order", "options")
+        fields = ("id", "text", "image_url", "explanation", "order", "options")
 
     def create(self, validated_data):
         options_data = validated_data.pop("options", [])

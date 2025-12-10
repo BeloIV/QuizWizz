@@ -27,6 +27,7 @@ function CreateQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState({
     text: '',
     image_url: '',
+    explanation: '',
     options: [
       { text: '', is_correct: false, image_url: '' },
       { text: '', is_correct: false, image_url: '' },
@@ -196,6 +197,7 @@ function CreateQuiz() {
         if (gapCount > newGapOptions.length) {
           for (let i = newGapOptions.length; i < gapCount; i += 1) {
             newGapOptions.push({
+              explanation: '',
               options: [
                 { text: '', is_correct: false, image_url: '' },
                 { text: '', is_correct: false, image_url: '' },
@@ -216,6 +218,15 @@ function CreateQuiz() {
       setCurrentQuestion((prev) => ({ ...prev, [name]: value }));
     }
   }, [selectedQuestionType]);
+
+  const handleGapExplanationChange = useCallback((gapIndex, value) => {
+    setCurrentQuestion((prev) => {
+      const gapOptions = Array.isArray(prev.gapOptions) ? [...prev.gapOptions] : [];
+      const gap = gapOptions[gapIndex] || { explanation: '', options: [] };
+      gapOptions[gapIndex] = { ...gap, explanation: value };
+      return { ...prev, gapOptions };
+    });
+  }, []);
 
   const handleGapOptionChange = useCallback((gapIndex, optionIndex, field, value) => {
     setCurrentQuestion((prev) => {
@@ -364,11 +375,19 @@ function CreateQuiz() {
 
       // Encode per-gap options into the flat options array so the backend schema stays unchanged.
       // We prefix each option text with a hidden marker that includes the gap index.
+      // Also collect gap explanations into a JSON object
       const flatOptions = [];
+      const gapExplanations = {};
       let flatIndex = 0;
       for (let g = 0; g < gapCount; g += 1) {
         const gap = gapOptions[g];
         const options = Array.isArray(gap?.options) ? gap.options : [];
+        
+        // Store explanation for this gap if it exists
+        if (gap.explanation && gap.explanation.trim()) {
+          gapExplanations[g] = gap.explanation.trim();
+        }
+        
         options.forEach((opt) => {
           flatOptions.push({
             text: `__G${g}__${opt.text}`,
@@ -385,6 +404,7 @@ function CreateQuiz() {
         id: `q${formData.questions.length + 1}`,
         order: formData.questions.length,
         options: flatOptions,
+        explanation: Object.keys(gapExplanations).length > 0 ? JSON.stringify(gapExplanations) : '',
       };
 
       setFormData((prev) => ({
@@ -396,6 +416,7 @@ function CreateQuiz() {
     setCurrentQuestion({
       text: '',
       image_url: '',
+      explanation: '',
       options: [
         { text: '', is_correct: false, image_url: '' },
         { text: '', is_correct: false, image_url: '' },
@@ -801,7 +822,19 @@ function CreateQuiz() {
                     </div>
                   </div>
 
-                  {/* Options Section with Checkboxes for Multiple Correct Answers */}
+
+                  <div className="form-group">
+                    <label htmlFor="question-explanation">Explanation (optional)</label>
+                    <textarea
+                      id="question-explanation"
+                      name="explanation"
+                      value={currentQuestion.explanation}
+                      onChange={handleQuestionChange}
+                      placeholder="Explain why this is the correct answer..."
+                      disabled={loading}
+                      rows="2"
+                    />
+                  </div>
                   <div className="form-group">
                     <label>Mark the correct answer(s) *</label>
                     <div className="options-editor">
@@ -986,6 +1019,31 @@ function CreateQuiz() {
                                       + Add Option to Gap {gapIndex + 1}
                                     </button>
                                   </div>
+                                </div>
+                                
+                                <div style={{ marginTop: '12px' }}>
+                                  <label htmlFor={`gap-explanation-${gapIndex}`} style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '4px', display: 'block' }}>
+                                    Explanation for Gap {gapIndex + 1} (optional)
+                                  </label>
+                                  <textarea
+                                    id={`gap-explanation-${gapIndex}`}
+                                    value={gap.explanation || ''}
+                                    onChange={(e) => handleGapExplanationChange(gapIndex, e.target.value)}
+                                    placeholder="Explain why this is the correct answer..."
+                                    disabled={loading}
+                                    rows="2"
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 10px',
+                                      background: 'rgba(13, 23, 48, 0.6)',
+                                      border: '1px solid rgba(118, 139, 180, 0.35)',
+                                      borderRadius: '8px',
+                                      color: 'var(--text)',
+                                      fontFamily: 'inherit',
+                                      fontSize: '13px',
+                                      resize: 'vertical'
+                                    }}
+                                  />
                                 </div>
                               </div>
                             );

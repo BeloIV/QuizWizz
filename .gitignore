@@ -1,8 +1,8 @@
 .idea
 frontend.log
-backend/backend/quizzes/migrations/__pycache__/*
-backend/backend/backend/__pycache__/*
-backend/backend/quizzes/__pycache__/*
+__pycache__/
+*.py[cod]
+*$py.class
 frontend/.env
 backend/media/*
 package-lock.json

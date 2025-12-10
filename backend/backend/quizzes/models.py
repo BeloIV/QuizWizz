@@ -35,6 +35,7 @@ class Question(models.Model):
     text = models.TextField()
     order = models.PositiveIntegerField(default=0)
     image_url = models.CharField(max_length=512, blank=True)
+    explanation = models.TextField(blank=True)
 
     class Meta:
         ordering = ["order", "id"]
