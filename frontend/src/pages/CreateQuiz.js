@@ -8,7 +8,7 @@ function CreateQuiz() {
   const navigate = useNavigate();
   const { createQuiz } = useQuizList();
 
-  const [screen, setScreen] = useState('metadata'); // 'metadata' or 'questions'
+  const [screen, setScreen] = useState('metadata'); // 'metadata', 'questions', or 'preview'
 
   const [formData, setFormData] = useState({
     name: '',
@@ -17,6 +17,12 @@ function CreateQuiz() {
     tags: [],
     questions: [],
   });
+
+  const questionsListRef = useRef(null);
+  const questionsListFooterRef = useRef(null);
+  const questionEditorRef = useRef(null);
+  const skipAutoScrollRef = useRef(false);
+  const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
 
   // Questions will be added dynamically without pre-set count
 
@@ -377,10 +383,21 @@ function CreateQuiz() {
         })),
       };
 
-      setFormData((prev) => ({
-        ...prev,
-        questions: [...prev.questions, questionWithId],
-      }));
+      if (editingQuestionIndex !== null) {
+        // Update existing question
+        setFormData((prev) => {
+          const newQuestions = [...prev.questions];
+          newQuestions[editingQuestionIndex] = questionWithId;
+          return { ...prev, questions: newQuestions };
+        });
+        setEditingQuestionIndex(null);
+      } else {
+        // Add new question
+        setFormData((prev) => ({
+          ...prev,
+          questions: [...prev.questions, questionWithId],
+        }));
+      }
     } else if (selectedQuestionType === 'fill_gap') {
       const textValue = currentQuestion.text;
       const gapMatches = textValue.match(/_{1,}/g) || [];
@@ -445,16 +462,27 @@ function CreateQuiz() {
 
       const questionWithId = {
         ...currentQuestion,
-        id: `q${formData.questions.length + 1}`,
-        order: formData.questions.length,
+        id: editingQuestionIndex !== null ? formData.questions[editingQuestionIndex].id : `q${formData.questions.length + 1}`,
+        order: editingQuestionIndex !== null ? editingQuestionIndex : formData.questions.length,
         options: flatOptions,
         explanation: Object.keys(gapExplanations).length > 0 ? JSON.stringify(gapExplanations) : '',
       };
 
-      setFormData((prev) => ({
-        ...prev,
-        questions: [...prev.questions, questionWithId],
-      }));
+      if (editingQuestionIndex !== null) {
+        // Update existing question
+        setFormData((prev) => {
+          const newQuestions = [...prev.questions];
+          newQuestions[editingQuestionIndex] = questionWithId;
+          return { ...prev, questions: newQuestions };
+        });
+        setEditingQuestionIndex(null);
+      } else {
+        // Add new question
+        setFormData((prev) => ({
+          ...prev,
+          questions: [...prev.questions, questionWithId],
+        }));
+      }
     }
 
     setCurrentQuestion({
@@ -473,7 +501,41 @@ function CreateQuiz() {
     setSelectedQuestionType('basic');
 
     setError(null);
-  }, [currentQuestion, formData.questions.length, selectedQuestionType, setPopup]);
+    
+    // When adding/updating we already scroll to the saved-questions footer.
+    // Mark that the next automatic top-scroll should be skipped so it doesn't override this footer scroll.
+    skipAutoScrollRef.current = true;
+    setTimeout(() => {
+      if (questionsListFooterRef.current) {
+        const yOffset = -65; // Small offset from top
+        const element = questionsListFooterRef.current;
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      // Clear the skip flag shortly after the footer scroll completes
+      setTimeout(() => {
+        skipAutoScrollRef.current = false;
+      }, 600);
+    }, 100);
+  }, [currentQuestion, formData.questions, selectedQuestionType, setPopup, editingQuestionIndex]);
+
+  // Auto-scroll to top whenever screen changes or number of questions changes,
+  // except when a deliberate footer scroll just happened (skipAutoScrollRef).
+  useEffect(() => {
+    if (skipAutoScrollRef.current) {
+      // consume the flag but do not perform the top scroll
+      skipAutoScrollRef.current = false;
+      return;
+    }
+
+    // Smoothly scroll to top for creation flow changes
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      // noop in non-browser environments
+    }
+  // watch screen and questions count so creation actions trigger a top scroll
+  }, [screen, formData.questions.length]);
 
   const removeQuestion = useCallback((index) => {
     setFormData((prev) => ({
@@ -482,6 +544,122 @@ function CreateQuiz() {
         .filter((_, i) => i !== index)
         .map((q, i) => ({ ...q, order: i, id: `q${i + 1}` })),
     }));
+    // If we're editing the question being removed, cancel editing
+    if (editingQuestionIndex === index) {
+      setEditingQuestionIndex(null);
+      setCurrentQuestion({
+        text: '',
+        image_url: '',
+        explanation: '',
+        options: [
+          { text: '', is_correct: false, image_url: '' },
+          { text: '', is_correct: false, image_url: '' },
+        ],
+        gapOptions: [],
+      });
+    }
+  }, [editingQuestionIndex]);
+
+  const editQuestion = useCallback((index) => {
+    const question = formData.questions[index];
+    if (!question) return;
+
+    // Check if there are unsaved changes before loading another question
+    if (hasUnsavedQuestion() && editingQuestionIndex !== index) {
+      setConfirmDialog({
+        message: 'You have unsaved changes in the current question. Do you want to discard them and edit another question?',
+        onConfirm: () => {
+          setConfirmDialog(null);
+          loadQuestionForEditing(index, question);
+        },
+        onCancel: () => {
+          setConfirmDialog(null);
+        },
+      });
+    } else {
+      loadQuestionForEditing(index, question);
+    }
+  }, [formData.questions, hasUnsavedQuestion, editingQuestionIndex]);
+
+  const loadQuestionForEditing = useCallback((index, question) => {
+    setEditingQuestionIndex(index);
+
+    // Check if this is a fill-in-the-gap question
+    const hasEncodedGaps = question.options.some((opt) => typeof opt.text === 'string' && /^__G\d+__/.test(opt.text));
+
+    if (hasEncodedGaps) {
+      setSelectedQuestionType('fill_gap');
+      
+      // Decode gap options
+      const gapMap = new Map();
+      question.options.forEach((option) => {
+        if (typeof option.text !== 'string') return;
+        const match = option.text.match(/^__G(\d+)__(.*)$/);
+        if (!match) return;
+        const gapIndex = parseInt(match[1], 10);
+        if (!gapMap.has(gapIndex)) {
+          gapMap.set(gapIndex, []);
+        }
+        gapMap.get(gapIndex).push({
+          text: match[2],
+          is_correct: option.is_correct,
+          image_url: option.image_url || '',
+        });
+      });
+
+      const gapOptions = [];
+      const gapIndices = Array.from(gapMap.keys()).sort((a, b) => a - b);
+      
+      // Parse gap explanations if they exist
+      let gapExplanations = {};
+      if (question.explanation) {
+        try {
+          gapExplanations = JSON.parse(question.explanation);
+        } catch (e) {
+          // Not JSON, treat as single explanation
+        }
+      }
+
+      gapIndices.forEach((gapIndex) => {
+        gapOptions.push({
+          options: gapMap.get(gapIndex),
+          explanation: gapExplanations[gapIndex] || '',
+        });
+      });
+
+      setCurrentQuestion({
+        text: question.text,
+        image_url: question.image_url || '',
+        explanation: '', // Explanation is stored per-gap for fill-gap questions
+        options: [
+          { text: '', is_correct: false, image_url: '' },
+          { text: '', is_correct: false, image_url: '' },
+        ],
+        gapOptions,
+      });
+    } else {
+      setSelectedQuestionType('basic');
+      setCurrentQuestion({
+        text: question.text,
+        image_url: question.image_url || '',
+        explanation: question.explanation || '',
+        options: question.options.map((opt) => ({
+          text: opt.text,
+          is_correct: opt.is_correct,
+          image_url: opt.image_url || '',
+        })),
+        gapOptions: [],
+      });
+    }
+
+    setQuestionTypeSelected(true);
+    
+    // Scroll to editor
+    setTimeout(() => {
+      if (questionEditorRef.current) {
+        questionEditorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }, []);
 
   const addTag = useCallback(() => {
@@ -527,13 +705,13 @@ function CreateQuiz() {
       return;
     }
 
-    // Check for unsaved question before submitting
+    // Check for unsaved question before proceeding to preview
     if (hasUnsavedQuestion()) {
       setConfirmDialog({
-        message: 'You have unsaved changes in the current question. Do you want to proceed without saving it?',
+        message: 'You have unsaved changes in the current question. Do you want to proceed to preview without saving it?',
         onConfirm: () => {
           setConfirmDialog(null);
-          submitQuiz();
+          setScreen('preview');
         },
         onCancel: () => {
           setConfirmDialog(null);
@@ -542,7 +720,7 @@ function CreateQuiz() {
       return;
     }
 
-    submitQuiz();
+    setScreen('preview');
   };
 
   const submitQuiz = async () => {
@@ -553,15 +731,13 @@ function CreateQuiz() {
         tags: formData.tags.map((tag) => tag),
       };
       const newQuiz = await createQuiz(quizData);
-      setPopup({ message: 'Quiz created successfully', type: 'success' });
-      // Wait for popup to be visible before navigating
-      setTimeout(() => {
-        navigate(`/quiz/${newQuiz.id}`);
-      }, 1500);
+      // Store success message in sessionStorage to show on next page
+      sessionStorage.setItem('quizSuccessMessage', 'Quiz created successfully');
+      // Navigate immediately
+      navigate(`/quiz/${newQuiz.id}`);
     } catch (err) {
       setPopup({ message: err.message || 'Failed to create quiz', type: 'warning' });
       console.error('Error creating quiz:', err);
-    } finally {
       setLoading(false);
     }
   };
@@ -765,7 +941,7 @@ function CreateQuiz() {
             </button>
           </div>
         </div>
-      ) : (
+      ) : screen === 'questions' ? (
         // SCREEN 2: Add Questions
         <div>
           <div className="screen-header">
@@ -778,25 +954,42 @@ function CreateQuiz() {
 
           <div className="questions-container">
             {formData.questions.length > 0 && (
-              <section className="form-section">
-                <h2 className="section-title">Added Questions ({formData.questions.length})</h2>
+              <section className="form-section" ref={questionsListRef}>
+                <div className="questions-list-header">
+                  <h2 className="section-title">Added Questions ({formData.questions.length})</h2>
+                </div>
                 <div className="questions-list">
                   {formData.questions.map((question, qIndex) => (
-                    <div key={qIndex} className="question-preview">
+                    <div key={qIndex} className={`question-preview ${editingQuestionIndex === qIndex ? 'editing' : ''}`}>
                       <div className="question-preview__header">
                         <p className="question-preview__text">{question.text}</p>
-                        <button
-                          type="button"
-                          onClick={() => removeQuestion(qIndex)}
-                          disabled={loading}
-                          className="btn-remove"
-                          aria-label="Remove question"
-                          title="Remove question"
-                        >
-                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
-                          </svg>
-                        </button>
+                        <div className="question-preview__actions">
+                          <button
+                            type="button"
+                            onClick={() => editQuestion(qIndex)}
+                            disabled={loading}
+                            className="btn-edit"
+                            aria-label="Edit question"
+                            title="Edit question"
+                          >
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeQuestion(qIndex)}
+                            disabled={loading}
+                            className="btn-remove"
+                            aria-label="Remove question"
+                            title="Remove question"
+                          >
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                       <div className="question-preview__options">
                         {(() => {
@@ -850,13 +1043,18 @@ function CreateQuiz() {
                     </div>
                   ))}
                 </div>
+                <div className="questions-list-footer" ref={questionsListFooterRef}>
+                  <p className="muted" style={{ fontSize: '14px', textAlign: 'center', marginTop: '16px' }}>
+                     ↑ Edit existing ones <br /> ↓ Add more questions below 
+                  </p>
+                </div>
               </section>
             )}
 
-            {/* Question Editor */}
-            <section className="form-section question-editor">
+            {/* Question Editor */
+            <section className="form-section question-editor" ref={questionEditorRef}>
               <h2 className="section-title">
-                Question {formData.questions.length + 1}
+                {editingQuestionIndex !== null ? `Editing Question ${editingQuestionIndex + 1}` : `Question ${formData.questions.length + 1}`}
               </h2>
 
               {/* Question Type Selection - Small buttons on top */}
@@ -929,9 +1127,11 @@ function CreateQuiz() {
                       onChange={handleQuestionChange}
                       placeholder="Explain why this is the correct answer..."
                       disabled={loading}
-                      rows="2"
+                      rows="3"
                     />
                   </div>
+
+                  {/* Options Section with Checkboxes for Multiple Correct Answers */}
                   <div className="form-group">
                     <label>Mark the correct answer(s) *</label>
                     <div className="options-editor">
@@ -1162,10 +1362,9 @@ function CreateQuiz() {
                   </div>
                 </>
               )}
-            </section>
+            </section>}
           </div>
 
-          {/* Bottom action buttons */}
           <div className="footer-actions row" style={{ justifyContent: 'space-between', marginTop: '24px' }}>
             <div className="row" style={{ gap: '8px' }}>
               <button
@@ -1197,7 +1396,154 @@ function CreateQuiz() {
             )}
           </div>
         </div>
-      )}
+      ) : screen === 'preview' ? (
+        // SCREEN 3: Preview and Confirm
+        <div>
+          <div className="screen-header">
+            <h1 className="page-title">Review Your Quiz</h1>
+            <p className="muted" style={{ fontSize: '15px', marginTop: '8px' }}>
+              Review the quiz details before publishing
+            </p>
+          </div>
+
+          {error && <div className="error-banner">{error}</div>}
+
+          <div className="preview-container">
+            {/* Quiz Metadata */}
+            <section className="form-section">
+              <h2 className="section-title">Quiz Details</h2>
+              <div className="preview-details">
+                <div className="preview-row">
+                  <span className="preview-label">Name:</span>
+                  <span className="preview-value">{formData.name}</span>
+                </div>
+                <div className="preview-row">
+                  <span className="preview-label">Author:</span>
+                  <span className="preview-value">{formData.author}</span>
+                </div>
+                <div className="preview-row">
+                  <span className="preview-label">Icon:</span>
+                  <span className="preview-value" style={{ fontSize: '24px' }}>{formData.icon}</span>
+                </div>
+                {formData.tags.length > 0 && (
+                  <div className="preview-row">
+                    <span className="preview-label">Tags:</span>
+                    <div className="tags-list">
+                      {formData.tags.map((tag, index) => (
+                        <span key={index} className="pill">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Questions Preview */}
+            <section className="form-section">
+              <h2 className="section-title">Questions ({formData.questions.length})</h2>
+              <div className="preview-questions-list">
+                {formData.questions.map((question, qIndex) => (
+                  <div key={qIndex} className="preview-question-card">
+                    <div className="preview-question-header">
+                      <span className="preview-question-number">Question {qIndex + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScreen('questions');
+                          setTimeout(() => editQuestion(qIndex), 100);
+                        }}
+                        disabled={loading}
+                        className="btn-edit-small"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <p className="preview-question-text">{question.text}</p>
+                    {question.image_url && (
+                      <img src={question.image_url} alt="Question" className="preview-question-image" />
+                    )}
+                    <div className="preview-options">
+                      {(() => {
+                        const options = Array.isArray(question.options) ? question.options : [];
+                        const hasEncodedGaps = options.some((opt) => typeof opt.text === 'string' && /^__G\d+__/.test(opt.text));
+
+                        if (!hasEncodedGaps) {
+                          return options.map((option, oIndex) => (
+                            <div key={oIndex} className={`preview-option ${option.is_correct ? 'correct' : ''}`}>
+                              <span className="option-check">
+                                {option.is_correct ? '✓' : '○'}
+                              </span>
+                              <span className="option-text">{renderPreviewOptionText(option.text)}</span>
+                              {option.image_url && (
+                                <img src={option.image_url} alt={`Option ${oIndex + 1}`} className="preview-option-image" />
+                              )}
+                            </div>
+                          ));
+                        }
+
+                        const gapMap = new Map();
+                        options.forEach((option) => {
+                          if (typeof option.text !== 'string') return;
+                          const match = option.text.match(/^__G(\d+)__(.*)$/);
+                          if (!match) return;
+                          const gapIndex = parseInt(match[1], 10);
+                          if (!gapMap.has(gapIndex)) {
+                            gapMap.set(gapIndex, []);
+                          }
+                          gapMap.get(gapIndex).push(option);
+                        });
+
+                        const gapIndices = Array.from(gapMap.keys()).sort((a, b) => a - b);
+
+                        return gapIndices.map((gapIndex) => (
+                          <div key={gapIndex} className="preview-gap-group">
+                            <span className="pill">Gap {gapIndex + 1}</span>
+                            {gapMap.get(gapIndex).map((option, oIndex) => (
+                              <div key={oIndex} className={`preview-option ${option.is_correct ? 'correct' : ''}`}>
+                                <span className="option-check">
+                                  {option.is_correct ? '✓' : '○'}
+                                </span>
+                                <span className="option-text">{renderPreviewOptionText(option.text)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                    {question.explanation && (
+                      <div className="preview-explanation">
+                        <strong>Explanation:</strong> {question.explanation}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          {/* Bottom action buttons */}
+          <div className="footer-actions row" style={{ justifyContent: 'space-between', marginTop: '24px' }}>
+            <button
+              type="button"
+              onClick={() => setScreen('questions')}
+              disabled={loading}
+              className="btn"
+            >
+              ← Back to Edit
+            </button>
+            <button
+              type="button"
+              onClick={submitQuiz}
+              disabled={loading}
+              className="btn primary success"
+            >
+              {loading ? 'Creating...' : '✓ Publish Quiz'}
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {popup && (
         <div
