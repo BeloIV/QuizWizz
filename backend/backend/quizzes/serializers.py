@@ -1,7 +1,8 @@
 from rest_framework import serializers
 import uuid
+from django.contrib.auth.models import User
 
-from .models import Choice, Question, Quiz, Tag
+from .models import Choice, Question, Quiz, Tag, Message, QuizShare
 
 
 class ChoiceSerializer(serializers.ModelSerializer):
@@ -115,3 +116,60 @@ class QuizCreateSerializer(serializers.ModelSerializer):
             QuestionCreateSerializer().create(question_data)
         
         return quiz
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Basic user information serializer"""
+    class Meta:
+        model = User
+        fields = ("id", "username")
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    """Serializer for messages between users"""
+    sender = UserSerializer(read_only=True)
+    recipient = UserSerializer(read_only=True)
+    sender_id = serializers.IntegerField(write_only=True, required=False)
+    recipient_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Message
+        fields = ("id", "sender", "recipient", "sender_id", "recipient_id", 
+                  "content", "created_at", "is_read")
+        read_only_fields = ("id", "created_at")
+
+    def create(self, validated_data):
+        # Get recipient from recipient_id
+        recipient_id = validated_data.pop('recipient_id')
+        recipient = User.objects.get(id=recipient_id)
+        validated_data['recipient'] = recipient
+        # sender will be set in the view from request.user
+        return super().create(validated_data)
+
+
+class QuizShareSerializer(serializers.ModelSerializer):
+    """Serializer for sharing quizzes between users"""
+    sender = UserSerializer(read_only=True)
+    recipient = UserSerializer(read_only=True)
+    quiz_data = QuizListSerializer(source="quiz", read_only=True)
+    sender_id = serializers.IntegerField(write_only=True, required=False)
+    recipient_id = serializers.IntegerField(write_only=True)
+    quiz_id = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = QuizShare
+        fields = ("id", "sender", "recipient", "quiz_data", "sender_id", 
+                  "recipient_id", "quiz_id", "message", "created_at", "is_viewed")
+        read_only_fields = ("id", "created_at")
+
+    def create(self, validated_data):
+        # Get quiz from quiz_id
+        quiz_id = validated_data.pop('quiz_id')
+        quiz = Quiz.objects.get(id=quiz_id)
+        validated_data['quiz'] = quiz
+        # Get recipient from recipient_id
+        recipient_id = validated_data.pop('recipient_id')
+        recipient = User.objects.get(id=recipient_id)
+        validated_data['recipient'] = recipient
+        # sender will be set in the view from request.user
+        return super().create(validated_data)

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuizDetail } from '../hooks/useQuizDetail';
 import { useScores } from '../context/ScoresContext';
 import { useReactions } from "../context/ReactionsContext";
+import { useAuth } from '../context/AuthContext';
+import ShareQuizModal from '../components/ShareQuizModal';
 
 function QuizDetail() {
   const { quizId } = useParams();
@@ -14,6 +16,8 @@ function QuizDetail() {
   const reactionInfo = reactions[quizId];
   const [popup, setPopup] = useState(null);
   const popupTimeoutRef = useRef(null);
+  const { isAuthenticated } = useAuth();
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Check for success message from quiz creation
   useEffect(() => {
@@ -86,6 +90,15 @@ function QuizDetail() {
           <Link className="btn cta" to={`/play/${quiz.id}`}>
             Start
           </Link>
+          {isAuthenticated && (
+            <button 
+              className="btn" 
+              onClick={() => setShowShareModal(true)}
+              style={{ marginLeft: '8px' }}
+            >
+              Share
+            </button>
+          )}
           <Link className="btn" to="/">
             Back
           </Link>
@@ -100,6 +113,13 @@ function QuizDetail() {
         >
           {popup.message}
         </div>
+      )}
+
+      {showShareModal && (
+        <ShareQuizModal 
+          quiz={quiz} 
+          onClose={() => setShowShareModal(false)} 
+        />
       )}
     </div>
   );
