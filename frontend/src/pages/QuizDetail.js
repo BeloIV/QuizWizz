@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 
 import { useQuizDetail } from '../hooks/useQuizDetail';
 import { useScores } from '../context/ScoresContext';
@@ -11,6 +12,34 @@ function QuizDetail() {
   const scoreEntry = quiz ? scores[quiz.id] : null;
   const { reactions } = useReactions();
   const reactionInfo = reactions[quizId];
+  const [popup, setPopup] = useState(null);
+  const popupTimeoutRef = useRef(null);
+
+  // Check for success message from quiz creation
+  useEffect(() => {
+    const successMessage = sessionStorage.getItem('quizSuccessMessage');
+    if (successMessage) {
+      setPopup({ message: successMessage, type: 'success' });
+      sessionStorage.removeItem('quizSuccessMessage');
+    }
+  }, []);
+
+  // Auto-dismiss popup after 2 seconds
+  useEffect(() => {
+    if (popup) {
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+      popupTimeoutRef.current = setTimeout(() => {
+        setPopup(null);
+      }, 2000);
+    }
+    return () => {
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+    };
+  }, [popup]);
 
   if (loading) {
     return <div className="muted">Loading quiz...</div>;
@@ -62,6 +91,16 @@ function QuizDetail() {
           </Link>
         </div>
       </div>
+
+      {popup && (
+        <div
+          className={`popup ${popup.type === 'warning' ? 'popup--danger' : 'popup--success'} popup--top`}
+          role="alert"
+          aria-live="assertive"
+        >
+          {popup.message}
+        </div>
+      )}
     </div>
   );
 }
