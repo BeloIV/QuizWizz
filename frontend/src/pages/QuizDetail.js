@@ -92,7 +92,7 @@ function QuizDetail() {
           </Link>
           {isAuthenticated && (
             <button 
-              className="btn" 
+              className="btn btn-secondary" 
               onClick={() => setShowShareModal(true)}
               style={{ marginLeft: '8px' }}
             >

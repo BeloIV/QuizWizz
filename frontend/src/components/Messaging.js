@@ -68,75 +68,96 @@ function Messaging() {
 
     if (!user) {
         return (
-            <div className="messaging-container">
-                <p>Please login to use messaging</p>
+            <div className="messaging-page">
+                <div className="messaging-empty">
+                    <p>Please login to use messaging</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="messaging-container">
-            <div className="messaging-sidebar">
-                <h3>Users</h3>
-                <div className="user-list">
-                    {otherUsers.map(u => (
-                        <button
-                            key={u.id}
-                            className={`user-list-item ${selectedUser?.id === u.id ? 'active' : ''}`}
-                            onClick={() => setSelectedUser(u)}
-                        >
-                            {u.username}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            <div className="messaging-main">
-                {selectedUser ? (
-                    <>
-                        <div className="messaging-header">
-                            <h3>Chat with {selectedUser.username}</h3>
-                        </div>
-
-                        <div className="messages-list">
-                            {loading ? (
-                                <p>Loading messages...</p>
-                            ) : messages.length === 0 ? (
-                                <p className="no-messages">No messages yet. Start a conversation!</p>
-                            ) : (
-                                messages.map(msg => (
-                                    <div
-                                        key={msg.id}
-                                        className={`message ${msg.sender.id === user?.id ? 'message-sent' : 'message-received'}`}
-                                    >
-                                        <div className="message-sender">{msg.sender.username}</div>
-                                        <div className="message-content">{msg.content}</div>
-                                        <div className="message-time">
-                                            {new Date(msg.created_at).toLocaleString()}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-
-                        <form onSubmit={sendMessage} className="message-input-form">
-                            <input
-                                type="text"
-                                value={newMessage}
-                                onChange={(e) => setNewMessage(e.target.value)}
-                                placeholder="Type a message..."
-                                className="message-input"
-                            />
-                            <button type="submit" className="btn-primary">
-                                Send
-                            </button>
-                        </form>
-                    </>
-                ) : (
-                    <div className="no-user-selected">
-                        <p>Select a user to start chatting</p>
+        <div className="messaging-page">
+            <div className="messaging-container">
+                {/* Sidebar */}
+                <div className="messaging-sidebar">
+                    <div className="sidebar-header">
+                        <h3>Messages</h3>
                     </div>
-                )}
+                    <div className="user-list">
+                        {otherUsers.length === 0 ? (
+                            <p className="no-users">No users available</p>
+                        ) : (
+                            otherUsers.map(u => (
+                                <button
+                                    key={u.id}
+                                    className={`user-list-item ${selectedUser?.id === u.id ? 'active' : ''}`}
+                                    onClick={() => setSelectedUser(u)}
+                                >
+                                    <span className="user-name">{u.username}</span>
+                                    <span className="user-avatar">{u.username.charAt(0).toUpperCase()}</span>
+                                </button>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Chat Area */}
+                <div className="messaging-main">
+                    {selectedUser ? (
+                        <>
+                            <div className="messaging-header">
+                                <div className="header-user-info">
+                                    <div className="header-avatar">{selectedUser.username.charAt(0).toUpperCase()}</div>
+                                    <h3>{selectedUser.username}</h3>
+                                </div>
+                            </div>
+
+                            <div className="messages-list">
+                                {loading ? (
+                                    <div className="loading-messages">
+                                        <p>Loading messages...</p>
+                                    </div>
+                                ) : messages.length === 0 ? (
+                                    <div className="no-messages-area">
+                                        <p>No messages yet. Start a conversation!</p>
+                                    </div>
+                                ) : (
+                                    messages.map(msg => (
+                                        <div
+                                            key={msg.id}
+                                            className={`message ${msg.sender.id === user?.id ? 'message-sent' : 'message-received'}`}
+                                        >
+                                            <div className="message-bubble">
+                                                <div className="message-content">{msg.content}</div>
+                                                <div className="message-time">
+                                                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <form onSubmit={sendMessage} className="message-input-form">
+                                <input
+                                    type="text"
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    placeholder="Type a message..."
+                                    className="message-input"
+                                />
+                                <button type="submit" className="btn btn-primary" disabled={!newMessage.trim()}>
+                                    Send
+                                </button>
+                            </form>
+                        </>
+                    ) : (
+                        <div className="no-user-selected">
+                            <p>Select a user to start chatting</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

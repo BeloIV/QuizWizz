@@ -25,6 +25,15 @@ function ShareQuizModal({ quiz, onClose }) {
                 },
                 { withCredentials: true }
             );
+            // Also send a message about the share
+            await axios.post(
+                `${API_BASE_URL}/messages/`,
+                {
+                    recipient_id: parseInt(selectedUserId),
+                    content: `I shared a quiz with you: "${quiz.name}"`,
+                },
+                { withCredentials: true }
+            );
             setSuccess(true);
             setTimeout(() => {
                 onClose();
@@ -45,7 +54,7 @@ function ShareQuizModal({ quiz, onClose }) {
                 <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                     <h2>Share Quiz</h2>
                     <p>Please login to share quizzes</p>
-                    <button onClick={onClose} className="btn-secondary">
+                    <button onClick={onClose} className="btn btn-secondary">
                         Close
                     </button>
                 </div>
@@ -95,13 +104,13 @@ function ShareQuizModal({ quiz, onClose }) {
                         </div>
 
                         <div className="modal-actions">
-                            <button type="submit" className="btn-primary" disabled={sending}>
+                            <button type="submit" className="btn btn-primary" disabled={sending}>
                                 {sending ? 'Sharing...' : 'Share Quiz'}
                             </button>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="btn-secondary"
+                                className="btn btn-secondary"
                                 disabled={sending}
                             >
                                 Cancel
