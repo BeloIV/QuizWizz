@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Tag(models.Model):
@@ -57,3 +58,35 @@ class Choice(models.Model):
 
     def __str__(self) -> str:
         return f"{self.question_id}[{self.index}]"
+
+
+class Message(models.Model):
+    """Messages between users for chat functionality"""
+    sender = models.ForeignKey(User, related_name="sent_messages", on_delete=models.CASCADE)
+    recipient = models.ForeignKey(User, related_name="received_messages", on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"From {self.sender.username} to {self.recipient.username}: {self.content[:30]}"
+
+
+class QuizShare(models.Model):
+    """Track quiz sharing between users"""
+    quiz = models.ForeignKey(Quiz, related_name="shares", on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, related_name="shared_quizzes", on_delete=models.CASCADE)
+    recipient = models.ForeignKey(User, related_name="received_quizzes", on_delete=models.CASCADE)
+    message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_viewed = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("quiz", "sender", "recipient")
+
+    def __str__(self) -> str:
+        return f"{self.sender.username} shared '{self.quiz.name}' with {self.recipient.username}"

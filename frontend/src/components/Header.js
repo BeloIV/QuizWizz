@@ -20,6 +20,10 @@ function Header() {
       if (containerRef.current.contains(event.target)) {
         return;
       }
+      // Don't close menu if clicking on the drawer or modal
+      if (event.target.closest('.drawer') || event.target.closest('.modal-overlay')) {
+        return;
+      }
       setMenuOpen(false);
     };
 
@@ -64,6 +68,7 @@ function Header() {
   }, [location.pathname]);
 
   const toggleMenu = () => {
+    console.log('toggleMenu called, menuOpen will be:', !menuOpen);
     setMenuOpen((prev) => !prev);
   };
 
