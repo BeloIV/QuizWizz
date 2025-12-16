@@ -88,12 +88,12 @@ function LoginModal({ isOpen, onClose }) {
                     </div>
 
                     <div className="modal-actions">
-                        <button type="submit" className="btn-primary" disabled={loading}>
+                        <button type="submit" className="btn btn-primary" disabled={loading}>
                             {loading ? 'Logging in...' : 'Login'}
                         </button>
                         <button 
                             type="button" 
-                            className="btn-secondary" 
+                            className="btn btn-secondary"
                             onClick={onClose}
                             disabled={loading}
                         >

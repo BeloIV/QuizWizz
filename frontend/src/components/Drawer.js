@@ -7,6 +7,7 @@ function Drawer({ isOpen, onClose }) {
     const drawerRef = useRef(null);
     const { user, logout, isAuthenticated, loading } = useAuth();
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
     const navigate = useNavigate();
 
     // NOTE: do not return early before declaring all hooks —
@@ -14,8 +15,8 @@ function Drawer({ isOpen, onClose }) {
 
     useEffect(() => {
         const handleEscape = (event) => {
-            if (event.key === 'Escape' && isOpen) {
-                onClose();
+            if (event.key === 'Escape' && isOpen && !isClosing) {
+                closeDrawer();
             }
         };
 
@@ -31,7 +32,6 @@ function Drawer({ isOpen, onClose }) {
             document.body.classList.remove('menu-open');
         };
     }, [isOpen]);
-
     // Wait for auth check before rendering drawer to avoid stuck "logged out" UI
     if (loading) {
         return null; // or return a spinner element if you want
@@ -44,8 +44,25 @@ function Drawer({ isOpen, onClose }) {
     };
 
     const navigateTo = (path) => {
-        navigate(path);
-        onClose();
+        closeDrawer(() => {
+            navigate(path);
+        });
+    };
+
+    const closeDrawer = (afterClose) => {
+        if (isClosing) return;
+
+        setIsClosing(true);
+
+        const drawer = drawerRef.current;
+        const duration =
+            parseFloat(getComputedStyle(drawer).animationDuration) * 1000;
+
+        setTimeout(() => {
+            setIsClosing(false);
+            onClose();
+            afterClose?.();
+        }, duration);
     };
 
     if (!isOpen) {
@@ -55,20 +72,21 @@ function Drawer({ isOpen, onClose }) {
     return (
         <>
             <div
-                className="drawer-overlay"
-                onClick={() => { console.log('drawer overlay clicked'); onClose && onClose(); }}
+                className={`drawer-overlay ${isClosing ? 'overlay--closing' : ''}`}
+                onClick={() => { closeDrawer()}}
                 role="presentation"
             />
             <div
-                className="drawer"
+                className={`drawer ${isClosing ? 'drawer--closing' : ''}`}
                 ref={drawerRef}
+                onClick={(e) => e.stopPropagation()}
                 role="navigation"
                 aria-label="Main navigation"
             >
                 <nav className="drawer-menu">
                     {/* User Account Section */}
                     <div className="drawer-section">
-                        <h3 className="drawer-section-title">Accountss</h3>
+                        <h3 className="drawer-section-title">Accounts</h3>
                         {isAuthenticated ? (
                             <>
                                 <div className="drawer-user-info">

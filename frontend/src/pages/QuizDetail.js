@@ -99,7 +99,7 @@ function QuizDetail() {
               Share
             </button>
           )}
-          <Link className="btn" to="/">
+          <Link className="btn btn-secondary" to="/">
             Back
           </Link>
         </div>

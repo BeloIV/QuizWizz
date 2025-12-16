@@ -96,11 +96,11 @@ function Results() {
             <div className="muted">Perfect run!</div>
         )}
         <div className="row">
-          <Link className="btn" to="/">
+          <Link className="btn btn-secondary" to="/">
             Home
           </Link>
           <Link 
-            className="btn" 
+            className="btn btn-secondary"
             to={`/review/${quizId}?score=${score}&wrong=${wrongAnswers.join(',')}&answers=${searchParams.get('answers') || '{}'}&incorrect=${searchParams.get('incorrect') || '{}'}`}
           >
             Review Answers
