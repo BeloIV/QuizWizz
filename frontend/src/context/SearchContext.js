@@ -2,30 +2,36 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 const SearchContext = createContext({
   open: false,
-  preset: '',
+  searchTerm: '',
   openSearch: () => {},
   closeSearch: () => {},
+  setSearchTerm: () => {},
 });
 
 export function SearchProvider({ children }) {
-  const [state, setState] = useState({ open: false, preset: '' });
+  const [state, setState] = useState({ open: false, searchTerm: '' });
 
-  const openSearch = useCallback((preset = '') => {
-    setState({ open: true, preset });
+  const openSearch = useCallback(() => {
+    setState((prev) => ({ ...prev, open: true }));
   }, []);
 
   const closeSearch = useCallback(() => {
-    setState({ open: false, preset: '' });
+    setState({ open: false, searchTerm: '' });
+  }, []);
+
+  const setSearchTerm = useCallback((term) => {
+    setState((prev) => ({ ...prev, searchTerm: term }));
   }, []);
 
   const value = useMemo(
     () => ({
       open: state.open,
-      preset: state.preset,
+      searchTerm: state.searchTerm,
       openSearch,
       closeSearch,
+      setSearchTerm,
     }),
-    [state, openSearch, closeSearch]
+    [state, openSearch, closeSearch, setSearchTerm]
   );
 
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;

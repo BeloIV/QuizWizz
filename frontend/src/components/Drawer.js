@@ -1,12 +1,22 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import LoginModal from './LoginModal';
 
 function Drawer({ isOpen, onClose }) {
     const drawerRef = useRef(null);
+    const { user, logout, isAuthenticated, loading } = useAuth();
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
+    const navigate = useNavigate();
+
+    // NOTE: do not return early before declaring all hooks —
+    // we'll check `loading` after hooks to avoid changing hook order.
 
     useEffect(() => {
         const handleEscape = (event) => {
-            if (event.key === 'Escape' && isOpen) {
-                onClose();
+            if (event.key === 'Escape' && isOpen && !isClosing) {
+                closeDrawer();
             }
         };
 
@@ -22,6 +32,38 @@ function Drawer({ isOpen, onClose }) {
             document.body.classList.remove('menu-open');
         };
     }, [isOpen]);
+    // Wait for auth check before rendering drawer to avoid stuck "logged out" UI
+    if (loading) {
+        return null; // or return a spinner element if you want
+    }
+
+    console.log('Drawer rendering, isOpen:', isOpen, 'loading:', loading, 'showLoginModal:', showLoginModal);
+
+    const handleLogout = async () => {
+        await logout();
+    };
+
+    const navigateTo = (path) => {
+        closeDrawer(() => {
+            navigate(path);
+        });
+    };
+
+    const closeDrawer = (afterClose) => {
+        if (isClosing) return;
+
+        setIsClosing(true);
+
+        const drawer = drawerRef.current;
+        const duration =
+            parseFloat(getComputedStyle(drawer).animationDuration) * 1000;
+
+        setTimeout(() => {
+            setIsClosing(false);
+            onClose();
+            afterClose?.();
+        }, duration);
+    };
 
     if (!isOpen) {
         return null;
@@ -30,27 +72,85 @@ function Drawer({ isOpen, onClose }) {
     return (
         <>
             <div
-                className="drawer-overlay"
-                onClick={onClose}
+                className={`drawer-overlay ${isClosing ? 'overlay--closing' : ''}`}
+                onClick={() => { closeDrawer()}}
                 role="presentation"
             />
             <div
-                className="drawer"
+                className={`drawer ${isClosing ? 'drawer--closing' : ''}`}
                 ref={drawerRef}
+                onClick={(e) => e.stopPropagation()}
                 role="navigation"
                 aria-label="Main navigation"
             >
                 <nav className="drawer-menu">
-                    <div className="drawer-menu-item">
-                        <div className="drawer-menu-link">
-                            Account
-                        </div>
-                        <div className="drawer-menu-note">
-                            Not implemented yet
-                        </div>
+                    {/* User Account Section */}
+                    <div className="drawer-section">
+                        <h3 className="drawer-section-title">Accounts</h3>
+                        {isAuthenticated ? (
+                            <>
+                                <div className="drawer-user-info">
+                                    <p className="drawer-username">
+                                        Logged in as: <strong>{user?.username}</strong>
+                                    </p>
+                                </div>
+                                <button
+                                    className="drawer-menu-button"
+                                    onClick={handleLogout}
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                className="drawer-menu-button"
+                                onClick={(e) => { e.stopPropagation(); console.log('Login button clicked'); setShowLoginModal(true); }}
+                            >
+                                Login
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Messaging Section */}
+                    {isAuthenticated && (
+                        <>
+                            <div className="drawer-divider"></div>
+                            <div className="drawer-section">
+                                <h3 className="drawer-section-title">Social</h3>
+                                <button
+                                    className="drawer-menu-button"
+                                    onClick={() => navigateTo('/messages')}
+                                >
+                                    Messages
+                                </button>
+                                <button
+                                    className="drawer-menu-button"
+                                    onClick={() => navigateTo('/shared-quizzes')}
+                                >
+                                    Shared Quizzes
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Home Navigation */}
+                    <div className="drawer-divider"></div>
+                    <div className="drawer-section">
+                        <button
+                            className="drawer-menu-button"
+                            onClick={() => navigateTo('/')}
+                        >
+                            Home
+                        </button>
                     </div>
                 </nav>
             </div>
+
+            {/* Login Modal */}
+            <LoginModal 
+                isOpen={showLoginModal} 
+                onClose={() => setShowLoginModal(false)} 
+            />
         </>
     );
 }

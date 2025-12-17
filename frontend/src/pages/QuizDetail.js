@@ -1,8 +1,11 @@
 import { Link, useParams } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 
 import { useQuizDetail } from '../hooks/useQuizDetail';
 import { useScores } from '../context/ScoresContext';
 import { useReactions } from "../context/ReactionsContext";
+import { useAuth } from '../context/AuthContext';
+import ShareQuizModal from '../components/ShareQuizModal';
 
 function QuizDetail() {
   const { quizId } = useParams();
@@ -11,6 +14,36 @@ function QuizDetail() {
   const scoreEntry = quiz ? scores[quiz.id] : null;
   const { reactions } = useReactions();
   const reactionInfo = reactions[quizId];
+  const [popup, setPopup] = useState(null);
+  const popupTimeoutRef = useRef(null);
+  const { isAuthenticated } = useAuth();
+  const [showShareModal, setShowShareModal] = useState(false);
+
+  // Check for success message from quiz creation
+  useEffect(() => {
+    const successMessage = sessionStorage.getItem('quizSuccessMessage');
+    if (successMessage) {
+      setPopup({ message: successMessage, type: 'success' });
+      sessionStorage.removeItem('quizSuccessMessage');
+    }
+  }, []);
+
+  // Auto-dismiss popup after 2 seconds
+  useEffect(() => {
+    if (popup) {
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+      popupTimeoutRef.current = setTimeout(() => {
+        setPopup(null);
+      }, 2000);
+    }
+    return () => {
+      if (popupTimeoutRef.current) {
+        clearTimeout(popupTimeoutRef.current);
+      }
+    };
+  }, [popup]);
 
   if (loading) {
     return <div className="muted">Loading quiz...</div>;
@@ -57,11 +90,37 @@ function QuizDetail() {
           <Link className="btn cta" to={`/play/${quiz.id}`}>
             Start
           </Link>
-          <Link className="btn" to="/">
+          {isAuthenticated && (
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => setShowShareModal(true)}
+              style={{ marginLeft: '8px' }}
+            >
+              Share
+            </button>
+          )}
+          <Link className="btn btn-secondary" to="/">
             Back
           </Link>
         </div>
       </div>
+
+      {popup && (
+        <div
+          className={`popup ${popup.type === 'warning' ? 'popup--danger' : 'popup--success'} popup--top`}
+          role="alert"
+          aria-live="assertive"
+        >
+          {popup.message}
+        </div>
+      )}
+
+      {showShareModal && (
+        <ShareQuizModal 
+          quiz={quiz} 
+          onClose={() => setShowShareModal(false)} 
+        />
+      )}
     </div>
   );
 }
