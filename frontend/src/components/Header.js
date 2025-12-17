@@ -13,39 +13,6 @@ function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handlePointerDown = (event) => {
-      if (!containerRef.current) {
-        return;
-      }
-      if (containerRef.current.contains(event.target)) {
-        return;
-      }
-      setMenuOpen(false);
-    };
-
-    const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        setMenuOpen(false);
-        closeSearch();
-      }
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [closeSearch]);
-
-  useEffect(() => {
-    document.body.classList.toggle('menu-open', menuOpen);
-    return () => {
-      document.body.classList.remove('menu-open');
-    };
-  }, [menuOpen]);
-
-  useEffect(() => {
     setMenuOpen(false);
     closeSearch();
   }, [location, closeSearch]);
@@ -64,6 +31,7 @@ function Header() {
   }, [location.pathname]);
 
   const toggleMenu = () => {
+    console.log('toggleMenu called, menuOpen will be:', !menuOpen);
     setMenuOpen((prev) => !prev);
   };
 

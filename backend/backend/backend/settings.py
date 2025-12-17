@@ -106,6 +106,11 @@ CSRF_TRUSTED_ORIGINS = [
     "http://192.168.1.250:3000",
 ]
 
+CSRF_EXEMPT_PATHS = [
+    '/api/messages/',
+    '/api/quiz-shares/',
+]
+
 ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
@@ -185,3 +190,24 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}
+
+# Session settings for cross-origin requests
+SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+
+# CSRF settings
+CSRF_COOKIE_SAMESITE = None
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False  # Must be False to allow JS to read it

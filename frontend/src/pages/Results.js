@@ -1,10 +1,12 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { useQuizDetail } from '../hooks/useQuizDetail';
 import { useQuizList } from '../context/QuizContext';
 import { useScores } from '../context/ScoresContext';
 import { useReactions } from '../context/ReactionsContext';
+import { useAuth } from '../context/AuthContext';
+import ShareQuizModal from '../components/ShareQuizModal';
 
 function Results() {
   const { quizId } = useParams();
@@ -14,6 +16,8 @@ function Results() {
   const { registerTemporaryQuiz } = useQuizList();
   const { recordScore } = useScores();
   const { reactions, recordReaction } = useReactions();
+  const { isAuthenticated } = useAuth();
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const currentReaction = reactions[quizId]?.userReaction || null;
 
@@ -92,15 +96,23 @@ function Results() {
             <div className="muted">Perfect run!</div>
         )}
         <div className="row">
-          <Link className="btn" to="/">
+          <Link className="btn btn-secondary" to="/">
             Home
           </Link>
           <Link 
-            className="btn" 
+            className="btn btn-secondary"
             to={`/review/${quizId}?score=${score}&wrong=${wrongAnswers.join(',')}&answers=${searchParams.get('answers') || '{}'}&incorrect=${searchParams.get('incorrect') || '{}'}`}
           >
             Review Answers
           </Link>
+          {isAuthenticated && (
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => setShowShareModal(true)}
+            >
+              Share Quiz
+            </button>
+          )}
           {wrongCount ? (
               <button id="retryWrong" className="btn success" type="button" onClick={handleRetryWrong}>
                 Retry failed
@@ -108,6 +120,13 @@ function Results() {
           ) : null}
         </div>
       </div>
+
+      {showShareModal && (
+        <ShareQuizModal 
+          quiz={quiz} 
+          onClose={() => setShowShareModal(false)} 
+        />
+      )}
     </div>
   );
 }

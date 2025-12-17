@@ -312,7 +312,7 @@ function Play() {
       />
 
       <div className="footer-actions row" style={{ justifyContent: 'space-between' }}>
-        <button type="button" className="btn" onClick={() => setShowQuitDialog(true)}>
+        <button type="button" className="btn btn-secondary" onClick={() => setShowQuitDialog(true)}>
           Quit
         </button>
       </div>
