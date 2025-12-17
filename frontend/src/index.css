@@ -409,9 +409,9 @@ body.menu-open {
   text-align: left;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(118, 139, 180, 0.25);
-  background: rgba(18, 31, 62, 0.6);
-  color: var(--text);
+  border: 1px solid rgba(96, 116, 163, 0.25);
+  background: rgb(228, 234, 253);
+  color: #16203b;
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
@@ -433,11 +433,11 @@ body.menu-open {
 
 .search-bubble__empty {
   padding: 12px;
-  border-radius: 14px;
-  border: 1px dashed rgba(148, 163, 184, 0.4);
   text-align: center;
   font-size: 13px;
-  background: rgba(18, 31, 62, 0.45);
+  border-radius: 12px;
+  border: 1px solid rgba(96, 116, 163, 0.25);
+  background: rgb(228, 234, 253);
 }
 
 .app-main {
@@ -591,6 +591,13 @@ body.menu-open {
   transform: translateY(-2px);
   border-color: rgba(110, 168, 255, 0.55);
   box-shadow: 0 18px 30px rgba(8, 15, 36, 0.45);
+}
+
+body.light .btn:hover,
+body.light .btn:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(110, 168, 255, 0.55);
+  box-shadow: 0 18px 30px rgba(195, 202, 216, 0.45);
 }
 
 .pill {
@@ -888,7 +895,7 @@ body.light {
   --bg: #e5e7eb;
   --bg-elev: #f3f4f6;
   --card: rgba(249, 250, 251, 0.95);
-  --card-strong: rgba(255, 255, 255, 0.98);
+  --card-strong: rgba(251, 251, 251, 0.98);
   --text: #111827;
   --muted: #6b7280;
   --border: rgba(107, 114, 128, 0.3);
@@ -900,9 +907,9 @@ body.light {
 
   background-image: linear-gradient(
           118deg,
-          #d1d5db 0%,
-          #e5e7eb 45%,
-          #f3f4f6 100%
+          #e6e6e6 0%,
+          #ededed 45%,
+          #e6e6e6 100%
   );
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -916,9 +923,15 @@ body.light .option {
 }
 
 body.light .btn {
-  background: #ffffff;
   border-color: rgba(107, 114, 128, 0.3);
   color: #111827;
+}
+
+body.light .btn.primary,
+body.light .btn.btn-primary,
+body.light .btn.btn-primary:hover {
+  background: linear-gradient(135deg, rgba(148, 188, 255, 0.95), rgba(75, 234, 211, 0.9));
+  border-color: rgba(76, 116, 177, 0.5);
 }
 
 body.light .menu-link {
@@ -1265,6 +1278,23 @@ body.light .icon-btn {
   cursor: not-allowed;
 }
 
+body.light .icon-option {
+  background: rgba(226, 232, 240, 0.9);
+  border-color: rgba(148, 163, 184, 0.45);
+}
+
+body.light .icon-option:hover:not(:disabled) {
+  background: rgba(226, 232, 240, 1);
+  border-color: rgba(59, 130, 246, 0.45);
+  transform: scale(1.05);
+}
+
+body.light .icon-option.selected {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.65);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
 .questions-list {
   margin-bottom: 24px;
   display: flex;
@@ -1475,6 +1505,31 @@ body.light .icon-btn {
   .options-editor {
     gap: 32px;
   }
+}
+
+body.light .image-upload-square {
+  background: rgba(226, 232, 240, 0.85);
+  border-color: rgba(148, 163, 184, 0.7);
+  color: #475569; /* slate-600 */
+}
+
+body.light .image-upload-square:hover:not(:disabled) {
+  background: rgba(226, 232, 240, 1);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+body.light .image-upload-square--has-image {
+  background: #ffffff;
+  border-color: rgba(59, 130, 246, 0.7);
+}
+
+body.light .image-upload-square__remove {
+  background: radial-gradient(
+          circle at center,
+          rgba(255, 255, 255, 0.2),
+          rgba(255, 255, 255, 0.9)
+  );
+  color: #dc2626;
 }
 
 .btn-remove {
@@ -2401,7 +2456,7 @@ body.light .drawer-menu-link:hover {
 }
 
 body.light .drawer-menu-button {
-  background: rgba(235, 240, 255, 0.9);
+  background: rgb(228, 234, 253);
   border-color: rgba(148, 163, 184, 0.35);
   color: #16203b;
 }
@@ -2409,10 +2464,30 @@ body.light .drawer-menu-button {
 body.light .drawer-menu-button:hover {
   background: linear-gradient(
           135deg,
-          rgba(59, 130, 246, 0.12),
-          rgba(99, 102, 241, 0.1)
+          rgba(59, 130, 246, 0.15),
+          rgba(99, 102, 241, 0.12)
   );
   border-color: rgba(59, 130, 246, 0.45);
+}
+
+body.light .drawer-section-title {
+  color: rgba(15, 23, 42, 0.65); /* slate-900-ish */
+}
+
+body.light .drawer-user-info {
+  background: rgba(15, 23, 42, 0.08);
+}
+
+body.light .drawer-username {
+  color: rgba(15, 23, 42, 0.85);
+}
+
+body.light .drawer-username strong {
+  color: #111827;
+}
+
+body.light .drawer-divider {
+  background: rgba(15, 23, 42, 0.12);
 }
 
 /* Scroll to Top Button */
@@ -3396,10 +3471,6 @@ body.light .user-avatar {
   background: #3b82f6;
 }
 
-body.light .messaging-main {
-  background: #ffffff;
-}
-
 body.light .messaging-header {
   border-bottom-color: rgba(148, 163, 184, 0.25);
 }
@@ -3500,6 +3571,33 @@ body.light .message-input-form {
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
   padding: 40px 20px;
+}
+
+body.light .share-item {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+body.light .share-from {
+  color: rgba(15, 23, 42, 0.75);
+}
+
+body.light .share-date {
+  color: rgba(15, 23, 42, 0.45);
+}
+
+body.light .share-quiz h3 {
+  color: #0f172a;
+}
+
+body.light .share-author {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+body.light .share-message {
+  color: #16203b;
+  background: rgb(228, 234, 253);;
+  border-left-color: rgba(59, 130, 246, 0.35);
 }
 
 /* Success message in modals */
@@ -3720,20 +3818,6 @@ body.light .messaging-header h3 {
   color: #1a1a1a;
 }
 
-body.light .message {
-  color: #1a1a1a;
-}
-
-body.light .message-sent {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-body.light .message-received {
-  background: rgba(226, 232, 240, 0.6);
-  border-color: rgba(148, 163, 184, 0.25);
-}
-
 body.light .message-sender {
   color: rgba(26, 26, 26, 0.6);
 }
@@ -3781,16 +3865,6 @@ body.light .modal-content {
 
 body.light .messaging-sidebar {
   background: #f9fafb;
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-body.light .message-sent {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-body.light .message-received {
-  background: #f3f4f6;
   border-color: rgba(0, 0, 0, 0.1);
 }
 
