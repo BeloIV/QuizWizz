@@ -1,5 +1,4 @@
 import Header from './Header';
-import SearchOverlay from './SearchOverlay';
 
 function Layout({ children }) {
   return (
@@ -10,7 +9,6 @@ function Layout({ children }) {
       <main id="app" className="app-main" aria-live="polite">
         {children}
       </main>
-      <SearchOverlay />
     </>
   );
 }

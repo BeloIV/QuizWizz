@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import QuizCard from '../components/QuizCard';
 import { useQuizList } from '../context/QuizContext';
 import { useScores } from '../context/ScoresContext';
+import { useSearch } from '../context/SearchContext';
 
 function Home() {
   const navigate = useNavigate();
   const { quizzes, loading, error } = useQuizList();
   const { scores } = useScores();
+  const { searchTerm } = useSearch();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -35,11 +37,23 @@ function Home() {
     });
   }, [quizzes, scores]);
 
+  const filteredQuizzes = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return quizzesWithScores;
+    }
+    const term = searchTerm.toLowerCase();
+    return quizzesWithScores.filter((quiz) => {
+      const nameMatch = quiz.name.toLowerCase().includes(term);
+      const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
+      return nameMatch || tagMatch;
+    });
+  }, [quizzesWithScores, searchTerm]);
+
   const recent = useMemo(() => {
-    return quizzesWithScores
+    return filteredQuizzes
       .filter((quiz) => quiz._takenAt)
       .sort((a, b) => b._takenAt - a._takenAt);
-  }, [quizzesWithScores]);
+  }, [filteredQuizzes]);
 
   const recentToDisplay = useMemo(() => {
     return recent.slice(0, 3);
@@ -71,37 +85,51 @@ function Home() {
       {error && !loading && <div className="empty">{error}</div>}
       {!loading && !error && (
         <>
-          {recentToDisplay.length > 0 && (
+          {searchTerm.trim() && filteredQuizzes.length === 0 ? (
+            <div className="empty">No quizzes found matching "{searchTerm}"</div>
+          ) : (
             <>
-              <h2 className="section-title">Recent</h2>
-              <section className="cards" id="recent-list">
-                {recentToDisplay.map((quiz) => (
-                  <QuizCard
-                    key={quiz.id}
-                    quiz={quiz}
-                    onClick={() => navigate(`/quiz/${quiz.id}`)}
-                  />
-                ))}
+              {recentToDisplay.length > 0 && !searchTerm.trim() && (
+                <>
+                  <h2 className="section-title">Recent</h2>
+                  <section className="cards" id="recent-list">
+                    {recentToDisplay.map((quiz) => (
+                      <QuizCard
+                        key={quiz.id}
+                        quiz={quiz}
+                        onClick={() => navigate(`/quiz/${quiz.id}`)}
+                      />
+                    ))}
+                  </section>
+                </>
+              )}
+
+              <h2 className="section-title">{searchTerm.trim() ? 'Search Results' : 'All'}</h2>
+              <section className="cards" id="all-list">
+                {quizzesWithScores.length === 0 ? (
+                  <div className="empty">No quizzes yet. Create one to get started!</div>
+                ) : remaining.length === 0 && !searchTerm.trim() ? (
+                  <div className="empty">All your quizzes are already in Recent.</div>
+                ) : searchTerm.trim() ? (
+                  filteredQuizzes.map((quiz) => (
+                    <QuizCard
+                      key={quiz.id}
+                      quiz={quiz}
+                      onClick={() => navigate(`/quiz/${quiz.id}`)}
+                    />
+                  ))
+                ) : (
+                  remaining.map((quiz) => (
+                    <QuizCard
+                      key={quiz.id}
+                      quiz={quiz}
+                      onClick={() => navigate(`/quiz/${quiz.id}`)}
+                    />
+                  ))
+                )}
               </section>
             </>
           )}
-
-          <h2 className="section-title">All</h2>
-          <section className="cards" id="all-list">
-            {quizzesWithScores.length === 0 ? (
-              <div className="empty">No quizzes yet. Create one to get started!</div>
-            ) : remaining.length === 0 ? (
-              <div className="empty">All your quizzes are already in Recent.</div>
-            ) : (
-              remaining.map((quiz) => (
-                <QuizCard
-                  key={quiz.id}
-                  quiz={quiz}
-                  onClick={() => navigate(`/quiz/${quiz.id}`)}
-                />
-              ))
-            )}
-          </section>
         </>
       )}
 
