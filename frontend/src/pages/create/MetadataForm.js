@@ -88,7 +88,7 @@ function MetadataForm({
 
           {/* Tags Section */}
           <div className="form-group">
-            <label>Tags</label>
+            <label>Tags *</label>
 
             {/* Predefined Favorite Tags */}
             <div className="favorite-tags">

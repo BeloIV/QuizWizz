@@ -105,11 +105,15 @@ export function useQuestionValidation(currentQuestion, selectedQuestionType) {
    */
   const validateMetadata = useCallback((formData) => {
     if (!formData.name.trim()) {
-      return { valid: false, error: 'No quiz name' };
+      return { valid: false, error: 'Quiz name must be filled in' };
     }
 
     if (!formData.author.trim()) {
-      return { valid: false, error: 'No quiz author name' };
+      return { valid: false, error: 'Quiz author name must be filled in' };
+    }
+
+    if (!Array.isArray(formData.tags) || formData.tags.length === 0) {
+      return { valid: false, error: 'At least one tag must be added' };
     }
 
     return { valid: true, error: null };
