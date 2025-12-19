@@ -160,7 +160,7 @@ function QuestionEditor({
                 type="button"
                 onClick={onAddOption}
                 disabled={loading}
-                className="btn"
+                className="btn btn-secondary"
               >
                 + Add Option
               </button>
@@ -281,7 +281,7 @@ function QuestionEditor({
                               type="button"
                               onClick={() => onAddGapOption(gapIndex)}
                               disabled={loading}
-                              className="btn"
+                              className="btn btn-secondary"
                             >
                               + Add Option to Gap {gapIndex + 1}
                             </button>

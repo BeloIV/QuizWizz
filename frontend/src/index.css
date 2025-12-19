@@ -292,6 +292,12 @@ body.menu-open {
   height: 22px;
 }
 
+.text-icon {
+  width: 1em !important;
+  height: 1em !important;
+  color: var(--text);
+}
+
 /* Header Search Styles */
 .app-header__inner.search-active {
   grid-template-columns: auto 1fr auto;

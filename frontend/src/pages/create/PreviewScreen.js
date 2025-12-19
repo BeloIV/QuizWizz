@@ -72,7 +72,7 @@ function PreviewScreen({
                     disabled={loading}
                     className="btn-edit-small"
                   >
-                    Edit
+                    ✏️ Edit
                   </button>
                 </div>
                 <p className="preview-question-text">{question.text}</p>
@@ -144,7 +144,7 @@ function PreviewScreen({
           type="button"
           onClick={onBackToEdit}
           disabled={loading}
-          className="btn"
+          className="btn btn-secondary"
         >
           ← Back to Edit
         </button>

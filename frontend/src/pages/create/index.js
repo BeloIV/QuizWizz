@@ -606,7 +606,7 @@ function CreateQuiz() {
                 type="button"
                 onClick={handleBackToMetadata}
                 disabled={loading}
-                className="btn"
+                className="btn btn-secondary"
               >
                 ← Back
               </button>
@@ -614,7 +614,7 @@ function CreateQuiz() {
                 type="button"
                 onClick={handleCancel}
                 disabled={loading}
-                className="btn"
+                className="btn btn-secondary"
               >
                 Cancel
               </button>
@@ -663,7 +663,7 @@ function CreateQuiz() {
               <button
                 type="button"
                 onClick={confirmDialog.onCancel}
-                className="btn"
+                className="btn btn-secondary"
               >
                 No, Stay
               </button>

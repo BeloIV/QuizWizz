@@ -124,7 +124,7 @@ function MetadataForm({
                 placeholder="Or add a custom tag and press Enter"
                 disabled={loading}
               />
-              <button type="button" onClick={onAddTag} disabled={loading} className="btn">
+              <button type="button" onClick={onAddTag} disabled={loading} className="btn btn-secondary">
                 Add Tag
               </button>
             </div>
@@ -155,7 +155,7 @@ function MetadataForm({
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="btn"
+          className="btn btn-secondary"
         >
           Cancel
         </button>

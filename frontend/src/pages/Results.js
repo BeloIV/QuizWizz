@@ -97,20 +97,20 @@ function Results() {
         )}
         <div className="row">
           <Link className="btn btn-secondary" to="/">
-            Home
+            🏠 Home
           </Link>
           <Link 
             className="btn btn-secondary"
             to={`/review/${quizId}?score=${score}&wrong=${wrongAnswers.join(',')}&answers=${searchParams.get('answers') || '{}'}&incorrect=${searchParams.get('incorrect') || '{}'}`}
           >
-            Review Answers
+            📊 Review Answers
           </Link>
           {isAuthenticated && (
             <button 
               className="btn btn-secondary" 
               onClick={() => setShowShareModal(true)}
             >
-              Share Quiz
+              🔗 Share Quiz
             </button>
           )}
           {wrongCount ? (
