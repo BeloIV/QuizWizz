@@ -63,6 +63,7 @@ function Play() {
     isSubmitDisabled,
     showTryAgainToast,
     handleOptionClick,
+    resetQuestionState,
   } = playState;
 
   const totalQuestions = quiz?.questions?.length || 0;
@@ -142,6 +143,7 @@ function Play() {
             const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
             navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
           } else {
+            resetQuestionState();
             setIndex(nextIndex);
           }
           setGapSelections({});
@@ -214,6 +216,7 @@ function Play() {
           const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
           navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
         } else {
+          resetQuestionState();
           setIndex(nextIndex);
         }
         setVerifiedCorrectIndices([]);
