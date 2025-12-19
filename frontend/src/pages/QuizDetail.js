@@ -59,6 +59,15 @@ function QuizDetail() {
     return correctCount > 1;
   });
 
+  const likes = reactionInfo?.likes ?? quiz.likes ?? 0;
+  const dislikes = reactionInfo?.dislikes ?? quiz.dislikes ?? 0;
+  const score = likes - dislikes;
+  const scoreClass =
+            score > 0 ? 'reaction-score-positive'
+          : score < 0 ? 'reaction-score-negative'
+              : 'reaction-score-neutral';
+  const scoreIcon = score < 0 ? '👎' : '👍';
+
   return (
     <div>
       <h2 className="section-title">{quiz.name}</h2>
@@ -69,13 +78,9 @@ function QuizDetail() {
         </div>
         <div className="row" style={{ justifyContent: 'flex-end' }}>
           <div className="reaction-stats">
-            <div className="reaction-stat reaction-stat-like">
-              <span className="reaction-stat-number">{reactionInfo?.likes ?? quiz.likes}</span>
-              <span className="reaction-stat-icon">👍</span>
-            </div>
-            <div className="reaction-stat reaction-stat-dislike">
-              <span className="reaction-stat-number">{reactionInfo?.dislikes ?? quiz.dislikes}</span>
-              <span className="reaction-stat-icon">👎</span>
+            <div className="reaction-stat">
+              <span className={`reaction-stat-number ${scoreClass}`}>{score}</span>
+              <span className="reaction-stat-icon">{scoreIcon}</span>
             </div>
           </div>
         </div>

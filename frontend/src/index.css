@@ -2326,11 +2326,15 @@ body.light .question-type-btn.active {
   font-weight: 600;
 }
 
-.reaction-stat-like .reaction-stat-number {
+.reaction-stat-number.reaction-score-neutral {
+  color: white;
+}
+
+.reaction-stat-number.reaction-score-positive {
   color: var(--success);
 }
 
-.reaction-stat-dislike .reaction-stat-number {
+.reaction-stat-number.reaction-score-negative {
   color: var(--danger);
 }
 
