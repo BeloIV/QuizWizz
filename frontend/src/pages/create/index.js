@@ -98,9 +98,16 @@ function CreateQuiz() {
     const formData = new FormData();
     formData.append('file', file);
 
+    // Get CSRF token from cookie
+    const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
     const response = await fetch(`${API_BASE_URL}/upload-image/`, {
       method: 'POST',
       body: formData,
+      credentials: 'include',
+      headers: csrfToken ? {
+        'X-CSRFToken': csrfToken,
+      } : {},
     });
 
     if (!response.ok) {

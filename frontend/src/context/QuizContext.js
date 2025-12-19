@@ -75,10 +75,15 @@ export function QuizProvider({ children }) {
     async (quizData) => {
       console.log('Creating quiz with data:', quizData);
       
+      // Get CSRF token from cookie
+      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+      
       const response = await fetch(`${API_BASE_URL}/quizzes/`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
         },
         body: JSON.stringify(quizData),
       });

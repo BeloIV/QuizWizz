@@ -57,9 +57,16 @@ export function ReactionsProvider({ children }) {
         else if (currentReaction === "dislike") endpoint = "dislike";
         else endpoint = previousReaction;
 
+        // Get CSRF token from cookie
+        const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
         const res = await fetch(`${API_BASE_URL}/quizzes/${quizId}/${endpoint}/`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
+            },
             body: JSON.stringify({
                 previous: previousReaction,
                 current: currentReaction
