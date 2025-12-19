@@ -129,11 +129,11 @@ body.light .popup--success {
 }
 
 html {
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 body {
-  overflow-y: auto;
+  overflow-y: visible;
 }
 
 :root {
@@ -2567,9 +2567,6 @@ body.light .drawer-divider {
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(110, 168, 255, 0.95), rgba(75, 234, 211, 0.9));
   border: 1px solid rgba(110, 168, 255, 0.5);
-  color: var(--text);
-  font-size: 24px;
-  font-weight: bold;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(7, 14, 32, 0.45);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -2578,6 +2575,13 @@ body.light .drawer-divider {
   align-items: center;
   justify-content: center;
   animation: fadeInUp 0.3s ease-out;
+}
+
+.scroll-to-top span {
+  color: var(--text);
+  font-size: 23px;
+  font-weight: bold;
+  transform: translateY(-3px);
 }
 
 .scroll-to-top:hover {
