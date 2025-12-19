@@ -588,9 +588,16 @@ body.light .header-search-input:focus {
 .quiz-card__footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 8px;
   margin-top: 12px;
+}
+
+.quiz-card__footer-left,
+.quiz-card__footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .quiz-card__tag {
@@ -611,6 +618,19 @@ body.light .header-search-input:focus {
 
 .quiz-card:hover .quiz-card__icon {
   transform: scale(1.1);
+}
+
+.quiz-card__reaction {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.quiz-card__reaction-number {
+  min-width: 18px;
+  text-align: right;
 }
 
 .row {
@@ -2332,7 +2352,7 @@ body.light .question-type-btn.active {
   font-weight: 600;
 }
 
-.reaction-stat-number.reaction-score-neutral {
+.reaction-stat-number.reaction-score-neutral, .reaction-score-neutral {
   color: white;
 }
 
