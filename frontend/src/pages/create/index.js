@@ -436,6 +436,14 @@ function CreateQuiz() {
     e.preventDefault();
     setError(null);
 
+    if (tagInput.trim()) {
+      setPopup({
+        message: 'You have typed a tag but didn’t add it. Click “Add Tag” or clear the field.',
+        type: 'warning',
+      });
+      return;
+    }
+
     const validation = validateMetadata(formData);
     if (!validation.valid) {
       setPopup({ message: validation.error, type: 'warning' });
