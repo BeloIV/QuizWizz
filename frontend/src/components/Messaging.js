@@ -148,7 +148,7 @@ function Messaging() {
                                     className="message-input"
                                 />
                                 <button type="submit" className="btn btn-primary" disabled={!newMessage.trim()}>
-                                    Send
+                                    ➤
                                 </button>
                             </form>
                         </>

@@ -93,7 +93,7 @@ function QuizDetail() {
         )}
         <div className="row">
           <Link className="btn cta" to={`/play/${quiz.id}`}>
-            Start
+            🧠 Start
           </Link>
           {isAuthenticated && (
             <button 
@@ -101,11 +101,11 @@ function QuizDetail() {
               onClick={() => setShowShareModal(true)}
               style={{ marginLeft: '8px' }}
             >
-              Share
+              🔗 Share
             </button>
           )}
           <Link className="btn btn-secondary" to="/">
-            Back
+            ← Back
           </Link>
         </div>
       </div>
