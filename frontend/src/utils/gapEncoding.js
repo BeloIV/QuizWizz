@@ -45,7 +45,9 @@ export function encodeGapOptions(gapOptions) {
   
   for (let g = 0; g < gapOptions.length; g += 1) {
     const gap = gapOptions[g];
-    const options = Array.isArray(gap?.options) ? gap.options : [];
+    const options = Array.isArray(gap?.options)
+      ? gap.options.filter((opt) => opt.text && opt.text.trim())
+      : [];
     
     // Store explanation for this gap if it exists
     if (gap.explanation && gap.explanation.trim()) {

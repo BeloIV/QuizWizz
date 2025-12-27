@@ -149,7 +149,7 @@ function Home() {
           aria-label="Scroll to top"
           title="Scroll to top"
         >
-          ↑
+          <span>↑</span>
         </button>
       )}
     </div>

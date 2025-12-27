@@ -5,6 +5,7 @@ import { useQuizDetail } from '../hooks/useQuizDetail';
 import { useScores } from '../context/ScoresContext';
 import { useReactions } from "../context/ReactionsContext";
 import { useAuth } from '../context/AuthContext';
+import { IoMdShare, IoMdHome } from "react-icons/io";
 import ShareQuizModal from '../components/ShareQuizModal';
 
 function QuizDetail() {
@@ -59,50 +60,67 @@ function QuizDetail() {
     return correctCount > 1;
   });
 
+  const likes = reactionInfo?.likes ?? quiz.likes ?? 0;
+  const dislikes = reactionInfo?.dislikes ?? quiz.dislikes ?? 0;
+  const score = likes - dislikes;
+  const scoreClass =
+            score > 0 ? 'reaction-score-positive'
+          : score < 0 ? 'reaction-score-negative'
+              : 'reaction-score-neutral';
+  const scoreIcon = score < 0 ? '👎' : '👍';
+
   return (
-    <div>
-      <h2 className="section-title">{quiz.name}</h2>
-      <div className="card stack">
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <span className="pill">{quiz.tags.join(' • ')}</span>
-          <span className="muted">by {quiz.author}</span>
-        </div>
-        <div className="row" style={{ justifyContent: 'flex-end' }}>
-          <div className="reaction-stats">
-            <div className="reaction-stat reaction-stat-like">
-              <span className="reaction-stat-number">{reactionInfo?.likes ?? quiz.likes}</span>
-              <span className="reaction-stat-icon">👍</span>
-            </div>
-            <div className="reaction-stat reaction-stat-dislike">
-              <span className="reaction-stat-number">{reactionInfo?.dislikes ?? quiz.dislikes}</span>
-              <span className="reaction-stat-icon">👎</span>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)', gap: '16px', paddingBottom: '16px' }}>
+      <div className="card stack" style={{ flex: '0 0 auto' }}>
+        <div className="quiz-card__header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <h2 className="quiz-card__title" style={{ fontSize: '20px', margin: 0 }}>{quiz.name}</h2>
+            <span className="quiz-card__author">by {quiz.author}</span>
+            {scoreEntry?.value !== undefined && (
+              <span className="quiz-card__score" style={{ marginTop: '4px' }}>Last score: {scoreEntry.value}%</span>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+            {isAuthenticated && (
+              <button
+                className="icon-btn"
+                onClick={() => setShowShareModal(true)}
+                aria-label="Share quiz"
+                style={{ width: '44px', height: '44px', fontSize: '22px' }}
+              >
+                <IoMdShare size={24} />
+              </button>
+            )}
+            <div className="quiz-card__reaction" style={{ fontSize: '20px', gap: '8px' }}>
+              <span className={`quiz-card__reaction-number ${scoreClass}`} style={{ fontSize: '20px' }}>{score}</span>
+              <span className="quiz-card__reaction-icon" style={{ fontSize: '22px' }}>{scoreIcon}</span>
             </div>
           </div>
         </div>
+
+        <div className="quiz-card__footer" style={{ alignItems: 'flex-end' }}>
+          <div className="quiz-card__footer-left" />
+          <div className="quiz-card__footer-right">
+            <span className="quiz-card__tag">{quiz.tags?.[0] || 'general'}</span>
+            <span className="quiz-card__icon">{quiz.icon || '📝'}</span>
+          </div>
+        </div>
+
         <div>{quiz.questions.length} questions</div>
         <div className="muted" style={{ fontSize: '14px' }}>
           {hasMultiAnswer ? '⚠️ One or more answers can be correct' : '✓ Single answer per question'}
         </div>
-        {scoreEntry?.value !== undefined && (
-          <div className="muted">Last score: {scoreEntry.value}%</div>
-        )}
-        <div className="row">
-          <Link className="btn cta" to={`/play/${quiz.id}`}>
-            Start
-          </Link>
-          {isAuthenticated && (
-            <button 
-              className="btn btn-secondary" 
-              onClick={() => setShowShareModal(true)}
-              style={{ marginLeft: '8px' }}
-            >
-              Share
-            </button>
-          )}
-          <Link className="btn btn-secondary" to="/">
-            Back
-          </Link>
-        </div>
+      </div>
+
+      <div aria-hidden="true" style={{ flex: 1 }} />
+
+      <div className="footer-actions row" style={{ justifyContent: 'space-between', alignSelf: 'stretch', marginBottom: '12px' }}>
+        <Link className="btn btn-secondary" to="/">
+          🏠 Home
+        </Link>
+        <Link className="btn primary" to={`/play/${quiz.id}`}>
+          🧠 Start
+        </Link>
       </div>
 
       {popup && (
