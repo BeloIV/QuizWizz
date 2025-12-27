@@ -186,7 +186,7 @@ function QuestionEditor({
                   className="btn primary"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
-                  <IoIosSave aria-hidden="true" />
+                  <IoIosSave aria-hidden="true" size={20} />
                   <span>Save</span>
                 </button>
               </div>
@@ -332,7 +332,7 @@ function QuestionEditor({
               className="btn primary"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <IoIosSave aria-hidden="true" />
+              <IoIosSave aria-hidden="true" size={22} />
               <span>Save</span>
             </button>
           </div>
