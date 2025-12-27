@@ -1,4 +1,6 @@
 import { useCallback } from 'react';
+import { LuImagePlus } from "react-icons/lu";
+import { IoIosSave } from "react-icons/io";
 
 /**
  * Component for editing a single question (basic or fill-gap)
@@ -18,8 +20,6 @@ function QuestionEditor({
   onRemoveOption,
   onGapOptionChange,
   onGapExplanationChange,
-  onAddGapOption,
-  onRemoveGapOption,
   onImageButtonClick,
   onSaveQuestion,
 }) {
@@ -79,10 +79,14 @@ function QuestionEditor({
                 {currentQuestion.image_url ? (
                   <>
                     <img src={currentQuestion.image_url} alt="Question" className="image-upload-square__img" />
-                    <span className="image-upload-square__remove">×</span>
+                    <span className="image-upload-square__remove" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                      </svg>
+                    </span>
                   </>
                 ) : (
-                  <span className="image-upload-square__placeholder">Img</span>
+                  <span className="image-upload-square__placeholder"><LuImagePlus /></span>
                 )}
               </button>
             </div>
@@ -106,7 +110,10 @@ function QuestionEditor({
             <label>Mark the correct answer(s) *</label>
             <div className="options-editor">
               {currentQuestion.options.map((option, index) => (
-                <div key={index} className="option-input-group">
+                <div
+                  key={index}
+                  className={`option-input-group ${index === currentQuestion.options.length - 1 && !String(option.text || '').trim() ? 'option-input-group--placeholder' : ''}`}
+                >
                   <label className="custom-checkbox-wrapper">
                     <input
                       type="checkbox"
@@ -135,44 +142,54 @@ function QuestionEditor({
                     {option.image_url ? (
                       <>
                         <img src={option.image_url} alt={`Option ${index + 1}`} className="image-upload-square__img" />
-                        <span className="image-upload-square__remove">×</span>
+                        <span className="image-upload-square__remove" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                          </svg>
+                        </span>
                       </>
                     ) : (
-                      <span className="image-upload-square__placeholder">Img</span>
+                      <span className="image-upload-square__placeholder"><LuImagePlus /></span>
                     )}
                   </button>
-                  {currentQuestion.options.length > 2 && (
+                  {currentQuestion.options.length > 2 && String(option.text || '').trim() && (
                     <button
                       type="button"
                       onClick={() => onRemoveOption(index)}
                       disabled={loading}
                       className="btn-remove"
                     >
-                      ✕
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                      </svg>
                     </button>
                   )}
                 </div>
               ))}
             </div>
-
-            <div className="option-buttons">
-              <button
-                type="button"
-                onClick={onAddOption}
-                disabled={loading}
-                className="btn btn-secondary"
-              >
-                + Add Option
-              </button>
-
-              <button
-                type="button"
-                onClick={onSaveQuestion}
-                disabled={loading}
-                className="btn primary"
-              >
-                ✓ Save Question
-              </button>
+            <div className="option-buttons" style={{ justifyContent: 'space-between' }}>
+              <div>
+                <button
+                  type="button"
+                  onClick={onAddOption}
+                  disabled={loading}
+                  className="btn btn-secondary"
+                >
+                  + Add Option
+                </button>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={onSaveQuestion}
+                  disabled={loading}
+                  className="btn primary"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <IoIosSave aria-hidden="true" />
+                  <span>Save</span>
+                </button>
+              </div>
             </div>
           </div>
         </>
@@ -205,10 +222,14 @@ function QuestionEditor({
                 {currentQuestion.image_url ? (
                   <>
                     <img src={currentQuestion.image_url} alt="Question" className="image-upload-square__img" />
-                    <span className="image-upload-square__remove">×</span>
+                    <span className="image-upload-square__remove" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                      </svg>
+                    </span>
                   </>
                 ) : (
-                  <span className="image-upload-square__placeholder">Img</span>
+                  <span className="image-upload-square__placeholder"><LuImagePlus /></span>
                 )}
               </button>
             </div>
@@ -245,7 +266,10 @@ function QuestionEditor({
                         </div>
                         <div className="options-editor">
                           {options.map((option, optionIndex) => (
-                            <div key={optionIndex} className="option-input-group">
+                            <div
+                              key={optionIndex}
+                              className={`option-input-group ${optionIndex === options.length - 1 && !String(option.text || '').trim() ? 'option-input-group--placeholder' : ''}`}
+                            >
                               <label className="custom-checkbox-wrapper">
                                 <input
                                   type="checkbox"
@@ -264,28 +288,8 @@ function QuestionEditor({
                                   className="option-text-input"
                                 />
                               </label>
-                              {options.length > 2 && (
-                                <button
-                                  type="button"
-                                  onClick={() => onRemoveGapOption(gapIndex, optionIndex)}
-                                  disabled={loading}
-                                  className="btn-remove"
-                                >
-                                  ✕
-                                </button>
-                              )}
                             </div>
                           ))}
-                          <div>
-                            <button
-                              type="button"
-                              onClick={() => onAddGapOption(gapIndex)}
-                              disabled={loading}
-                              className="btn btn-secondary"
-                            >
-                              + Add Option to Gap {gapIndex + 1}
-                            </button>
-                          </div>
                         </div>
                         
                         <div style={{ marginTop: '12px' }}>
@@ -320,14 +324,16 @@ function QuestionEditor({
             })()}
           </div>
 
-          <div className="option-buttons">
+          <div className="option-buttons" style={{ justifyContent: 'flex-end' }}>
             <button
               type="button"
               onClick={onSaveQuestion}
               disabled={loading}
               className="btn primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              ✓ Save Question
+              <IoIosSave aria-hidden="true" />
+              <span>Save</span>
             </button>
           </div>
         </>

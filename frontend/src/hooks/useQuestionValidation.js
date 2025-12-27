@@ -60,17 +60,16 @@ export function useQuestionValidation(currentQuestion, selectedQuestionType) {
     if (!currentQuestion.text.trim()) {
       return { valid: false, error: 'Question text is not filled in' };
     }
+    const filledOptions = Array.isArray(currentQuestion.options)
+      ? currentQuestion.options.filter((opt) => opt.text && opt.text.trim())
+      : [];
 
-    if (currentQuestion.options.length < 2) {
+    if (filledOptions.length < 2) {
       return { valid: false, error: 'Please add at least 2 options' };
     }
 
-    if (!currentQuestion.options.some((opt) => opt.is_correct)) {
+    if (!filledOptions.some((opt) => opt.is_correct)) {
       return { valid: false, error: 'No correct answer is chosen' };
-    }
-
-    if (currentQuestion.options.some((opt) => !opt.text.trim())) {
-      return { valid: false, error: 'An option text is not filled in' };
     }
 
     return { valid: true, error: null };
@@ -85,7 +84,16 @@ export function useQuestionValidation(currentQuestion, selectedQuestionType) {
     }
 
     const gapOptions = Array.isArray(currentQuestion.gapOptions) ? currentQuestion.gapOptions : [];
-    return validateGapQuestion(currentQuestion.text, gapOptions);
+
+    // Strip placeholder/empty options before validating
+    const sanitized = gapOptions.map((gap) => ({
+      ...gap,
+      options: Array.isArray(gap?.options)
+        ? gap.options.filter((opt) => opt.text && opt.text.trim())
+        : [],
+    }));
+
+    return validateGapQuestion(currentQuestion.text, sanitized);
   }, [currentQuestion]);
 
   /**
@@ -134,6 +142,7 @@ export function useQuestionValidation(currentQuestion, selectedQuestionType) {
           options: [
             { text: '', is_correct: false, image_url: '' },
             { text: '', is_correct: false, image_url: '' },
+            { text: '', is_correct: false, image_url: '' }, // placeholder
           ],
         });
       }
