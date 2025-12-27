@@ -2356,12 +2356,16 @@ body.light .question-type-btn.active {
   color: white;
 }
 
-.reaction-stat-number.reaction-score-positive {
+.reaction-stat-number.reaction-score-positive, .quiz-card__reaction-number.reaction-score-positive {
   color: var(--success);
 }
 
-.reaction-stat-number.reaction-score-negative {
+.reaction-stat-number.reaction-score-negative, .quiz-card__reaction-number.reaction-score-negative {
   color: var(--danger);
+}
+
+.quiz-card__reaction-number.reaction-score-neutral {
+  color: white;
 }
 
 .reaction-stat-icon {

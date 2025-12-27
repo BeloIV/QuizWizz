@@ -7,6 +7,10 @@ function QuizCard({ quiz, onClick }) {
   const likes = reactionInfo?.likes ?? quiz.likes ?? 0;
   const dislikes = reactionInfo?.dislikes ?? quiz.dislikes ?? 0;
   const score = likes - dislikes;
+  const scoreClass =
+            score > 0 ? 'reaction-score-positive'
+          : score < 0 ? 'reaction-score-negative'
+              : 'reaction-score-neutral';
   const scoreIcon = score < 0 ? '👎' : '👍';
 
   const handleActivate = () => {
@@ -41,8 +45,8 @@ function QuizCard({ quiz, onClick }) {
         </div>
         <div className="quiz-card__footer">
           <div className="quiz-card__footer-left">
-            <div className={`quiz-card__reaction reaction-score-neutral`}>
-              <span className="quiz-card__reaction-number">{score}</span>
+            <div className={`quiz-card__reaction`}>
+              <span className={`quiz-card__reaction-number ${scoreClass}`}>{score}</span>
               <span className="quiz-card__reaction-icon">{scoreIcon}</span>
             </div>
           </div>
