@@ -25,6 +25,7 @@ function CreateQuiz() {
     name: '',
     author: user?.username || '',
     icon: '📝',
+    description: '',
     tags: [],
     questions: [],
   });
@@ -343,11 +344,14 @@ function CreateQuiz() {
     let questionWithId;
 
     if (selectedQuestionType === 'basic') {
+      const filteredOptions = (Array.isArray(currentQuestion.options) ? currentQuestion.options : [])
+        .filter((opt) => String(opt?.text || '').trim());
+      const indexedOptions = filteredOptions.map((opt, idx) => ({ ...opt, index: idx }));
       questionWithId = {
         ...currentQuestion,
         id: `q${formData.questions.length + 1}`,
         order: formData.questions.length,
-        options: currentQuestion.options.map((opt, idx) => ({ ...opt, index: idx })),
+        options: indexedOptions,
       };
     } else if (selectedQuestionType === 'fill_gap') {
       const gapOptions = Array.isArray(currentQuestion.gapOptions) ? currentQuestion.gapOptions : [];
