@@ -72,33 +72,34 @@ function QuizDetail() {
   return (
     <div style={{ display: 'grid', gridTemplateRows: 'auto 1fr auto', minHeight: 'calc(100vh - 100px)', gap: '16px' }}>
       <div className="card stack" style={{ alignSelf: 'start' }}>
-        <div className="quiz-card__header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 className="quiz-card__title" style={{ fontSize: '20px' }}>{quiz.name}</h2>
-          {isAuthenticated && (
-            <button
-              className="icon-btn"
-              onClick={() => setShowShareModal(true)}
-              aria-label="Share quiz"
-              style={{ width: '44px', height: '44px', fontSize: '22px' }}
-            >
-              <IoMdShare size={24} />
-            </button>
-          )}
-        </div>
-        <div className="quiz-card__meta">
-          <span className="quiz-card__author">by {quiz.author}</span>
-          {scoreEntry?.value !== undefined && (
-            <span className="quiz-card__score">Last score: {scoreEntry.value}%</span>
-          )}
-        </div>
-
-        <div className="quiz-card__footer" style={{ alignItems: 'flex-end' }}>
-          <div className="quiz-card__footer-left">
+        <div className="quiz-card__header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <h2 className="quiz-card__title" style={{ fontSize: '20px', margin: 0 }}>{quiz.name}</h2>
+            <span className="quiz-card__author">by {quiz.author}</span>
+            {scoreEntry?.value !== undefined && (
+              <span className="quiz-card__score" style={{ marginTop: '4px' }}>Last score: {scoreEntry.value}%</span>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+            {isAuthenticated && (
+              <button
+                className="icon-btn"
+                onClick={() => setShowShareModal(true)}
+                aria-label="Share quiz"
+                style={{ width: '44px', height: '44px', fontSize: '22px' }}
+              >
+                <IoMdShare size={24} />
+              </button>
+            )}
             <div className="quiz-card__reaction" style={{ fontSize: '20px', gap: '8px' }}>
               <span className={`quiz-card__reaction-number ${scoreClass}`} style={{ fontSize: '20px' }}>{score}</span>
               <span className="quiz-card__reaction-icon" style={{ fontSize: '22px' }}>{scoreIcon}</span>
             </div>
           </div>
+        </div>
+
+        <div className="quiz-card__footer" style={{ alignItems: 'flex-end' }}>
+          <div className="quiz-card__footer-left" />
           <div className="quiz-card__footer-right">
             <span className="quiz-card__tag">{quiz.tags?.[0] || 'general'}</span>
             <span className="quiz-card__icon">{quiz.icon || '📝'}</span>
