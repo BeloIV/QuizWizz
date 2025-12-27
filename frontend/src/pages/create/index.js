@@ -184,10 +184,25 @@ function CreateQuiz() {
   }, [selectedQuestionType, syncGapOptionsWithText]);
 
   const handleQuestionTypeChange = useCallback((type) => {
-    setQuestionTypeSelected(true);
-    setSelectedQuestionType(type);
-    if (type === 'fill_gap') setError(null);
-  }, []);
+    const proceed = () => {
+      setQuestionTypeSelected(true);
+      setSelectedQuestionType(type);
+      if (type === 'fill_gap') setError(null);
+    };
+
+    if (hasUnsavedQuestion() && selectedQuestionType !== type) {
+      setConfirmDialog({
+        message: 'You have unsaved changes in the current question. Do you want to switch question type without saving?',
+        onConfirm: () => {
+          setConfirmDialog(null);
+          proceed();
+        },
+        onCancel: () => setConfirmDialog(null),
+      });
+    } else {
+      proceed();
+    }
+  }, [hasUnsavedQuestion, selectedQuestionType]);
 
   const handleGapExplanationChange = useCallback((gapIndex, value) => {
     setCurrentQuestion((prev) => {
