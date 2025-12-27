@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useQuizList } from '../../context/QuizContext';
+import { useAuth } from '../../context/AuthContext';
 import { API_BASE_URL } from '../../config';
 import { useQuestionValidation } from '../../hooks/useQuestionValidation';
 import { encodeGapOptions, decodeGapOptions } from '../../utils/gapEncoding';
@@ -17,11 +18,12 @@ import PreviewScreen from './PreviewScreen';
 function CreateQuiz() {
   const navigate = useNavigate();
   const { createQuiz } = useQuizList();
+  const { user, isAuthenticated } = useAuth();
 
   const [screen, setScreen] = useState('metadata'); // 'metadata', 'questions', or 'preview'
   const [formData, setFormData] = useState({
     name: '',
-    author: '',
+    author: user?.username || '',
     icon: '📝',
     tags: [],
     questions: [],
@@ -545,6 +547,7 @@ function CreateQuiz() {
           tagInput={tagInput}
           setTagInput={setTagInput}
           loading={loading}
+            isAuthenticated={isAuthenticated}
           onQuizChange={handleQuizChange}
           onAddTag={addTag}
           onRemoveTag={removeTag}

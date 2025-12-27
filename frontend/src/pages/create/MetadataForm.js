@@ -8,6 +8,7 @@ function MetadataForm({
   tagInput,
   setTagInput,
   loading,
+  isAuthenticated,
   onQuizChange,
   onAddTag,
   onRemoveTag,
@@ -62,7 +63,7 @@ function MetadataForm({
               value={formData.author}
               onChange={onQuizChange}
               placeholder="Your name"
-              disabled={loading}
+                disabled={loading || isAuthenticated}
               required
             />
           </div>
