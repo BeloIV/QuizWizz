@@ -3286,11 +3286,19 @@ body.light .quick-login-title {
 }
 
 /* Messaging */
+:root {
+  --bottom-nav-height: 72px;
+  --messaging-composer-height: 64px;
+  --messaging-clearance: clamp(12px, 2vw, 24px);
+}
+
 .messaging-page {
   width: 100%;
-  height: calc(100vh - 120px);
+  height: calc(90vh - var(--bottom-nav-height));
   display: flex;
   flex-direction: column;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .messaging-empty {
@@ -3405,13 +3413,8 @@ body.light .quick-login-title {
   flex-direction: column;
   background: var(--card-strong);
   padding: 0;
-}
-
-.messaging-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
+  position: relative;
+   height: 100%;
   gap: 12px;
 }
 
@@ -3440,7 +3443,7 @@ body.light .quick-login-title {
 
 .messages-list {
   flex: 1;
-  padding: 24px 16px;
+  padding: 24px 16px calc(var(--messaging-composer-height) + var(--bottom-nav-height) + var(--messaging-clearance));
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -3525,11 +3528,15 @@ body.light .quick-login-title {
 .message-input-form {
   display: flex;
   gap: 8px;
-  padding: 16px 20px;
+  padding: 20px 20px;
   border-top: 1px solid var(--border);
-  background: rgba(13, 23, 48, 0.3);
-  position: sticky;
+  background: var(--card-strong);
+  position: absolute;
+  left: 0;
+  right: 0;
   bottom: 0;
+  z-index: 4;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .message-input {

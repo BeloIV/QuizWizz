@@ -66,6 +66,12 @@ function Messaging() {
 
     const otherUsers = allUsers.filter(u => !user || u.id !== user.id);
 
+    useEffect(() => {
+        if (user && otherUsers.length > 0 && !selectedUser) {
+            setSelectedUser(otherUsers[0]);
+        }
+    }, [user, otherUsers, selectedUser]);
+
     if (!user) {
         return (
             <div className="messaging-page">
