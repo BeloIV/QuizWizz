@@ -76,15 +76,21 @@ function Results() {
   const reactionScoreIcon = reactionScore < 0 ? '👎' : '👍';
 
   return (
-    <div style={{ display: 'grid', gridTemplateRows: 'auto 1fr auto', minHeight: 'calc(100vh - 120px)', gap: '16px' }}>
-      <h2 className="section-title" style={{ alignSelf: 'start' }}>Your score</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', gap: '16px', paddingBottom: '8px' }}>
+      <h2 className="section-title">Your score</h2>
 
-      <div className="card stack" style={{ alignSelf: 'start' }}>
+      <div className="card stack" style={{ flex: '0 0 auto' }}>
         <div className="quiz-card__header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <h2 className="quiz-card__title" style={{ fontSize: '20px', margin: 0 }}>{quiz.name}</h2>
             <span className="quiz-card__author">by {quiz.author}</span>
             <span style={{ fontSize: '40px', fontWeight: 700, marginTop: '6px' }}>{score}%</span>
+            <div className="muted" style={{ marginTop: '6px' }}>
+              {quiz.questions.length} questions
+            </div>
+            <div className="muted" style={{ fontSize: '14px' }}>
+              {wrongCount ? `Missed: ${wrongCount}` : 'Perfect run!'}
+            </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
             {isAuthenticated && (
@@ -115,23 +121,18 @@ function Results() {
 
         
 
-        <div className="quiz-card__footer" style={{ alignItems: 'flex-end' }}>
+        <div className="quiz-card__footer" style={{ alignItems: 'flex-end', marginTop: '6px' }}>
           <div className="quiz-card__footer-left" aria-hidden="true" />
           <div className="quiz-card__footer-right">
             <span className="quiz-card__tag">{quiz.tags?.[0] || 'general'}</span>
             <span className="quiz-card__icon">{quiz.icon || '📝'}</span>
           </div>
         </div>
-
-        <div className="muted">
-          {quiz.questions.length} questions
-        </div>
-        <div className="muted" style={{ fontSize: '14px' }}>
-          {wrongCount ? `Missed: ${wrongCount}` : 'Perfect run!'}
-        </div>
       </div>
 
-      <div className="row" style={{ justifyContent: 'space-between', marginTop: '24px', alignSelf: 'stretch' }}>
+      <div aria-hidden="true" style={{ flex: 1 }} />
+
+      <div className="row" style={{ justifyContent: 'space-between', alignSelf: 'stretch', marginBottom: '8px' }}>
         <div className="row" style={{ gap: '8px' }}>
           <Link className="btn btn-secondary" to="/">
             🏠 Home

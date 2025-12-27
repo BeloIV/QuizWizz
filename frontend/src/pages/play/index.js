@@ -287,7 +287,7 @@ function Play() {
   const progress = `${index + 1} / ${totalQuestions}`;
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)', gap: '16px', paddingBottom: '16px' }}>
       <div className="row" style={{ justifyContent: 'space-between', marginBottom: '8px' }}>
         <span className="pill">{quiz.name}</span>
         <span className="muted">{progress}</span>
@@ -314,10 +314,22 @@ function Play() {
         onSubmit={handleSubmit}
       />
 
-      <div className="footer-actions row" style={{ justifyContent: 'space-between' }}>
+      <div aria-hidden="true" style={{ flex: 1 }} />
+
+      <div className="footer-actions row" style={{ justifyContent: 'space-between', marginBottom: '12px' }}>
         <button type="button" className="btn btn-secondary" onClick={() => setShowQuitDialog(true)}>
           Quit
         </button>
+        {!reveal ? (
+          <button
+            type="button"
+            className="btn primary"
+            onClick={() => handleSubmit()}
+            disabled={isSubmitDisabled}
+          >
+            Continue
+          </button>
+        ) : <div />}
       </div>
 
       {showTryAgain && (

@@ -2312,12 +2312,12 @@ body.light .question-type-btn.active {
 
 .reaction-buttons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .reaction-btn {
-  font-size: 24px;
-  padding: 10px 14px;
+  font-size: 20px;
+  padding: 8px 12px;
   border-radius: 12px;
   border: 1px solid rgba(118, 139, 180, 0.35);
   background: var(--bg-secondary);
