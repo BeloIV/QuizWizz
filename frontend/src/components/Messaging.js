@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMessages } from '../context/MessagesContext';
 import { API_BASE_URL } from '../config';
 
 function Messaging() {
     const { user, allUsers } = useAuth();
-    const { unreadByUser, markConversationAsRead, loadUnreadCounts } = useMessages();
+    const { unreadByUser, markConversationAsRead, loadUnreadCounts, loadUnviewedQuizzes } = useMessages();
+    const navigate = useNavigate();
     const [selectedUser, setSelectedUser] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [conversationShares, setConversationShares] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -16,7 +19,27 @@ function Messaging() {
     const messagesEndRef = useRef(null);
     const messageInputRef = useRef(null);
     const isFirstLoad = useRef(true);
-    const prevMessagesLength = useRef(0);
+    const prevItemsLength = useRef(0);
+
+    const conversationItems = useMemo(() => {
+        const mappedMessages = messages.map(msg => ({
+            type: 'message',
+            id: `message-${msg.id}`,
+            created_at: msg.created_at,
+            payload: msg,
+        }));
+
+        const mappedShares = conversationShares.map(share => ({
+            type: 'share',
+            id: `share-${share.id}`,
+            created_at: share.created_at,
+            payload: share,
+        }));
+
+        return [...mappedMessages, ...mappedShares].sort(
+            (a, b) => new Date(a.created_at) - new Date(b.created_at)
+        );
+    }, [messages, conversationShares]);
 
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
@@ -28,17 +51,18 @@ function Messaging() {
     };
 
     useEffect(() => {
-        // Scroll instantly on first load and new messages
-        if (isFirstLoad.current && messages.length > 0) {
+        const itemCount = conversationItems.length;
+
+        if (isFirstLoad.current && itemCount > 0) {
             scrollToBottom();
             isFirstLoad.current = false;
-            prevMessagesLength.current = messages.length;
-        } else if (messages.length > prevMessagesLength.current) {
-            // New message arrived, scroll instantly
+            prevItemsLength.current = itemCount;
+        } else if (itemCount > prevItemsLength.current) {
+            // New items arrived, scroll instantly
             scrollToBottom();
-            prevMessagesLength.current = messages.length;
+            prevItemsLength.current = itemCount;
         }
-    }, [messages]);
+    }, [conversationItems]);
 
     useEffect(() => {
         if (user && allUsers.length > 0) {
@@ -113,14 +137,29 @@ function Messaging() {
         try {
             const params = { user_id: userId };
             if (user) {
-                // Authenticated request
-                const response = await axios.get(`${API_BASE_URL}/messages/conversation/`, {
-                    params,
-                    withCredentials: true,
-                });
-                setMessages(response.data);
+                const [messagesResponse, sharesResponse] = await Promise.all([
+                    axios.get(`${API_BASE_URL}/messages/conversation/`, {
+                        params,
+                        withCredentials: true,
+                    }),
+                    axios.get(`${API_BASE_URL}/quiz-shares/`, {
+                        withCredentials: true,
+                    }),
+                ]);
+
+                setMessages(messagesResponse.data);
+
+                const relevantShares = sharesResponse.data
+                    .filter(share => (
+                        (share.sender.id === user.id && share.recipient.id === userId) ||
+                        (share.sender.id === userId && share.recipient.id === user.id)
+                    ))
+                    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+                setConversationShares(relevantShares);
             } else {
                 setMessages([]);
+                setConversationShares([]);
             }
         } catch (error) {
             console.error('Error loading conversation:', error);
@@ -129,6 +168,29 @@ function Messaging() {
                 setLoading(false);
             }
         }
+    };
+
+    const handleOpenSharedQuiz = async (share) => {
+        if (!share?.quiz_data?.id) return;
+
+        // Mark as viewed when the current user received it
+        if (share.recipient.id === user.id && !share.is_viewed) {
+            try {
+                await axios.post(
+                    `${API_BASE_URL}/quiz-shares/${share.id}/mark_viewed/`,
+                    {},
+                    { withCredentials: true }
+                );
+                setConversationShares(prev => prev.map(s =>
+                    s.id === share.id ? { ...s, is_viewed: true } : s
+                ));
+                loadUnviewedQuizzes();
+            } catch (error) {
+                console.error('Error marking share as viewed:', error);
+            }
+        }
+
+        navigate(`/quiz/${share.quiz_data.id}`);
     };
 
     const sendMessage = async (e) => {
@@ -179,6 +241,7 @@ function Messaging() {
     const handleSelectUser = (selectedUserObj) => {
         setSelectedUser(selectedUserObj);
         setSearchTerm(''); // Clear search when user is selected
+        prevItemsLength.current = 0;
         // Mark conversation as read when opened
         markConversationAsRead(selectedUserObj.id);
     };
@@ -261,24 +324,59 @@ function Messaging() {
                                     <div className="loading-messages">
                                         <p>Loading messages...</p>
                                     </div>
-                                ) : messages.length === 0 ? (
+                                ) : conversationItems.length === 0 ? (
                                     <div className="no-messages-area">
                                         <p>No messages yet. Start a conversation!</p>
                                     </div>
                                 ) : (
-                                    messages.map(msg => (
-                                        <div
-                                            key={msg.id}
-                                            className={`message ${msg.sender.id === user?.id ? 'message-sent' : 'message-received'}`}
-                                        >
-                                            <div className="message-bubble">
-                                                <div className="message-content">{msg.content}</div>
-                                                <div className="message-time">
-                                                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    conversationItems.map(item => {
+                                        if (item.type === 'message') {
+                                            const msg = item.payload;
+                                            return (
+                                                <div
+                                                    key={item.id}
+                                                    className={`message ${msg.sender.id === user?.id ? 'message-sent' : 'message-received'}`}
+                                                >
+                                                    <div className="message-bubble">
+                                                        <div className="message-content">{msg.content}</div>
+                                                        <div className="message-time">
+                                                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
+                                        const share = item.payload;
+                                        const isSender = share.sender.id === user?.id;
+                                        return (
+                                            <div
+                                                key={item.id}
+                                                className={`message ${isSender ? 'message-sent' : 'message-received'} share-message`}
+                                            >
+                                                <div className="message-bubble share-bubble">
+                                                    <div className="share-header-row">
+                                                        <div className="share-title">Quiz shared</div>
+                                                        <div className="message-time">
+                                                            {new Date(share.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </div>
+                                                    </div>
+                                                    <div className="share-quiz-name">{share.quiz_data?.name}</div>
+                                                    <div className="share-quiz-author">by {share.quiz_data?.author}</div>
+                                                    {share.message && (
+                                                        <div className="share-note">{share.message}</div>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-primary share-open-btn"
+                                                        onClick={() => handleOpenSharedQuiz(share)}
+                                                    >
+                                                        View quiz
+                                                    </button>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 )}
                                 <div ref={messagesEndRef} />
                             </div>

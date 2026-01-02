@@ -69,15 +69,6 @@ function ShareQuizModal({ quiz, onClose }) {
                 },
                 { withCredentials: true }
             );
-            // Also send a message about the share
-            await axios.post(
-                `${API_BASE_URL}/messages/`,
-                {
-                    recipient_id: parseInt(selectedUserId),
-                    content: `I shared a quiz with you: "${quiz.name}"`,
-                },
-                { withCredentials: true }
-            );
             setSuccess(true);
             setTimeout(() => {
                 onClose();
