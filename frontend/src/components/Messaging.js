@@ -14,13 +14,30 @@ function Messaging() {
     const [searchTerm, setSearchTerm] = useState('');
     const [conversationUsers, setConversationUsers] = useState([]);
     const messagesEndRef = useRef(null);
+    const messageInputRef = useRef(null);
+    const isFirstLoad = useRef(true);
+    const prevMessagesLength = useRef(0);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ 
+                behavior: 'instant',
+                block: 'end'
+            });
+        }
     };
 
     useEffect(() => {
-        scrollToBottom();
+        // Scroll instantly on first load and new messages
+        if (isFirstLoad.current && messages.length > 0) {
+            scrollToBottom();
+            isFirstLoad.current = false;
+            prevMessagesLength.current = messages.length;
+        } else if (messages.length > prevMessagesLength.current) {
+            // New message arrived, scroll instantly
+            scrollToBottom();
+            prevMessagesLength.current = messages.length;
+        }
     }, [messages]);
 
     useEffect(() => {
@@ -38,6 +55,7 @@ function Messaging() {
 
     useEffect(() => {
         if (selectedUser) {
+            isFirstLoad.current = true;
             loadConversation(selectedUser.id, false);
             
             // Poll for new messages every 3 seconds (silent refresh)
@@ -135,6 +153,8 @@ function Messaging() {
             setNewMessage('');
             // Reload conversation to show the new message
             loadConversation(selectedUser.id, false);
+            // Keep focus on input
+            setTimeout(() => messageInputRef.current?.focus(), 50);
             // Refresh the conversation users list
             loadConversationUsers();
             // Refresh unread counts
@@ -161,6 +181,13 @@ function Messaging() {
         setSearchTerm(''); // Clear search when user is selected
         // Mark conversation as read when opened
         markConversationAsRead(selectedUserObj.id);
+    };
+
+    const handleInputFocus = () => {
+        if (selectedUser) {
+            // Mark conversation as read when user focuses on input
+            markConversationAsRead(selectedUser.id);
+        }
     };
 
     if (!user) {
@@ -258,9 +285,11 @@ function Messaging() {
 
                             <form onSubmit={sendMessage} className="message-input-form">
                                 <input
+                                    ref={messageInputRef}
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
+                                    onFocus={handleInputFocus}
                                     placeholder="Type a message..."
                                     className="message-input"
                                 />

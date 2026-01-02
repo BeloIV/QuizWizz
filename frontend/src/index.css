@@ -365,7 +365,7 @@ body.menu-open {
 .header-search-input {
   width: 100%;
   padding: 10px 16px;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text);
   background: rgba(20, 35, 66, 0.75);
   border: 1px solid rgba(118, 139, 180, 0.35);
@@ -976,6 +976,13 @@ body.light .btn:focus-visible {
     padding: 16px 12px 72px;
   }
 
+  /* Remove bottom padding on messaging page to hide footer */
+  .messaging-page {
+    margin: -16px -12px -72px;
+    width: calc(100% + 24px);
+    height: calc(100vh + 72px);
+  }
+
   .quiz-card {
     padding: 16px;
   }
@@ -1293,7 +1300,7 @@ body.light .icon-btn {
   border-radius: 10px;
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 16px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1892,7 +1899,7 @@ body.light .option-check.correct {
   border-radius: 10px;
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 16px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -3350,7 +3357,8 @@ body.light .quick-login-title {
 
 .messaging-page {
   width: 100%;
-  height: calc(90vh - var(--bottom-nav-height));
+  height: calc(100vh - 72px);
+  height: calc(100dvh - 72px);
   display: flex;
   flex-direction: column;
   padding-bottom: 0;
@@ -3368,11 +3376,12 @@ body.light .quick-login-title {
 
 .messaging-container {
   display: flex;
-  height: 100%;
+  flex: 1;
   gap: 0;
   background: var(--card);
   border-radius: 12px;
   overflow: hidden;
+  min-height: 0;
 }
 
 .messaging-sidebar {
@@ -3403,7 +3412,7 @@ body.light .quick-login-title {
   border-radius: 8px;
   background: rgba(13, 23, 48, 0.6);
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
   font-family: inherit;
   transition: border-color 0.2s ease;
 }
@@ -3491,14 +3500,17 @@ body.light .quick-login-title {
   background: var(--card-strong);
   padding: 0;
   position: relative;
-   height: 100%;
-  gap: 12px;
+  min-height: 0;
 }
 
 .messaging-header {
   padding: 16px;
   border-bottom: 1px solid var(--border);
   background: var(--card-strong);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex-shrink: 0;
 }
 
 .header-user-info {
@@ -3546,11 +3558,14 @@ body.light .quick-login-title {
 
 .messages-list {
   flex: 1;
-  padding: 24px 16px calc(var(--messaging-composer-height) + var(--bottom-nav-height) + var(--messaging-clearance));
+  padding: 16px;
+  padding-bottom: 16px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  min-height: 0;
 }
 
 .loading-messages,
@@ -3653,14 +3668,16 @@ body.light .quick-login-title {
 .message-input-form {
   display: flex;
   gap: 8px;
-  padding: 20px 20px;
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border);
   background: var(--card-strong);
-  position: absolute;
+  position: sticky;
+  bottom: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 4;
+  z-index: 10;
+  flex-shrink: 0;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.25);
 }
 
@@ -3671,7 +3688,7 @@ body.light .quick-login-title {
   border-radius: 10px;
   background: rgba(13, 23, 48, 0.6);
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
