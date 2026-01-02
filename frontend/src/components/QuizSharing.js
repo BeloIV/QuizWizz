@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useMessages } from '../context/MessagesContext';
 import { API_BASE_URL } from '../config';
 import { useNavigate } from 'react-router-dom';
 
 function QuizSharing() {
     const { user, allUsers } = useAuth();
+    const { loadUnviewedQuizzes } = useMessages();
     const [receivedShares, setReceivedShares] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -39,6 +41,7 @@ function QuizSharing() {
                 { withCredentials: true }
             );
             loadReceivedShares();
+            loadUnviewedQuizzes();
         } catch (error) {
             console.error('Error marking as viewed:', error);
         }

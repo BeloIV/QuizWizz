@@ -253,6 +253,7 @@ body.menu-open {
 }
 
 .icon-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -292,6 +293,41 @@ body.menu-open {
   height: 22px;
 }
 
+/* Badge styles for notifications */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #ef4444;
+  color: white;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.badge-hamburger {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 10px;
+}
+
+.badge-drawer {
+  margin-left: auto;
+  background: #ef4444;
+}
+
+.badge-user {
+  margin-left: auto;
+}
+
 .text-icon {
   width: 1em !important;
   height: 1em !important;
@@ -329,7 +365,7 @@ body.menu-open {
 .header-search-input {
   width: 100%;
   padding: 10px 16px;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text);
   background: rgba(20, 35, 66, 0.75);
   border: 1px solid rgba(118, 139, 180, 0.35);
@@ -940,6 +976,13 @@ body.light .btn:focus-visible {
     padding: 16px 12px 72px;
   }
 
+  /* Remove bottom padding on messaging page to hide footer */
+  .messaging-page {
+    margin: -16px -12px -72px;
+    width: calc(100% + 24px);
+    height: calc(100vh + 72px);
+  }
+
   .quiz-card {
     padding: 16px;
   }
@@ -1257,7 +1300,7 @@ body.light .icon-btn {
   border-radius: 10px;
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 16px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1856,7 +1899,7 @@ body.light .option-check.correct {
   border-radius: 10px;
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 16px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -3213,6 +3256,10 @@ body.light .quick-login-title {
 }
 
 .drawer-menu-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
   padding: 12px 20px;
   margin-top: 16px;
@@ -3310,7 +3357,8 @@ body.light .quick-login-title {
 
 .messaging-page {
   width: 100%;
-  height: calc(90vh - var(--bottom-nav-height));
+  height: calc(100vh - 72px);
+  height: calc(100dvh - 72px);
   display: flex;
   flex-direction: column;
   padding-bottom: 0;
@@ -3328,15 +3376,16 @@ body.light .quick-login-title {
 
 .messaging-container {
   display: flex;
-  height: 100%;
+  flex: 1;
   gap: 0;
   background: var(--card);
   border-radius: 12px;
   overflow: hidden;
+  min-height: 0;
 }
 
 .messaging-sidebar {
-  width: 60px;
+  width: 280px;
   border-right: 1px solid var(--border);
   background: rgba(13, 23, 48, 0.5);
   display: flex;
@@ -3353,7 +3402,28 @@ body.light .quick-login-title {
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  display: none;
+  margin-bottom: 12px;
+}
+
+.user-search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid rgba(118, 139, 180, 0.35);
+  border-radius: 8px;
+  background: rgba(13, 23, 48, 0.6);
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.user-search-input:focus {
+  outline: none;
+  border-color: rgba(110, 168, 255, 0.55);
+}
+
+.user-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .user-list {
@@ -3374,8 +3444,8 @@ body.light .quick-login-title {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 12px;
+  gap: 12px;
+  padding: 16px;
   text-align: left;
   background: none;
   border: none;
@@ -3407,7 +3477,7 @@ body.light .quick-login-title {
 }
 
 .user-name {
-  display: none;
+  flex: 1;
 }
 
 .user-avatar {
@@ -3430,14 +3500,43 @@ body.light .quick-login-title {
   background: var(--card-strong);
   padding: 0;
   position: relative;
-   height: 100%;
-  gap: 12px;
+  min-height: 0;
+}
+
+.messaging-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card-strong);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex-shrink: 0;
 }
 
 .header-user-info {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.back-button:hover {
+  background: rgba(110, 168, 255, 0.15);
 }
 
 .header-avatar {
@@ -3459,11 +3558,14 @@ body.light .quick-login-title {
 
 .messages-list {
   flex: 1;
-  padding: 24px 16px calc(var(--messaging-composer-height) + var(--bottom-nav-height) + var(--messaging-clearance));
+  padding: 16px;
+  padding-bottom: 16px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  min-height: 0;
 }
 
 .loading-messages,
@@ -3494,6 +3596,84 @@ body.light .quick-login-title {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.share-message .message-bubble {
+  max-width: min(90ch, 92%);
+  gap: 8px;
+}
+
+.share-bubble {
+  position: relative;
+  padding-right: 12px;
+  padding-left: 12px;
+}
+
+.share-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.share-title {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.share-quiz-name {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.share-quiz-author {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.share-note {
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.share-open-btn {
+  align-self: flex-start;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  background: rgba(18, 31, 62, 0.85);
+  color: var(--text);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.share-open-btn:hover,
+.share-open-btn:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  background: rgba(12, 20, 42, 0.95);
+  border-color: rgba(118, 139, 180, 0.65);
+}
+
+.share-open-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  background: rgba(18, 31, 62, 0.78);
+  border-color: rgba(110, 168, 255, 0.4);
+}
+
+.message-sent .share-open-btn {
+  align-self: flex-end;
+}
+
+.message-received .share-open-btn {
+  align-self: flex-start;
 }
 
 .message-sent {
@@ -3535,23 +3715,47 @@ body.light .quick-login-title {
 .no-user-selected {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   color: rgba(255, 255, 255, 0.4);
   font-size: 16px;
+  text-align: center;
+  padding: 20px;
+}
+
+.no-user-icon {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.no-user-selected h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.no-user-selected p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .message-input-form {
   display: flex;
   gap: 8px;
-  padding: 20px 20px;
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border);
   background: var(--card-strong);
-  position: absolute;
+  position: sticky;
+  bottom: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 4;
+  z-index: 10;
+  flex-shrink: 0;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.25);
 }
 
@@ -3562,7 +3766,7 @@ body.light .quick-login-title {
   border-radius: 10px;
   background: rgba(13, 23, 48, 0.6);
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -3645,6 +3849,40 @@ body.light .message-input:focus {
 body.light .message-input-form {
   border-top-color: rgba(148, 163, 184, 0.25);
   background: rgba(226, 232, 240, 0.1);
+}
+
+body.light .user-search-input {
+  background: rgba(226, 232, 240, 0.8);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #1e293b;
+}
+
+body.light .user-search-input:focus {
+  border-color: rgba(59, 130, 246, 0.55);
+}
+
+body.light .user-search-input::placeholder {
+  color: rgba(26, 26, 26, 0.4);
+}
+
+body.light .back-button {
+  color: #1a1a1a;
+}
+
+body.light .back-button:hover {
+  background: rgba(59, 130, 246, 0.15);
+}
+
+body.light .no-user-selected h3 {
+  color: rgba(26, 26, 26, 0.6);
+}
+
+body.light .no-user-selected p {
+  color: rgba(26, 26, 26, 0.4);
+}
+
+body.light .badge {
+  background: #dc2626;
 }
 
 /* Quiz Sharing */
@@ -3902,6 +4140,76 @@ body.light .success-message p {
   margin-top: 20px;
 }
 
+.user-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px;
+  background: rgba(13, 23, 48, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(118, 139, 180, 0.25);
+}
+
+.user-selection-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(22, 38, 72, 0.65);
+  border: 1px solid rgba(118, 139, 180, 0.25);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.user-selection-item:hover {
+  background: rgba(110, 168, 255, 0.15);
+  border-color: rgba(110, 168, 255, 0.45);
+}
+
+.user-selection-item.selected {
+  background: rgba(110, 168, 255, 0.25);
+  border-color: rgba(110, 168, 255, 0.55);
+}
+
+.user-avatar-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.user-name-display {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.selected-check {
+  color: var(--primary);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.no-users-found {
+  text-align: center;
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+}
+
 .modal-actions {
   display: flex;
   gap: 8px;
@@ -3917,6 +4225,22 @@ body.light .success-message p {
 .success-message p {
   font-size: 18px;
   color: #10b981;
+}
+
+.error-message {
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 14px;
+}
+
+.error-message p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Light mode adjustments */
@@ -3989,6 +4313,41 @@ body.light .share-item {
 body.light .share-unviewed {
   border-color: rgba(59, 130, 246, 0.3);
   background: rgba(59, 130, 246, 0.1);
+}
+
+body.light .user-selection-list {
+  background: rgba(226, 232, 240, 0.4);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+body.light .user-selection-item {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #1a1a1a;
+}
+
+body.light .user-selection-item:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
+body.light .user-selection-item.selected {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.55);
+}
+
+body.light .user-avatar-small {
+  background: #3b82f6;
+}
+
+body.light .no-users-found {
+  color: rgba(26, 26, 26, 0.4);
+}
+
+body.light .error-message {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.3);
+  color: #dc2626;
 }
 
 body.light .share-from {
@@ -4111,5 +4470,47 @@ body.light .tag {
 @media (max-width: 640px) {
   .messaging-sidebar {
     width: 56px;
+  }
+}
+
+/* Responsive messaging - show full sidebar with search on wider screens */
+@media (min-width: 768px) {
+  .messaging-sidebar {
+    width: 280px;
+  }
+  
+  .back-button {
+    display: none;
+  }
+}
+
+/* Mobile messaging - show back button and narrower sidebar */
+@media (max-width: 767px) {
+  .messaging-sidebar {
+    width: 100%;
+  }
+  
+  .messaging-main {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    z-index: 10;
+    padding-top: 70px; /* Height of app header */
+  }
+  
+  /* Show main and hide sidebar when user is selected */
+  .messaging-container.has-selected-user .messaging-main {
+    display: flex;
+  }
+  
+  .messaging-container.has-selected-user .messaging-sidebar {
+    display: none;
+  }
+  
+  .back-button {
+    display: flex;
   }
 }

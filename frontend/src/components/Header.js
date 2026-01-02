@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import Drawer from './Drawer';
 import { useSearch } from '../context/SearchContext';
 import { useTheme } from '../context/ThemeContext';
+import { useMessages } from '../context/MessagesContext';
 
 function Header() {
   const containerRef = useRef(null);
@@ -11,8 +12,11 @@ function Header() {
   const location = useLocation();
   const { open: searchOpen, searchTerm, openSearch, closeSearch, setSearchTerm } = useSearch();
   const { toggleTheme } = useTheme();
+  const { unreadCount, unviewedQuizzesCount } = useMessages();
   const [menuOpen, setMenuOpen] = useState(false);
   const isHomePage = location.pathname === '/';
+
+  const totalNotifications = unreadCount + unviewedQuizzesCount;
 
   useEffect(() => {
     setMenuOpen(false);
@@ -84,6 +88,9 @@ function Header() {
                   strokeLinejoin="round"
                 />
               </svg>
+              {totalNotifications > 0 && (
+                <span className="badge badge-hamburger">{totalNotifications}</span>
+              )}
             </button>
           )}
         </div>
