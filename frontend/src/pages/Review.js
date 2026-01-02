@@ -358,11 +358,11 @@ function Review() {
         );
       })}      <div className="card stack">
         <div className="row" style={{ gap: '8px' }}>
-          <Link className="btn" to={`/results/${quizId}?score=${searchParams.get('score') || '0'}&wrong=${wrongAnswers.join(',')}&answers=${searchParams.get('answers') || '{}'}&incorrect=${searchParams.get('incorrect') || '{}'}`}>
+          <Link className="btn btn-secondary" to={`/results/${quizId}?score=${searchParams.get('score') || '0'}&wrong=${wrongAnswers.join(',')}&answers=${searchParams.get('answers') || '{}'}&incorrect=${searchParams.get('incorrect') || '{}'}`}>
             ← Back to Results
           </Link>
-          <Link className="btn" to="/">
-            Home
+          <Link className="btn btn-secondary" to="/">
+            🏠 Home
           </Link>
         </div>
       </div>

@@ -66,19 +66,7 @@ function QuestionDisplay({
         </>
       )}
 
-      {!reveal && (
-        <div style={{ marginTop: '16px' }}>
-          <button
-            type="button"
-            className="btn primary"
-            onClick={onSubmit}
-            disabled={isSubmitDisabled}
-            style={{ width: '100%' }}
-          >
-            Continue
-          </button>
-        </div>
-      )}
+      {/* Continue button moved to page footer in Play */}
     </div>
   );
 }

@@ -63,17 +63,23 @@ function PreviewScreen({
                 <div className="preview-question-header">
                   <span className="preview-question-number">Question {qIndex + 1}</span>
                   <button
-                    type="button"
-                    onClick={() => onEditQuestion(qIndex)}
-                    disabled={loading}
-                    className="btn-edit-small"
+                      type="button"
+                      onClick={() => onEditQuestion(qIndex)}
+                      disabled={loading}
+                      className="btn-edit-small"
+                      aria-label="Edit question"
+                      title="Edit question"
                   >
-                    Edit
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"
+                         strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
                   </button>
                 </div>
                 <p className="preview-question-text">{question.text}</p>
                 {question.image_url && (
-                  <img src={question.image_url} alt="Question" className="preview-question-image" />
+                    <img src={question.image_url} alt="Question" className="preview-question-image"/>
                 )}
                 <div className="preview-options">
                   {(() => {
@@ -140,7 +146,7 @@ function PreviewScreen({
           type="button"
           onClick={onBackToEdit}
           disabled={loading}
-          className="btn"
+          className="btn btn-secondary"
         >
           ← Back to Edit
         </button>

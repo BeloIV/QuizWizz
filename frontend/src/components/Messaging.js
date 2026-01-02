@@ -66,6 +66,12 @@ function Messaging() {
 
     const otherUsers = allUsers.filter(u => !user || u.id !== user.id);
 
+    useEffect(() => {
+        if (user && otherUsers.length > 0 && !selectedUser) {
+            setSelectedUser(otherUsers[0]);
+        }
+    }, [user, otherUsers, selectedUser]);
+
     if (!user) {
         return (
             <div className="messaging-page">
@@ -148,7 +154,7 @@ function Messaging() {
                                     className="message-input"
                                 />
                                 <button type="submit" className="btn btn-primary" disabled={!newMessage.trim()}>
-                                    Send
+                                    ➤
                                 </button>
                             </form>
                         </>

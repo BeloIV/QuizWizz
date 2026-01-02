@@ -87,7 +87,7 @@ class QuizCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ("id", "name", "description", "tags", "questions", "icon")
+        fields = ("id", "name", "author", "icon", "description", "tags", "questions")
 
     def to_representation(self, instance):
         # After creation return full QuizSerializer representation
