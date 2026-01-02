@@ -108,10 +108,6 @@ export function useQuestionValidation(currentQuestion, selectedQuestionType) {
       return { valid: false, error: 'No quiz name' };
     }
 
-    if (!formData.author.trim()) {
-      return { valid: false, error: 'No quiz author name' };
-    }
-
     return { valid: true, error: null };
   }, []);
 

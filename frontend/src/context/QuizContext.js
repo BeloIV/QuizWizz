@@ -115,6 +115,81 @@ export function QuizProvider({ children }) {
     []
   );
 
+  const updateQuiz = useCallback(
+    async (quizId, quizData) => {
+      console.log('Updating quiz with data:', quizData);
+      
+      // Get CSRF token from cookie
+      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+      
+      const response = await fetch(`${API_BASE_URL}/quizzes/${quizId}/`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
+        },
+        body: JSON.stringify(quizData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Quiz update error:', errorData);
+        
+        if (errorData && typeof errorData === 'object') {
+          const messages = Object.entries(errorData)
+            .map(([field, errors]) => {
+              if (Array.isArray(errors)) {
+                return `${field}: ${errors.join(', ')}`;
+              }
+              return `${field}: ${errors}`;
+            })
+            .join('\n');
+          throw new Error(messages || `Failed to update quiz (${response.status})`);
+        }
+        
+        throw new Error(errorData.detail || `Failed to update quiz (${response.status})`);
+      }
+
+      const data = await response.json();
+      setQuizzes((prev) => prev.map(q => q.id === quizId ? data : q).sort((a, b) => a.name.localeCompare(b.name)));
+      setQuizDetails((prev) => ({ ...prev, [quizId]: data }));
+      return data;
+    },
+    []
+  );
+
+  const deleteQuiz = useCallback(
+    async (quizId) => {
+      console.log('Deleting quiz:', quizId);
+      
+      // Get CSRF token from cookie
+      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+      
+      const response = await fetch(`${API_BASE_URL}/quizzes/${quizId}/`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Quiz deletion error:', errorData);
+        throw new Error(errorData.detail || `Failed to delete quiz (${response.status})`);
+      }
+
+      setQuizzes((prev) => prev.filter(q => q.id !== quizId));
+      setQuizDetails((prev) => {
+        const newDetails = { ...prev };
+        delete newDetails[quizId];
+        return newDetails;
+      });
+    },
+    []
+  );
+
   const value = useMemo(
     () => ({
       quizzes,
@@ -124,8 +199,10 @@ export function QuizProvider({ children }) {
       getQuiz,
       registerTemporaryQuiz,
       createQuiz,
+      updateQuiz,
+      deleteQuiz,
     }),
-    [quizzes, loading, error, fetchQuizzes, getQuiz, registerTemporaryQuiz, createQuiz]
+    [quizzes, loading, error, fetchQuizzes, getQuiz, registerTemporaryQuiz, createQuiz, updateQuiz, deleteQuiz]
   );
 
   return <QuizContext.Provider value={value}>{children}</QuizContext.Provider>;

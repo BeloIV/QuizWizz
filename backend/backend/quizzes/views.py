@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.conf import settings
 from django.db import models
 from django.views.decorators.csrf import csrf_exempt
@@ -18,13 +19,18 @@ class QuizViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     lookup_field = "id"
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_action_map = {
         "list": QuizListSerializer,
         "retrieve": QuizSerializer,
         "create": QuizCreateSerializer,
+        "update": QuizCreateSerializer,
+        "partial_update": QuizCreateSerializer,
     }
 
     def get_queryset(self):
@@ -36,6 +42,25 @@ class QuizViewSet(
 
     def get_serializer_class(self):
         return self.serializer_action_map.get(self.action, QuizSerializer)
+
+    def perform_create(self, serializer):
+        # Set author to the authenticated user (required)
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
+        # Ensure only the author can update their quiz
+        quiz = self.get_object()
+        if quiz.author != self.request.user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You can only edit your own quizzes.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        # Ensure only the author can delete their quiz
+        if instance.author != self.request.user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You can only delete your own quizzes.")
+        instance.delete()
 
     @action(detail=True, methods=["post"])
     def like(self, request, id=None):

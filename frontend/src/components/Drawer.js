@@ -116,6 +116,16 @@ function Drawer({ isOpen, onClose }) {
                         <>
                             <div className="drawer-divider"></div>
                             <div className="drawer-section">
+                                <h3 className="drawer-section-title">My Content</h3>
+                                <button
+                                    className="drawer-menu-button"
+                                    onClick={() => navigateTo('/my-quizzes')}
+                                >
+                                    My Quizzes
+                                </button>
+                            </div>
+                            <div className="drawer-divider"></div>
+                            <div className="drawer-section">
                                 <h3 className="drawer-section-title">Social</h3>
                                 <button
                                     className="drawer-menu-button"

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { useQuizList } from '../../context/QuizContext';
 import { API_BASE_URL } from '../../config';
@@ -12,16 +12,17 @@ import QuestionsList from './QuestionsList';
 import PreviewScreen from './PreviewScreen';
 
 /**
- * Main CreateQuiz component - orchestrates quiz creation flow
+ * Main CreateQuiz component - orchestrates quiz creation/editing flow
  */
 function CreateQuiz() {
   const navigate = useNavigate();
-  const { createQuiz } = useQuizList();
+  const { quizId } = useParams();
+  const { createQuiz, updateQuiz, getQuiz } = useQuizList();
+  const isEditMode = !!quizId;
 
   const [screen, setScreen] = useState('metadata'); // 'metadata', 'questions', or 'preview'
   const [formData, setFormData] = useState({
     name: '',
-    author: '',
     icon: '📝',
     tags: [],
     questions: [],
@@ -59,6 +60,36 @@ function CreateQuiz() {
 
   const { hasUnsavedQuestion, validateQuestion, validateMetadata, syncGapOptionsWithText } = 
     useQuestionValidation(currentQuestion, selectedQuestionType);
+
+  // Load quiz data if editing
+  useEffect(() => {
+    if (isEditMode && quizId) {
+      const loadQuiz = async () => {
+        try {
+          setLoading(true);
+          const quiz = await getQuiz(quizId);
+          
+          // Transform quiz data to form format
+          setFormData({
+            name: quiz.name || '',
+            icon: quiz.icon || '📝',
+            tags: quiz.tags || [],
+            questions: quiz.questions.map((q, idx) => ({
+              ...q,
+              id: q.id || `q${idx + 1}`,
+              order: idx,
+            })) || [],
+          });
+        } catch (err) {
+          setPopup({ message: err.message || 'Failed to load quiz', type: 'warning' });
+          console.error('Error loading quiz:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadQuiz();
+    }
+  }, [isEditMode, quizId, getQuiz]);
 
   // Auto-dismiss popup
   useEffect(() => {
@@ -476,12 +507,21 @@ function CreateQuiz() {
         ...formData,
         tags: formData.tags.map((tag) => tag),
       };
-      const newQuiz = await createQuiz(quizData);
-      sessionStorage.setItem('quizSuccessMessage', 'Quiz created successfully');
-      navigate(`/quiz/${newQuiz.id}`);
+      
+      if (isEditMode) {
+        // Update existing quiz
+        const updatedQuiz = await updateQuiz(quizId, quizData);
+        sessionStorage.setItem('quizSuccessMessage', 'Quiz updated successfully');
+        navigate(`/quiz/${updatedQuiz.id}`);
+      } else {
+        // Create new quiz
+        const newQuiz = await createQuiz(quizData);
+        sessionStorage.setItem('quizSuccessMessage', 'Quiz created successfully');
+        navigate(`/quiz/${newQuiz.id}`);
+      }
     } catch (err) {
-      setPopup({ message: err.message || 'Failed to create quiz', type: 'warning' });
-      console.error('Error creating quiz:', err);
+      setPopup({ message: err.message || `Failed to ${isEditMode ? 'update' : 'create'} quiz`, type: 'warning' });
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} quiz:`, err);
       setLoading(false);
     }
   };
@@ -507,12 +547,12 @@ function CreateQuiz() {
         message: 'You have unsaved changes in the current question. Do you want to cancel without saving it?',
         onConfirm: () => {
           setConfirmDialog(null);
-          navigate('/');
+          navigate(isEditMode ? '/my-quizzes' : '/');
         },
         onCancel: () => setConfirmDialog(null),
       });
     } else {
-      navigate('/');
+      navigate(isEditMode ? '/my-quizzes' : '/');
     }
   };
 
@@ -537,6 +577,7 @@ function CreateQuiz() {
           tagInput={tagInput}
           setTagInput={setTagInput}
           loading={loading}
+          isEditMode={isEditMode}
           onQuizChange={handleQuizChange}
           onAddTag={addTag}
           onRemoveTag={removeTag}
@@ -549,7 +590,7 @@ function CreateQuiz() {
         <div>
           <div className="screen-header">
             <h1 className="page-title">
-              Add Questions <span className="question-counter">({formData.questions.length})</span>
+              {isEditMode ? 'Edit Questions' : 'Add Questions'} <span className="question-counter">({formData.questions.length})</span>
             </h1>
           </div>
 
@@ -618,7 +659,7 @@ function CreateQuiz() {
                 disabled={loading}
                 className="btn primary success"
               >
-                {loading ? 'Creating...' : '✓ Finish'}
+                {loading ? (isEditMode ? 'Updating...' : 'Creating...') : '✓ Finish'}
               </button>
             )}
           </div>

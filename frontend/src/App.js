@@ -7,6 +7,7 @@ import { SearchProvider } from './context/SearchContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import CreateQuiz from './pages/create';
+import MyQuizzes from './pages/MyQuizzes';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import Play from './pages/play';
@@ -30,6 +31,8 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Home />} />
                       <Route path="/create" element={<CreateQuiz />} />
+                      <Route path="/edit/:quizId" element={<CreateQuiz />} />
+                      <Route path="/my-quizzes" element={<MyQuizzes />} />
                       <Route path="/quiz/:quizId" element={<QuizDetail />} />
                       <Route path="/play/:quizId" element={<Play />} />
                       <Route path="/results/:quizId" element={<Results />} />

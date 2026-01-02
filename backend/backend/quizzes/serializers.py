@@ -35,6 +35,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 class QuizSerializer(serializers.ModelSerializer):
     tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
     questions = QuestionSerializer(many=True)
+    author = serializers.CharField(source="author.username", read_only=True)
 
     class Meta:
         model = Quiz
@@ -44,6 +45,7 @@ class QuizSerializer(serializers.ModelSerializer):
 class QuizListSerializer(serializers.ModelSerializer):
     tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
     question_count = serializers.IntegerField(source="questions.count", read_only=True)
+    author = serializers.CharField(source="author.username", read_only=True)
 
     class Meta:
         model = Quiz
@@ -85,7 +87,7 @@ class QuizCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quiz
-        fields = ("id", "name", "author", "description", "tags", "questions")
+        fields = ("id", "name", "description", "tags", "questions", "icon")
 
     def to_representation(self, instance):
         # After creation return full QuizSerializer representation
@@ -116,6 +118,36 @@ class QuizCreateSerializer(serializers.ModelSerializer):
             QuestionCreateSerializer().create(question_data)
         
         return quiz
+
+    def update(self, instance, validated_data):
+        questions_data = validated_data.pop("questions", [])
+        tag_names = validated_data.pop("tags", [])
+        
+        # Update basic fields
+        instance.name = validated_data.get('name', instance.name)
+        instance.description = validated_data.get('description', instance.description)
+        instance.icon = validated_data.get('icon', instance.icon)
+        instance.save()
+        
+        # Update tags
+        tags = []
+        for tag_name in tag_names:
+            if isinstance(tag_name, str) and tag_name.strip():
+                tag, created = Tag.objects.get_or_create(name=tag_name.strip())
+                tags.append(tag)
+        instance.tags.set(tags)
+        
+        # Delete all existing questions and recreate them
+        # This is simpler than trying to update/match existing ones
+        instance.questions.all().delete()
+        
+        # Create new questions
+        for idx, question_data in enumerate(questions_data):
+            question_data['quiz'] = instance
+            question_data['order'] = idx
+            QuestionCreateSerializer().create(question_data)
+        
+        return instance
 
 
 class UserSerializer(serializers.ModelSerializer):

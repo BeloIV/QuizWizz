@@ -1,13 +1,14 @@
 import { useCallback } from 'react';
 
 /**
- * Component for editing quiz metadata (name, author, icon, tags)
+ * Component for editing quiz metadata (name, icon, tags)
  */
 function MetadataForm({
   formData,
   tagInput,
   setTagInput,
   loading,
+  isEditMode,
   onQuizChange,
   onAddTag,
   onRemoveTag,
@@ -32,7 +33,7 @@ function MetadataForm({
   return (
     <div>
       <div className="screen-header">
-        <h1 className="page-title">Create New Quiz</h1>
+        <h1 className="page-title">{isEditMode ? 'Edit Quiz' : 'Create New Quiz'}</h1>
       </div>
 
       <form className="quiz-form" onSubmit={onSubmit}>
@@ -48,20 +49,6 @@ function MetadataForm({
               value={formData.name}
               onChange={onQuizChange}
               placeholder="e.g., Python Basics Review"
-              disabled={loading}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="author">Author *</label>
-            <input
-              id="author"
-              type="text"
-              name="author"
-              value={formData.author}
-              onChange={onQuizChange}
-              placeholder="Your name"
               disabled={loading}
               required
             />

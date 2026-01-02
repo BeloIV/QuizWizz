@@ -36,10 +36,6 @@ function PreviewScreen({
               <span className="preview-value">{formData.name}</span>
             </div>
             <div className="preview-row">
-              <span className="preview-label">Author:</span>
-              <span className="preview-value">{formData.author}</span>
-            </div>
-            <div className="preview-row">
               <span className="preview-label">Icon:</span>
               <span className="preview-value" style={{ fontSize: '24px' }}>{formData.icon}</span>
             </div>
