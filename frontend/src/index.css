@@ -129,11 +129,11 @@ body.light .popup--success {
 }
 
 html {
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 body {
-  overflow-y: auto;
+  overflow-y: visible;
 }
 
 :root {
@@ -290,6 +290,12 @@ body.menu-open {
 .hamburger-btn svg {
   width: 22px;
   height: 22px;
+}
+
+.text-icon {
+  width: 1em !important;
+  height: 1em !important;
+  color: var(--text);
 }
 
 /* Header Search Styles */
@@ -582,9 +588,16 @@ body.light .header-search-input:focus {
 .quiz-card__footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 8px;
   margin-top: 12px;
+}
+
+.quiz-card__footer-left,
+.quiz-card__footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .quiz-card__tag {
@@ -605,6 +618,19 @@ body.light .header-search-input:focus {
 
 .quiz-card:hover .quiz-card__icon {
   transform: scale(1.1);
+}
+
+.quiz-card__reaction {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.quiz-card__reaction-number {
+  min-width: 18px;
+  text-align: right;
 }
 
 .row {
@@ -806,6 +832,22 @@ body.light .btn:focus-visible {
   bottom: 0;
   background: none;
   padding: 14px 0 8px;
+}
+
+/* Create page: ensure footer actions are fixed to viewport bottom */
+.create-quiz {
+  padding-bottom: 92px; /* prevent content from being hidden behind fixed footer */
+}
+
+.create-quiz .footer-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: linear-gradient(160deg, rgba(16, 30, 58, 0.96) 0%, rgba(11, 20, 41, 0.94) 100%);
+  border-top: 1px solid rgba(118, 139, 180, 0.35);
+  padding: 12px 16px;
 }
 
 .empty {
@@ -1466,6 +1508,16 @@ body.light .icon-option.selected {
   flex-wrap: wrap;
 }
 
+.option-input-group--placeholder .option-text-input {
+  opacity: 0.6;
+}
+
+.option-input-group--placeholder .custom-checkbox-wrapper,
+.option-input-group--placeholder .image-upload-square,
+.option-input-group--placeholder .btn-remove {
+  opacity: 0.6;
+}
+
 .option-input-group input[type="radio"] {
   flex-shrink: 0;
 }
@@ -1527,6 +1579,11 @@ body.light .icon-option.selected {
 .image-upload-square__placeholder {
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  font-size: 18px;
+}
+.image-upload-square__placeholder svg {
+  width: 20px;
+  height: 20px;
 }
 
 .image-upload-square__img {
@@ -2271,12 +2328,12 @@ body.light .question-type-btn.active {
 
 .reaction-buttons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .reaction-btn {
-  font-size: 24px;
-  padding: 10px 14px;
+  font-size: 20px;
+  padding: 8px 12px;
   border-radius: 12px;
   border: 1px solid rgba(118, 139, 180, 0.35);
   background: var(--bg-secondary);
@@ -2326,12 +2383,20 @@ body.light .question-type-btn.active {
   font-weight: 600;
 }
 
-.reaction-stat-like .reaction-stat-number {
+.reaction-stat-number.reaction-score-neutral, .reaction-score-neutral {
+  color: white;
+}
+
+.reaction-stat-number.reaction-score-positive, .quiz-card__reaction-number.reaction-score-positive {
   color: var(--success);
 }
 
-.reaction-stat-dislike .reaction-stat-number {
+.reaction-stat-number.reaction-score-negative, .quiz-card__reaction-number.reaction-score-negative {
   color: var(--danger);
+}
+
+.quiz-card__reaction-number.reaction-score-neutral {
+  color: white;
 }
 
 .reaction-stat-icon {
@@ -2567,9 +2632,6 @@ body.light .drawer-divider {
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(110, 168, 255, 0.95), rgba(75, 234, 211, 0.9));
   border: 1px solid rgba(110, 168, 255, 0.5);
-  color: var(--text);
-  font-size: 24px;
-  font-weight: bold;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(7, 14, 32, 0.45);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -2578,6 +2640,13 @@ body.light .drawer-divider {
   align-items: center;
   justify-content: center;
   animation: fadeInUp 0.3s ease-out;
+}
+
+.scroll-to-top span {
+  color: var(--text);
+  font-size: 23px;
+  font-weight: bold;
+  transform: translateY(-3px);
 }
 
 .scroll-to-top:hover {
@@ -3233,11 +3302,19 @@ body.light .quick-login-title {
 }
 
 /* Messaging */
+:root {
+  --bottom-nav-height: 72px;
+  --messaging-composer-height: 64px;
+  --messaging-clearance: clamp(12px, 2vw, 24px);
+}
+
 .messaging-page {
   width: 100%;
-  height: calc(100vh - 120px);
+  height: calc(90vh - var(--bottom-nav-height));
   display: flex;
   flex-direction: column;
+  padding-bottom: 0;
+  overflow: hidden;
 }
 
 .messaging-empty {
@@ -3352,13 +3429,8 @@ body.light .quick-login-title {
   flex-direction: column;
   background: var(--card-strong);
   padding: 0;
-}
-
-.messaging-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
+  position: relative;
+   height: 100%;
   gap: 12px;
 }
 
@@ -3387,7 +3459,7 @@ body.light .quick-login-title {
 
 .messages-list {
   flex: 1;
-  padding: 24px 16px;
+  padding: 24px 16px calc(var(--messaging-composer-height) + var(--bottom-nav-height) + var(--messaging-clearance));
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -3472,11 +3544,15 @@ body.light .quick-login-title {
 .message-input-form {
   display: flex;
   gap: 8px;
-  padding: 16px 20px;
+  padding: 20px 20px;
   border-top: 1px solid var(--border);
-  background: rgba(13, 23, 48, 0.3);
-  position: sticky;
+  background: var(--card-strong);
+  position: absolute;
+  left: 0;
+  right: 0;
   bottom: 0;
+  z-index: 4;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .message-input {

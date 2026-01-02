@@ -93,7 +93,7 @@ function QuizSharing() {
                                 className="btn cta"
                                 onClick={() => openQuiz(share.quiz_data.id, share.id)}
                             >
-                                Take Quiz
+                                🧠 Take Quiz
                             </button>
                         </div>
                     ))}

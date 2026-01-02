@@ -8,6 +8,7 @@ function MetadataForm({
   tagInput,
   setTagInput,
   loading,
+  isAuthenticated,
   onQuizChange,
   onAddTag,
   onRemoveTag,
@@ -62,7 +63,7 @@ function MetadataForm({
               value={formData.author}
               onChange={onQuizChange}
               placeholder="Your name"
-              disabled={loading}
+                disabled={loading || isAuthenticated}
               required
             />
           </div>
@@ -88,7 +89,7 @@ function MetadataForm({
 
           {/* Tags Section */}
           <div className="form-group">
-            <label>Tags</label>
+            <label>Tags *</label>
 
             {/* Predefined Favorite Tags */}
             <div className="favorite-tags">
@@ -124,7 +125,7 @@ function MetadataForm({
                 placeholder="Or add a custom tag and press Enter"
                 disabled={loading}
               />
-              <button type="button" onClick={onAddTag} disabled={loading} className="btn">
+              <button type="button" onClick={onAddTag} disabled={loading} className="btn btn-secondary">
                 Add Tag
               </button>
             </div>
@@ -155,7 +156,7 @@ function MetadataForm({
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="btn"
+          className="btn btn-secondary"
         >
           Cancel
         </button>

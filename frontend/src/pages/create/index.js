@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useQuizList } from '../../context/QuizContext';
+import { useAuth } from '../../context/AuthContext';
 import { API_BASE_URL } from '../../config';
 import { useQuestionValidation } from '../../hooks/useQuestionValidation';
 import { encodeGapOptions, decodeGapOptions } from '../../utils/gapEncoding';
@@ -17,12 +18,14 @@ import PreviewScreen from './PreviewScreen';
 function CreateQuiz() {
   const navigate = useNavigate();
   const { createQuiz } = useQuizList();
+  const { user, isAuthenticated } = useAuth();
 
   const [screen, setScreen] = useState('metadata'); // 'metadata', 'questions', or 'preview'
   const [formData, setFormData] = useState({
     name: '',
-    author: '',
+    author: user?.username || '',
     icon: '📝',
+    description: '',
     tags: [],
     questions: [],
   });
@@ -43,6 +46,7 @@ function CreateQuiz() {
     options: [
       { text: '', is_correct: false, image_url: '' },
       { text: '', is_correct: false, image_url: '' },
+      { text: '', is_correct: false, image_url: '' }, // placeholder
     ],
     gapOptions: [],
   });
@@ -182,10 +186,25 @@ function CreateQuiz() {
   }, [selectedQuestionType, syncGapOptionsWithText]);
 
   const handleQuestionTypeChange = useCallback((type) => {
-    setQuestionTypeSelected(true);
-    setSelectedQuestionType(type);
-    if (type === 'fill_gap') setError(null);
-  }, []);
+    const proceed = () => {
+      setQuestionTypeSelected(true);
+      setSelectedQuestionType(type);
+      if (type === 'fill_gap') setError(null);
+    };
+
+    if (hasUnsavedQuestion() && selectedQuestionType !== type) {
+      setConfirmDialog({
+        message: 'You have unsaved changes in the current question. Do you want to switch question type without saving?',
+        onConfirm: () => {
+          setConfirmDialog(null);
+          proceed();
+        },
+        onCancel: () => setConfirmDialog(null),
+      });
+    } else {
+      proceed();
+    }
+  }, [hasUnsavedQuestion, selectedQuestionType]);
 
   const handleGapExplanationChange = useCallback((gapIndex, value) => {
     setCurrentQuestion((prev) => {
@@ -200,7 +219,7 @@ function CreateQuiz() {
     setCurrentQuestion((prev) => {
       const gapOptions = Array.isArray(prev.gapOptions) ? [...prev.gapOptions] : [];
       const gap = gapOptions[gapIndex] || { options: [] };
-      const options = [...gap.options];
+      let options = Array.isArray(gap.options) ? [...gap.options] : [];
       const existing = options[optionIndex] || { text: '', is_correct: false, image_url: '' };
       let nextValue = value;
       if (field === 'text' && typeof nextValue === 'string') {
@@ -210,30 +229,33 @@ function CreateQuiz() {
         ? { ...existing, is_correct: value }
         : { ...existing, [field]: nextValue };
       options[optionIndex] = updatedOption;
+
+      // Ensure minimum two options plus one placeholder
+      while (options.length < 3) {
+        options.push({ text: '', is_correct: false, image_url: '' });
+      }
+
+      const last = options[options.length - 1];
+      const isLastFilled = !!String(last?.text || '').trim();
+      if (isLastFilled) {
+        options.push({ text: '', is_correct: false, image_url: '' });
+      }
+      while (
+        options.length > 3 &&
+        !String(options[options.length - 1].text || '').trim() &&
+        !String(options[options.length - 2].text || '').trim()
+      ) {
+        options.pop();
+      }
+      while (options.length < 3) {
+        options.push({ text: '', is_correct: false, image_url: '' });
+      }
+
       gapOptions[gapIndex] = { ...gap, options };
       return { ...prev, gapOptions };
     });
   }, []);
 
-  const addGapOption = useCallback((gapIndex) => {
-    setCurrentQuestion((prev) => {
-      const gapOptions = Array.isArray(prev.gapOptions) ? [...prev.gapOptions] : [];
-      const gap = gapOptions[gapIndex] || { options: [] };
-      const options = [...gap.options, { text: '', is_correct: false, image_url: '' }];
-      gapOptions[gapIndex] = { ...gap, options };
-      return { ...prev, gapOptions };
-    });
-  }, []);
-
-  const removeGapOption = useCallback((gapIndex, optionIndex) => {
-    setCurrentQuestion((prev) => {
-      const gapOptions = Array.isArray(prev.gapOptions) ? [...prev.gapOptions] : [];
-      const gap = gapOptions[gapIndex] || { options: [] };
-      const options = gap.options.filter((_, i) => i !== optionIndex);
-      gapOptions[gapIndex] = { ...gap, options };
-      return { ...prev, gapOptions };
-    });
-  }, []);
 
   const handleOptionChange = useCallback((index, field, value) => {
     setCurrentQuestion((prev) => {
@@ -243,22 +265,73 @@ function CreateQuiz() {
       } else {
         newOptions[index] = { ...newOptions[index], [field]: value };
       }
+
+      // Ensure minimum of 3 options (two real + one placeholder)
+      while (newOptions.length < 3) {
+        newOptions.push({ text: '', is_correct: false, image_url: '' });
+      }
+
+      // Keep exactly one trailing empty placeholder
+      const last = newOptions[newOptions.length - 1];
+      const isLastFilled = !!String(last?.text || '').trim();
+
+      if (isLastFilled) {
+        newOptions.push({ text: '', is_correct: false, image_url: '' });
+      }
+
+      while (
+        newOptions.length > 3 &&
+        !String(newOptions[newOptions.length - 1].text || '').trim() &&
+        !String(newOptions[newOptions.length - 2].text || '').trim()
+      ) {
+        newOptions.pop();
+      }
+
+      while (newOptions.length < 3) {
+        newOptions.push({ text: '', is_correct: false, image_url: '' });
+      }
+
       return { ...prev, options: newOptions };
     });
   }, []);
 
   const addOption = useCallback(() => {
-    setCurrentQuestion((prev) => ({
-      ...prev,
-      options: [...prev.options, { text: '', is_correct: false, image_url: '' }],
-    }));
+    setCurrentQuestion((prev) => {
+      let newOptions = [...prev.options];
+      const last = newOptions[newOptions.length - 1];
+      const lastIsEmpty = !String(last?.text || '').trim();
+      if (lastIsEmpty) {
+        newOptions.pop(); // remove placeholder
+      }
+      newOptions.push({ text: '', is_correct: false, image_url: '' }); // new option
+      newOptions.push({ text: '', is_correct: false, image_url: '' }); // placeholder
+      return { ...prev, options: newOptions };
+    });
   }, []);
 
   const removeOption = useCallback((index) => {
-    setCurrentQuestion((prev) => ({
-      ...prev,
-      options: prev.options.filter((_, i) => i !== index),
-    }));
+    setCurrentQuestion((prev) => {
+      let newOptions = prev.options.filter((_, i) => i !== index);
+      while (newOptions.length < 3) {
+        newOptions.push({ text: '', is_correct: false, image_url: '' });
+      }
+      const last = newOptions[newOptions.length - 1];
+      const isLastFilled = !!String(last?.text || '').trim();
+      if (isLastFilled) {
+        newOptions.push({ text: '', is_correct: false, image_url: '' });
+      }
+      while (
+        newOptions.length > 3 &&
+        !String(newOptions[newOptions.length - 1].text || '').trim() &&
+        !String(newOptions[newOptions.length - 2].text || '').trim()
+      ) {
+        newOptions.pop();
+      }
+      while (newOptions.length < 3) {
+        newOptions.push({ text: '', is_correct: false, image_url: '' });
+      }
+      return { ...prev, options: newOptions };
+    });
   }, []);
 
   const addQuestion = useCallback(() => {
@@ -271,11 +344,14 @@ function CreateQuiz() {
     let questionWithId;
 
     if (selectedQuestionType === 'basic') {
+      const filteredOptions = (Array.isArray(currentQuestion.options) ? currentQuestion.options : [])
+        .filter((opt) => String(opt?.text || '').trim());
+      const indexedOptions = filteredOptions.map((opt, idx) => ({ ...opt, index: idx }));
       questionWithId = {
         ...currentQuestion,
         id: `q${formData.questions.length + 1}`,
         order: formData.questions.length,
-        options: currentQuestion.options.map((opt, idx) => ({ ...opt, index: idx })),
+        options: indexedOptions,
       };
     } else if (selectedQuestionType === 'fill_gap') {
       const gapOptions = Array.isArray(currentQuestion.gapOptions) ? currentQuestion.gapOptions : [];
@@ -310,6 +386,7 @@ function CreateQuiz() {
       options: [
         { text: '', is_correct: false, image_url: '' },
         { text: '', is_correct: false, image_url: '' },
+        { text: '', is_correct: false, image_url: '' }, // placeholder
       ],
       gapOptions: [],
     });
@@ -349,6 +426,7 @@ function CreateQuiz() {
         options: [
           { text: '', is_correct: false, image_url: '' },
           { text: '', is_correct: false, image_url: '' },
+          { text: '', is_correct: false, image_url: '' }, // placeholder
         ],
         gapOptions: [],
       });
@@ -435,6 +513,14 @@ function CreateQuiz() {
   const handleMetadataSubmit = (e) => {
     e.preventDefault();
     setError(null);
+
+    if (tagInput.trim()) {
+      setPopup({
+        message: 'You have typed a tag but didn’t add it. Click “Add Tag” or clear the field.',
+        type: 'warning',
+      });
+      return;
+    }
 
     const validation = validateMetadata(formData);
     if (!validation.valid) {
@@ -537,6 +623,7 @@ function CreateQuiz() {
           tagInput={tagInput}
           setTagInput={setTagInput}
           loading={loading}
+            isAuthenticated={isAuthenticated}
           onQuizChange={handleQuizChange}
           onAddTag={addTag}
           onRemoveTag={removeTag}
@@ -584,8 +671,6 @@ function CreateQuiz() {
                 onRemoveOption={removeOption}
                 onGapOptionChange={handleGapOptionChange}
                 onGapExplanationChange={handleGapExplanationChange}
-                onAddGapOption={addGapOption}
-                onRemoveGapOption={removeGapOption}
                 onImageButtonClick={handleImageButtonClick}
                 onSaveQuestion={addQuestion}
               />
@@ -598,7 +683,7 @@ function CreateQuiz() {
                 type="button"
                 onClick={handleBackToMetadata}
                 disabled={loading}
-                className="btn"
+                className="btn btn-secondary"
               >
                 ← Back
               </button>
@@ -606,7 +691,7 @@ function CreateQuiz() {
                 type="button"
                 onClick={handleCancel}
                 disabled={loading}
-                className="btn"
+                className="btn btn-secondary"
               >
                 Cancel
               </button>
@@ -655,7 +740,7 @@ function CreateQuiz() {
               <button
                 type="button"
                 onClick={confirmDialog.onCancel}
-                className="btn"
+                className="btn btn-secondary"
               >
                 No, Stay
               </button>

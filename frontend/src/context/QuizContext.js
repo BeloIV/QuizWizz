@@ -91,21 +91,23 @@ export function QuizProvider({ children }) {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error('Quiz creation error:', errorData);
-        
-        // Format error messages from Django
+
+        // Robustly format nested Django errors
+        const formatErr = (val) => {
+          if (val == null) return '';
+          if (Array.isArray(val)) return val.map(formatErr).join(', ');
+          if (typeof val === 'object') return Object.entries(val).map(([k, v]) => `${k}: ${formatErr(v)}`).join('; ');
+          return String(val);
+        };
+
         if (errorData && typeof errorData === 'object') {
           const messages = Object.entries(errorData)
-            .map(([field, errors]) => {
-              if (Array.isArray(errors)) {
-                return `${field}: ${errors.join(', ')}`;
-              }
-              return `${field}: ${errors}`;
-            })
+            .map(([field, errors]) => `${field}: ${formatErr(errors)}`)
             .join('\n');
           throw new Error(messages || `Failed to create quiz (${response.status})`);
         }
-        
-        throw new Error(errorData.detail || `Failed to create quiz (${response.status})`);
+
+        throw new Error(errorData?.detail || `Failed to create quiz (${response.status})`);
       }
 
       const data = await response.json();
