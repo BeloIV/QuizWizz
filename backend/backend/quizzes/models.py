@@ -15,7 +15,7 @@ class Tag(models.Model):
 class Quiz(models.Model):
     id = models.SlugField(primary_key=True, max_length=100)
     name = models.CharField(max_length=255)
-    author = models.CharField(max_length=255)
+    author = models.ForeignKey(User, related_name="quizzes", on_delete=models.CASCADE)
     description = models.TextField(blank=True)
     icon = models.CharField(max_length=50, blank=True, default="📝")
     tags = models.ManyToManyField(Tag, related_name="quizzes", blank=True)

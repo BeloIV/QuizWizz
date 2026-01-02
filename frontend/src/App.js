@@ -7,6 +7,7 @@ import { SearchProvider } from './context/SearchContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import CreateQuiz from './pages/create';
+import MyQuizzes from './pages/MyQuizzes';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import Play from './pages/play';
@@ -16,6 +17,8 @@ import Review from './pages/Review';
 import {ReactionsProvider} from "./context/ReactionsContext";
 import Messaging from './components/Messaging';
 import QuizSharing from './components/QuizSharing';
+import Login from './components/Login';
+import Register from './components/Register';
 
 function App() {
   return (
@@ -29,7 +32,11 @@ function App() {
                   <Layout>
                     <Routes>
                       <Route path="/" element={<Home />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
                       <Route path="/create" element={<CreateQuiz />} />
+                      <Route path="/edit/:quizId" element={<CreateQuiz />} />
+                      <Route path="/my-quizzes" element={<MyQuizzes />} />
                       <Route path="/quiz/:quizId" element={<QuizDetail />} />
                       <Route path="/play/:quizId" element={<Play />} />
                       <Route path="/results/:quizId" element={<Results />} />

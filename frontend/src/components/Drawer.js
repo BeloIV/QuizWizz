@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
 
 function Drawer({ isOpen, onClose }) {
     const drawerRef = useRef(null);
     const { user, logout, isAuthenticated, loading } = useAuth();
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const navigate = useNavigate();
 
@@ -117,38 +119,75 @@ function Drawer({ isOpen, onClose }) {
                                 </button>
                             </>
                         ) : (
-                            <button
-                                className="drawer-menu-button"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    console.log('Login button clicked');
-                                    setShowLoginModal(true);
-                                }}
-                            >
-                                <svg
-                                    className="text-icon"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
+                            <>
+                                <button
+                                    className="drawer-menu-button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        console.log('Login button clicked');
+                                        setShowLoginModal(true);
+                                    }}
                                 >
-                                    <path d="M15 3h3a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-3"/>
-                                    <path d="M10 17l5-5-5-5"/>
-                                    <path d="M15 12H3"/>
-                                </svg>
+                                    <svg
+                                        className="text-icon"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <path d="M15 3h3a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-3"/>
+                                        <path d="M10 17l5-5-5-5"/>
+                                        <path d="M15 12H3"/>
+                                    </svg>
 
 
-                                <span>  Login</span>
-                            </button>
+                                    <span>  Login</span>
+                                </button>
+                                <button
+                                    className="drawer-menu-button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        console.log('Register button clicked');
+                                        setShowRegisterModal(true);
+                                    }}
+                                >
+                                    <svg
+                                        className="text-icon"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    >
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="8.5" cy="7" r="4"/>
+                                        <line x1="20" y1="8" x2="20" y2="14"/>
+                                        <line x1="23" y1="11" x2="17" y2="11"/>
+                                    </svg>
+                                    <span>  Register</span>
+                                </button>
+                            </>
                         )}
                     </div>
 
                     {/* Messaging Section */}
                     {isAuthenticated && (
                         <>
+                            <div className="drawer-divider"></div>
+                            <div className="drawer-section">
+                                <h3 className="drawer-section-title">My Content</h3>
+                                <button
+                                    className="drawer-menu-button"
+                                    onClick={() => navigateTo('/my-quizzes')}
+                                >
+                                    My Quizzes
+                                </button>
+                            </div>
                             <div className="drawer-divider"></div>
                             <div className="drawer-section">
                                 <h3 className="drawer-section-title">Social</h3>
@@ -184,7 +223,21 @@ function Drawer({ isOpen, onClose }) {
             {/* Login Modal */}
             <LoginModal
                 isOpen={showLoginModal} 
-                onClose={() => setShowLoginModal(false)} 
+                onClose={() => setShowLoginModal(false)}
+                onSwitchToRegister={() => {
+                    setShowLoginModal(false);
+                    setShowRegisterModal(true);
+                }}
+            />
+
+            {/* Register Modal */}
+            <RegisterModal
+                isOpen={showRegisterModal}
+                onClose={() => setShowRegisterModal(false)}
+                onSwitchToLogin={() => {
+                    setShowRegisterModal(false);
+                    setShowLoginModal(true);
+                }}
             />
         </>
     );

@@ -16,7 +16,7 @@ class QuestionInline(admin.StackedInline):
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "author")
-    search_fields = ("id", "name", "author")
+    search_fields = ("id", "name", "author__username")
     inlines = [QuestionInline]
 
 
