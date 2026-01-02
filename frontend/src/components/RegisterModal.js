@@ -1,23 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
+function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    const { register } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        // Validation
+        if (!username || !password) {
+            setError('Username and password are required');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters long');
+            return;
+        }
+
         setLoading(true);
-        console.debug('LoginModal: submit', { username });
-        const result = await login(username, password);
+        console.debug('RegisterModal: submit', { username });
+        const result = await register(username, password);
         
         if (result.success) {
             setUsername('');
             setPassword('');
+            setConfirmPassword('');
             onClose();
         } else {
             setError(result.error);
@@ -27,17 +46,17 @@ function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
     };
 
     useEffect(() => {
-        console.log('LoginModal: isOpen =>', isOpen);
+        console.log('RegisterModal: isOpen =>', isOpen);
     }, [isOpen]);
 
     if (!isOpen) return null;
 
-    console.log('LoginModal rendering, isOpen:', isOpen);
+    console.log('RegisterModal rendering, isOpen:', isOpen);
 
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content login-modal" onClick={(e) => e.stopPropagation()}>
-                <h2>Login to QuizWizz</h2>
+                <h2>Register to QuizWizz</h2>
                 
                 {error && (
                     <div className="login-error">
@@ -53,7 +72,7 @@ function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
                             id="username"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="Enter username"
+                            placeholder="Choose a username"
                             disabled={loading}
                             required
                         />
@@ -66,15 +85,28 @@ function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter password"
+                            placeholder="Enter password (min 6 characters)"
+                            disabled={loading}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="confirmPassword">Confirm Password</label>
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            placeholder="Re-enter password"
                             disabled={loading}
                             required
                         />
                     </div>
 
                     <div className="modal-actions" style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '20px' }}>
-                        <button type="submit" className="btn btn-primary" disabled={loading} style={{ minWidth: '120px' }}>
-                            {loading ? 'Logging in...' : 'Login'}
+                        <button type="submit" className="btn btn-primary" disabled={loading} style={{ minWidth: '140px' }}>
+                            {loading ? 'Creating Account...' : 'Register'}
                         </button>
                         <button 
                             type="button" 
@@ -88,17 +120,17 @@ function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
                     </div>
                 </form>
 
-                {onSwitchToRegister && (
+                {onSwitchToLogin && (
                     <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #eee' }}>
-                        <p style={{ margin: '0 0 10px 0', color: '#666' }}>Don't have an account?</p>
+                        <p style={{ margin: '0 0 10px 0', color: '#666' }}>Already have an account?</p>
                         <button
                             type="button"
-                            onClick={onSwitchToRegister}
+                            onClick={onSwitchToLogin}
                             disabled={loading}
                             className="btn btn-link"
                             style={{ textDecoration: 'underline', cursor: 'pointer' }}
                         >
-                            Create a new account
+                            Login here
                         </button>
                     </div>
                 )}
@@ -107,4 +139,4 @@ function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
     );
 }
 
-export default LoginModal;
+export default RegisterModal;

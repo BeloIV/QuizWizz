@@ -72,6 +72,25 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const register = async (username, password) => {
+        try {
+            console.debug('AuthContext.register called', { username });
+            const response = await axios.post(`${API_BASE_URL}/auth/register/`, {
+                username,
+                password,
+            });
+            console.debug('AuthContext.register response', response.data);
+            setUser(response.data.user);
+            return { success: true, user: response.data.user };
+        } catch (error) {
+            console.error('Registration error:', error);
+            return {
+                success: false,
+                error: error.response?.data?.detail || 'Registration failed',
+            };
+        }
+    };
+
     const logout = async () => {
         try {
             await axios.post(`${API_BASE_URL}/auth/logout/`);
@@ -87,6 +106,7 @@ export const AuthProvider = ({ children }) => {
         user,
         loading,
         login,
+        register,
         logout,
         allUsers,
         isAuthenticated: !!user,

@@ -173,6 +173,48 @@ class LoginView(APIView):
             )
 
 
+class RegisterView(APIView):
+    """Register a new user"""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if not username or not password:
+            return Response(
+                {"detail": "Username and password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if username already exists
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {"detail": "Username already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Create new user
+            user = User.objects.create_user(
+                username=username,
+                password=password
+            )
+            
+            # Automatically log in the new user
+            login(request, user)
+            
+            return Response({
+                "user": UserSerializer(user).data,
+                "message": "Registration successful"
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(
+                {"detail": f"Registration failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 class LogoutView(APIView):
     """Logout endpoint"""
     permission_classes = [AllowAny]

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function Login({ onClose }) {
@@ -7,6 +8,7 @@ function Login({ onClose }) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,7 +18,11 @@ function Login({ onClose }) {
         const result = await login(username, password);
         
         if (result.success) {
-            onClose && onClose();
+            if (onClose) {
+                onClose();
+            } else {
+                navigate('/');
+            }
         } else {
             setError(result.error);
         }
@@ -33,7 +39,11 @@ function Login({ onClose }) {
         const result = await login(user, user);
         
         if (result.success) {
-            onClose && onClose();
+            if (onClose) {
+                onClose();
+            } else {
+                navigate('/');
+            }
         } else {
             setError(result.error);
         }
@@ -42,8 +52,9 @@ function Login({ onClose }) {
     };
 
     return (
-        <div className="login-container">
-            <h2>Login</h2>
+        <div style={onClose ? {} : { maxWidth: '400px', margin: '40px auto', padding: '20px' }}>
+            <div className="login-container">
+                <h2>Login</h2>
             
             {error && (
                 <div className="login-error">
@@ -120,6 +131,11 @@ function Login({ onClose }) {
                         User 3
                     </button>
                 </div>
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '15px' }}>
+                Don't have an account? <Link to="/register">Register here</Link>
+            </div>
             </div>
         </div>
     );

@@ -55,20 +55,6 @@ function MetadataForm({
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="author">Author *</label>
-            <input
-              id="author"
-              type="text"
-              name="author"
-              value={formData.author}
-              onChange={onQuizChange}
-              placeholder="Your name"
-                disabled={loading || isAuthenticated}
-              required
-            />
-          </div>
-
           {/* Icon Selector */}
           <div className="form-group">
             <label htmlFor="icon">Quiz Icon</label>

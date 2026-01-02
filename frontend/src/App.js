@@ -17,6 +17,8 @@ import Review from './pages/Review';
 import {ReactionsProvider} from "./context/ReactionsContext";
 import Messaging from './components/Messaging';
 import QuizSharing from './components/QuizSharing';
+import Login from './components/Login';
+import Register from './components/Register';
 
 function App() {
   return (
@@ -30,6 +32,8 @@ function App() {
                   <Layout>
                     <Routes>
                       <Route path="/" element={<Home />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
                       <Route path="/create" element={<CreateQuiz />} />
                       <Route path="/edit/:quizId" element={<CreateQuiz />} />
                       <Route path="/my-quizzes" element={<MyQuizzes />} />

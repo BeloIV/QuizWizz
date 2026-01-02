@@ -116,10 +116,6 @@ export function useQuestionValidation(currentQuestion, selectedQuestionType) {
       return { valid: false, error: 'Quiz name must be filled in' };
     }
 
-    if (!formData.author.trim()) {
-      return { valid: false, error: 'Quiz author name must be filled in' };
-    }
-
     if (!Array.isArray(formData.tags) || formData.tags.length === 0) {
       return { valid: false, error: 'At least one tag must be added' };
     }

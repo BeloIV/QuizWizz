@@ -11,6 +11,8 @@ import MetadataForm from './MetadataForm';
 import QuestionEditor from './QuestionEditor';
 import QuestionsList from './QuestionsList';
 import PreviewScreen from './PreviewScreen';
+import LoginModal from '../../components/LoginModal';
+import RegisterModal from '../../components/RegisterModal';
 
 /**
  * Main CreateQuiz component - orchestrates quiz creation/editing flow
@@ -19,7 +21,7 @@ function CreateQuiz() {
   const navigate = useNavigate();
   const { quizId } = useParams();
   const { createQuiz, updateQuiz, getQuiz } = useQuizList();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const isEditMode = !!quizId;
 
   const [screen, setScreen] = useState('metadata'); // 'metadata', 'questions', or 'preview'
@@ -61,9 +63,31 @@ function CreateQuiz() {
 
   const fileInputRef = useRef(null);
   const [imageTarget, setImageTarget] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [waitingForAuth, setWaitingForAuth] = useState(false);
+  const loginCanceledRef = useRef(false);
 
   const { hasUnsavedQuestion, validateQuestion, validateMetadata, syncGapOptionsWithText } = 
     useQuestionValidation(currentQuestion, selectedQuestionType);
+
+  // Show login modal if not authenticated (only after auth check is complete)
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      loginCanceledRef.current = false;
+      setShowLoginModal(true);
+    }
+  }, [isAuthenticated, authLoading]);
+
+  // Handle redirect after modal is closed and waiting for auth update
+  useEffect(() => {
+    if (waitingForAuth && !authLoading) {
+      setWaitingForAuth(false);
+      if (!isAuthenticated && loginCanceledRef.current) {
+        navigate('/');
+      }
+    }
+  }, [waitingForAuth, authLoading, isAuthenticated, navigate]);
 
   // Load quiz data if editing
   useEffect(() => {
@@ -796,6 +820,42 @@ function CreateQuiz() {
           </div>
         </div>
       )}
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => {
+          const wasCanceled = !isAuthenticated;
+          loginCanceledRef.current = wasCanceled;
+          setShowLoginModal(false);
+          // Set waiting state to check auth after it updates
+          if (wasCanceled) {
+            setWaitingForAuth(true);
+          }
+        }}
+        onSwitchToRegister={() => {
+          setShowLoginModal(false);
+          setShowRegisterModal(true);
+        }}
+      />
+
+      {/* Register Modal */}
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => {
+          const wasCanceled = !isAuthenticated;
+          loginCanceledRef.current = wasCanceled;
+          setShowRegisterModal(false);
+          // Set waiting state to check auth after it updates
+          if (wasCanceled) {
+            setWaitingForAuth(true);
+          }
+        }}
+        onSwitchToLogin={() => {
+          setShowRegisterModal(false);
+          setShowLoginModal(true);
+        }}
+      />
     </div>
   );
 }
