@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useMessages } from '../context/MessagesContext';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
@@ -7,6 +8,7 @@ import RegisterModal from './RegisterModal';
 function Drawer({ isOpen, onClose }) {
     const drawerRef = useRef(null);
     const { user, logout, isAuthenticated, loading } = useAuth();
+    const { unreadCount, unviewedQuizzesCount } = useMessages();
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
@@ -196,12 +198,18 @@ function Drawer({ isOpen, onClose }) {
                                     onClick={() => navigateTo('/messages')}
                                 >
                                     💬 Messages
+                                    {unreadCount > 0 && (
+                                        <span className="badge badge-drawer">{unreadCount}</span>
+                                    )}
                                 </button>
                                 <button
                                     className="drawer-menu-button"
                                     onClick={() => navigateTo('/shared-quizzes')}
                                 >
                                     🔗 Shared Quizzes
+                                    {unviewedQuizzesCount > 0 && (
+                                        <span className="badge badge-drawer">{unviewedQuizzesCount}</span>
+                                    )}
                                 </button>
                             </div>
                         </>
