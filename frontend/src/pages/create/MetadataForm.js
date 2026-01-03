@@ -138,7 +138,18 @@ function MetadataForm({
       </form>
 
       {/* Bottom action buttons */}
-      <div className="footer-actions row" style={{ justifyContent: 'space-between', marginTop: '24px' }}>
+      <div
+        className="footer-actions row"
+        style={{
+          justifyContent: 'space-between',
+          marginTop: '24px',
+          position: 'sticky',
+          bottom: '68px',
+          padding: '12px 0',
+          background: 'var(--bg)',
+          zIndex: 10,
+        }}
+      >
         <button
           type="button"
           onClick={onCancel}

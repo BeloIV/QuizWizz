@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { LuLogOut, LuLogIn } from 'react-icons/lu';
 
-import Drawer from './Drawer';
 import { useSearch } from '../context/SearchContext';
 import { useTheme } from '../context/ThemeContext';
 import { useMessages } from '../context/MessagesContext';
+import { useAuth } from '../context/AuthContext';
+import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
 
 function Header() {
   const containerRef = useRef(null);
@@ -13,13 +16,14 @@ function Header() {
   const { open: searchOpen, searchTerm, openSearch, closeSearch, setSearchTerm } = useSearch();
   const { toggleTheme } = useTheme();
   const { unreadCount, unviewedQuizzesCount } = useMessages();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { isAuthenticated, logout, loading } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const isHomePage = location.pathname === '/';
 
   const totalNotifications = unreadCount + unviewedQuizzesCount;
 
   useEffect(() => {
-    setMenuOpen(false);
     closeSearch();
   }, [location, closeSearch]);
 
@@ -42,14 +46,8 @@ function Header() {
     return '/';
   }, [location.pathname]);
 
-  const toggleMenu = () => {
-    console.log('toggleMenu called, menuOpen will be:', !menuOpen);
-    setMenuOpen((prev) => !prev);
-  };
-
   const toggleSearch = () => {
     if (!isHomePage) return;
-    setMenuOpen(false);
     if (searchOpen) {
       closeSearch();
     } else {
@@ -71,50 +69,16 @@ function Header() {
     <>
       <div className={`app-header__inner${searchOpen ? ' search-active' : ''}`} ref={containerRef}>
         <div className="app-header__section app-header__section--left">
-          {!searchOpen && (
+          {!searchOpen && !loading && (
             <button
               type="button"
-              className={`icon-btn hamburger-btn${menuOpen ? ' is-open' : ''}`}
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={menuOpen}
-              onClick={toggleMenu}
+              className="icon-btn icon-btn--ghost"
+              aria-label="Toggle theme"
+              onClick={toggleTheme}
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              {totalNotifications > 0 && (
-                <span className="badge badge-hamburger">{totalNotifications}</span>
-              )}
+              <span aria-hidden="true">🌗</span>
             </button>
           )}
-        </div>
-        {searchOpen && isHomePage ? (
-          <div className="header-search-wrapper">
-            <input
-              ref={searchInputRef}
-              type="text"
-              className="header-search-input"
-              placeholder="Search quizzes by name or tag"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onKeyDown={handleSearchKeyDown}
-            />
-          </div>
-        ) : (
-          <Link
-            to="/"
-            className={`header-brand${route === '/' ? ' active' : ''}`}
-          >
-            QuizWizz
-          </Link>
-        )}
-        <div className="app-header__section app-header__section--right">
           {isHomePage && (
             <button
               type="button"
@@ -152,18 +116,70 @@ function Header() {
               )}
             </button>
           )}
-          <button
-            type="button"
-            className="icon-btn icon-btn--ghost"
-            aria-label="Toggle theme"
-            onClick={toggleTheme}
+          {searchOpen && isHomePage && (
+            <div className="header-search-wrapper">
+              <input
+                ref={searchInputRef}
+                type="text"
+                className="header-search-input"
+                placeholder="Search by name or tag"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                onKeyDown={handleSearchKeyDown}
+              />
+            </div>
+          )}
+        </div>
+        {!searchOpen && (
+          <Link
+            to="/"
+            className={`header-brand${route === '/' ? ' active' : ''}`}
           >
-            <span aria-hidden="true">🌗</span>
-          </button>
+            QuizWizz
+          </Link>
+        )}
+        <div className="app-header__section app-header__section--right">
+          {!searchOpen && !loading && (
+            isAuthenticated ? (
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label="Logout"
+                onClick={logout}
+              >
+                <LuLogOut size={20} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label="Login"
+                onClick={() => setShowLoginModal(true)}
+              >
+                <LuLogIn size={20} />
+              </button>
+            )
+          )}
         </div>
       </div>
 
-      <Drawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToRegister={() => {
+          setShowLoginModal(false);
+          setShowRegisterModal(true);
+        }}
+      />
+
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onSwitchToLogin={() => {
+          setShowRegisterModal(false);
+          setShowLoginModal(true);
+        }}
+      />
     </>
   );
 }

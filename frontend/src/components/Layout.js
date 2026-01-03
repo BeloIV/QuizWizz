@@ -1,4 +1,5 @@
 import Header from './Header';
+import BottomNav from './BottomNav';
 
 function Layout({ children }) {
   return (
@@ -9,6 +10,7 @@ function Layout({ children }) {
       <main id="app" className="app-main" aria-live="polite">
         {children}
       </main>
+      <BottomNav />
     </>
   );
 }

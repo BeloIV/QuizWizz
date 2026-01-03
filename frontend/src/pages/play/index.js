@@ -63,7 +63,6 @@ function Play() {
     isSubmitDisabled,
     showTryAgainToast,
     handleOptionClick,
-    resetQuestionState,
   } = playState;
 
   const totalQuestions = quiz?.questions?.length || 0;
@@ -143,7 +142,6 @@ function Play() {
             const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
             navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
           } else {
-            resetQuestionState();
             setIndex(nextIndex);
           }
           setGapSelections({});
@@ -216,7 +214,6 @@ function Play() {
           const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
           navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
         } else {
-          resetQuestionState();
           setIndex(nextIndex);
         }
         setVerifiedCorrectIndices([]);
@@ -287,7 +284,7 @@ function Play() {
   const progress = `${index + 1} / ${totalQuestions}`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)', gap: '16px', paddingBottom: '16px' }}>
+    <div>
       <div className="row" style={{ justifyContent: 'space-between', marginBottom: '8px' }}>
         <span className="pill">{quiz.name}</span>
         <span className="muted">{progress}</span>
@@ -314,22 +311,10 @@ function Play() {
         onSubmit={handleSubmit}
       />
 
-      <div aria-hidden="true" style={{ flex: 1 }} />
-
-      <div className="footer-actions row" style={{ justifyContent: 'space-between', marginBottom: '12px' }}>
-        <button type="button" className="btn btn-secondary" onClick={() => setShowQuitDialog(true)}>
+      <div className="footer-actions row" style={{ justifyContent: 'space-between' }}>
+        <button type="button" className="btn" onClick={() => setShowQuitDialog(true)}>
           Quit
         </button>
-        {!reveal ? (
-          <button
-            type="button"
-            className="btn primary"
-            onClick={() => handleSubmit()}
-            disabled={isSubmitDisabled}
-          >
-            Continue
-          </button>
-        ) : <div />}
       </div>
 
       {showTryAgain && (
