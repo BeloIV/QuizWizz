@@ -47,7 +47,8 @@ function Home() {
     return quizzesWithScores.filter((quiz) => {
       const nameMatch = quiz.name.toLowerCase().includes(term);
       const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
-      return nameMatch || tagMatch;
+      const authorMatch = quiz.author?.toLowerCase().includes(term);
+      return nameMatch || tagMatch || authorMatch;
     });
   }, [quizzesWithScores, searchTerm]);
 

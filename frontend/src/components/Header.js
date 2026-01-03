@@ -19,7 +19,17 @@ function Header() {
   const { isAuthenticated, logout, loading } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const isHomePage = location.pathname === '/';
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false);
+    logout();
+  };
 
   const totalNotifications = unreadCount + unviewedQuizzesCount;
 
@@ -69,16 +79,6 @@ function Header() {
     <>
       <div className={`app-header__inner${searchOpen ? ' search-active' : ''}`} ref={containerRef}>
         <div className="app-header__section app-header__section--left">
-          {!searchOpen && !loading && (
-            <button
-              type="button"
-              className="icon-btn icon-btn--ghost"
-              aria-label="Toggle theme"
-              onClick={toggleTheme}
-            >
-              <span aria-hidden="true">🌗</span>
-            </button>
-          )}
           {isHomePage && (
             <button
               type="button"
@@ -116,13 +116,23 @@ function Header() {
               )}
             </button>
           )}
+          {!searchOpen && !loading && (
+            <button
+              type="button"
+              className="icon-btn icon-btn--ghost"
+              aria-label="Toggle theme"
+              onClick={toggleTheme}
+            >
+              <span aria-hidden="true">🌗</span>
+            </button>
+          )}
           {searchOpen && isHomePage && (
             <div className="header-search-wrapper">
               <input
                 ref={searchInputRef}
                 type="text"
                 className="header-search-input"
-                placeholder="Search by name or tag"
+                placeholder="Search by name, tag, or creator"
                 value={searchTerm}
                 onChange={handleSearchChange}
                 onKeyDown={handleSearchKeyDown}
@@ -143,9 +153,9 @@ function Header() {
             isAuthenticated ? (
               <button
                 type="button"
-                className="icon-btn"
+                className="icon-btn icon-btn--logout"
                 aria-label="Logout"
-                onClick={logout}
+                onClick={handleLogoutClick}
               >
                 <LuLogOut size={20} />
               </button>
@@ -180,6 +190,29 @@ function Header() {
           setShowLoginModal(true);
         }}
       />
+
+      {showLogoutConfirm && (
+        <div className="modal-backdrop" onClick={() => setShowLogoutConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Confirm Logout</h2>
+            <p>Are you sure you want to logout?</p>
+            <div className="modal-buttons">
+              <button
+                className="btn secondary"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn primary"
+                onClick={confirmLogout}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

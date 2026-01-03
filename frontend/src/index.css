@@ -378,9 +378,75 @@ body.menu-open {
   color: var(--text);
 }
 
+/* Logout Confirmation Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(118, 139, 180, 0.35);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+.modal-content h2 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.modal-content p {
+  margin: 0 0 24px 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+body.light .modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(180, 192, 210, 0.45);
+}
+
 /* Header Search Styles */
 .app-header__inner.search-active {
   grid-template-columns: auto 1fr auto;
+  gap: 16px;
 }
 
 .app-header__inner.search-active .header-brand {
@@ -388,11 +454,20 @@ body.menu-open {
 }
 
 .header-search-wrapper {
-  flex: 1;
+  flex: 2;
   display: flex;
   align-items: center;
   justify-self: stretch;
+  width: calc(100% + 3px);
   animation: searchSlideIn 0.3s ease-out;
+}
+
+.icon-btn--logout {
+  transition: all 0.3s ease;
+}
+
+.icon-btn--logout:hover {
+  transform: scale(1.1);
 }
 
 @keyframes searchSlideIn {
