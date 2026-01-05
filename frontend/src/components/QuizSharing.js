@@ -1,16 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useMessages } from '../context/MessagesContext';
 import { API_BASE_URL } from '../config';
 import { useNavigate } from 'react-router-dom';
+import LoginModal from "./LoginModal.js";
+import RegisterModal from "./RegisterModal.js";
 
 function QuizSharing() {
-    const { user, allUsers } = useAuth();
+    const { user, allUsers, isAuthenticated, loading: authLoading } = useAuth();
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [waitingForAuth, setWaitingForAuth] = useState(false);
+    const loginCanceledRef = useRef(false);
     const { loadUnviewedQuizzes } = useMessages();
     const [receivedShares, setReceivedShares] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            loginCanceledRef.current = false;
+            setShowLoginModal(true);
+        }
+    }, [isAuthenticated, authLoading]);
+
+    useEffect(() => {
+        if (waitingForAuth && !authLoading) {
+            setWaitingForAuth(false);
+            if (!isAuthenticated && loginCanceledRef.current) {
+                navigate('/');
+            }
+        }
+    }, [waitingForAuth, authLoading, isAuthenticated, navigate]);
 
     useEffect(() => {
         if (user) {
@@ -51,14 +73,6 @@ function QuizSharing() {
         markAsViewed(shareId);
         navigate(`/quiz/${quizId}`);
     };
-
-    if (!user) {
-        return (
-            <div className="quiz-sharing-container">
-                <p>Please login to see shared quizzes</p>
-            </div>
-        );
-    }
 
     return (
         <div className="quiz-sharing-container">
@@ -102,6 +116,34 @@ function QuizSharing() {
                     ))}
                 </div>
             )}
+
+            <LoginModal
+                isOpen={showLoginModal}
+                onClose={() => {
+                    const wasCanceled = !isAuthenticated;
+                    loginCanceledRef.current = wasCanceled;
+                    setShowLoginModal(false);
+                    if (wasCanceled) setWaitingForAuth(true);
+                }}
+                onSwitchToRegister={() => {
+                    setShowLoginModal(false);
+                    setShowRegisterModal(true);
+                }}
+            />
+
+            <RegisterModal
+                isOpen={showRegisterModal}
+                onClose={() => {
+                    const wasCanceled = !isAuthenticated;
+                    loginCanceledRef.current = wasCanceled;
+                    setShowRegisterModal(false);
+                    if (wasCanceled) setWaitingForAuth(true);
+                }}
+                onSwitchToLogin={() => {
+                    setShowRegisterModal(false);
+                    setShowLoginModal(true);
+                }}
+            />
         </div>
     );
 }
