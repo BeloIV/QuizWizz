@@ -4,10 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMessages } from '../context/MessagesContext';
 import { API_BASE_URL } from '../config';
+import LoginModal from "./LoginModal.js";
+import RegisterModal from "./RegisterModal.js";
 
 function Messaging() {
-    const { user, allUsers } = useAuth();
+    const { user, allUsers, isAuthenticated, loading: authLoading } = useAuth();
     const { unreadByUser, markConversationAsRead, loadUnreadCounts, loadUnviewedQuizzes } = useMessages();
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [waitingForAuth, setWaitingForAuth] = useState(false);
+    const loginCanceledRef = useRef(false);
     const navigate = useNavigate();
     const [selectedUser, setSelectedUser] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -49,6 +55,22 @@ function Messaging() {
             });
         }
     };
+
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            loginCanceledRef.current = false;
+            setShowLoginModal(true);
+        }
+    }, [isAuthenticated, authLoading]);
+
+    useEffect(() => {
+        if (waitingForAuth && !authLoading) {
+            setWaitingForAuth(false);
+            if (!isAuthenticated && loginCanceledRef.current) {
+                navigate('/');
+            }
+        }
+    }, [waitingForAuth, authLoading, isAuthenticated, navigate]);
 
     useEffect(() => {
         const itemCount = conversationItems.length;
@@ -253,16 +275,6 @@ function Messaging() {
         }
     };
 
-    if (!user) {
-        return (
-            <div className="messaging-page">
-                <div className="messaging-empty">
-                    <p>Please login to use messaging</p>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="messaging-page">
             <div className={`messaging-container ${selectedUser ? 'has-selected-user' : ''}`}>
@@ -405,6 +417,34 @@ function Messaging() {
                     )}
                 </div>
             </div>
+
+            <LoginModal
+                isOpen={showLoginModal}
+                onClose={() => {
+                    const wasCanceled = !isAuthenticated;
+                    loginCanceledRef.current = wasCanceled;
+                    setShowLoginModal(false);
+                    if (wasCanceled) setWaitingForAuth(true);
+                }}
+                onSwitchToRegister={() => {
+                    setShowLoginModal(false);
+                    setShowRegisterModal(true);
+                }}
+            />
+
+            <RegisterModal
+                isOpen={showRegisterModal}
+                onClose={() => {
+                    const wasCanceled = !isAuthenticated;
+                    loginCanceledRef.current = wasCanceled;
+                    setShowRegisterModal(false);
+                    if (wasCanceled) setWaitingForAuth(true);
+                }}
+                onSwitchToLogin={() => {
+                    setShowRegisterModal(false);
+                    setShowLoginModal(true);
+                }}
+            />
         </div>
     );
 }
