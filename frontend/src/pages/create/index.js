@@ -748,9 +748,7 @@ function CreateQuiz() {
               justifyContent: 'space-between',
               marginTop: '24px',
               position: 'sticky',
-              bottom: '68px',
               padding: '8px 0',
-              background: 'var(--bg)',
               zIndex: 10,
             }}
           >
