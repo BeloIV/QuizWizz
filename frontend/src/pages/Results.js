@@ -7,6 +7,7 @@ import { useQuizList } from '../context/QuizContext';
 import { useScores } from '../context/ScoresContext';
 import { useReactions } from '../context/ReactionsContext';
 import { useAuth } from '../context/AuthContext';
+import CommentsSection from '../components/CommentsSection';
 import ShareQuizModal from '../components/ShareQuizModal';
 
 function Results() {
@@ -129,6 +130,8 @@ function Results() {
           </div>
         </div>
       </div>
+
+      <CommentsSection quizId={quiz.id} />
 
       <div aria-hidden="true" style={{ flex: 1 }} />
 
