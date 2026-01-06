@@ -77,7 +77,7 @@ function Results() {
   const reactionScoreIcon = reactionScore < 0 ? '👎' : '👍';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', gap: '16px', paddingBottom: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', gap: '16px', paddingBottom: '80px' }}>
       <h2 className="section-title">Your score</h2>
 
       <div className="card stack" style={{ flex: '0 0 auto' }}>

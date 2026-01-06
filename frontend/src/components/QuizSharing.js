@@ -8,7 +8,7 @@ import LoginModal from "./LoginModal.js";
 import RegisterModal from "./RegisterModal.js";
 
 function QuizSharing() {
-    const { user, isAuthenticated, loading: authLoading } = useAuth();
+    const { user, allUsers, isAuthenticated, loading: authLoading } = useAuth();
     const [showLoginModal, setShowLoginModal] = useState(false);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [waitingForAuth, setWaitingForAuth] = useState(false);

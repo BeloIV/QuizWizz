@@ -18,6 +18,8 @@ import Review from './pages/Review';
 import {ReactionsProvider} from "./context/ReactionsContext";
 import Messaging from './components/Messaging';
 import QuizSharing from './components/QuizSharing';
+import CreatedQuizzes from './pages/CreatedQuizzes';
+import SharedQuizzes from './pages/SharedQuizzes';
 import Login from './components/Login';
 import Register from './components/Register';
 

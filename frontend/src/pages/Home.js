@@ -5,12 +5,14 @@ import QuizCard from '../components/QuizCard';
 import { useQuizList } from '../context/QuizContext';
 import { useScores } from '../context/ScoresContext';
 import { useSearch } from '../context/SearchContext';
+import { useAuth } from '../context/AuthContext';
 
 function Home() {
   const navigate = useNavigate();
   const { quizzes, loading, error } = useQuizList();
   const { scores } = useScores();
   const { searchTerm } = useSearch();
+  const { user, isAuthenticated } = useAuth();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -71,7 +73,12 @@ function Home() {
   return (
     <div>
       <div className="home-header">
-        <h1 className="page-title">QuizWizz</h1>
+        <div>
+          <h1 className="page-title">QuizWizz</h1>
+          {isAuthenticated && user && (
+            <p className="muted" style={{ margin: '4px 0 0 0', fontSize: '14px' }}>Hi {user.username} 🎉</p>
+          )}
+        </div>
         <button
           className="btn primary fab"
           onClick={() => navigate('/create')}

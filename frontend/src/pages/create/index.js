@@ -742,7 +742,16 @@ function CreateQuiz() {
             </div>
           </div>
 
-          <div className="footer-actions row" style={{ justifyContent: 'space-between', marginTop: '24px' }}>
+          <div
+            className="footer-actions row"
+            style={{
+              justifyContent: 'space-between',
+              marginTop: '24px',
+              position: 'sticky',
+              padding: '8px 0',
+              zIndex: 10,
+            }}
+          >
             <div className="row" style={{ gap: '8px' }}>
               <button
                 type="button"

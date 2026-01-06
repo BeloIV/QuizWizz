@@ -71,7 +71,7 @@ function QuizDetail() {
   const scoreIcon = score < 0 ? '👎' : '👍';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)', gap: '16px', paddingBottom: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)', gap: '16px', paddingBottom: '80px' }}>
       <div className="card stack" style={{ flex: '0 0 auto' }}>
         <div className="quiz-card__header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -117,7 +117,7 @@ function QuizDetail() {
 
       <div aria-hidden="true" style={{ flex: 1 }} />
 
-      <div className="footer-actions row" style={{ justifyContent: 'space-between', alignSelf: 'stretch', marginBottom: '12px' }}>
+      <div className="footer-actions row" style={{ justifyContent: 'space-between', alignSelf: 'stretch', marginBottom: '8px' }}>
         <Link className="btn btn-secondary" to="/">
           🏠 Home
         </Link>
