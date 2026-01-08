@@ -311,6 +311,44 @@ body.menu-open {
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.star-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  border-radius: 14px;
+  border: 1px solid rgba(118, 139, 180, 0.35);
+  background: rgba(22, 38, 72, 0.65);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.star-button:hover,
+.star-button:focus-visible {
+  color: #facc15;
+  background: rgba(110, 168, 255, 0.18);
+  border-color: rgba(110, 168, 255, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(7, 14, 32, 0.35);
+}
+
+.star-button--active {
+  color: #facc15;
+  background: rgba(110, 168, 255, 0.18);
+  border-color: rgba(110, 168, 255, 0.55);
+  box-shadow: 0 12px 30px rgba(7, 14, 32, 0.45);
+}
+
+.star-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .icon-btn svg {
   width: 20px;
   height: 20px;

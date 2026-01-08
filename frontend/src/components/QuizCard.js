@@ -1,7 +1,12 @@
 import { useReactions } from "../context/ReactionsContext";
+import { useFavorites } from "../context/FavoritesContext";
+import { useAuth } from "../context/AuthContext";
+import StarButton from "./StarButton";
 
 function QuizCard({ quiz, onClick }) {
   const { reactions } = useReactions();
+  const { favoriteIds, toggleFavorite } = useFavorites();
+  const { isAuthenticated } = useAuth();
   const reactionInfo = reactions[quiz.id];
 
   const likes = reactionInfo?.likes ?? quiz.likes ?? 0;
@@ -12,6 +17,18 @@ function QuizCard({ quiz, onClick }) {
           : score < 0 ? 'reaction-score-negative'
               : 'reaction-score-neutral';
   const scoreIcon = score < 0 ? '👎' : '👍';
+
+  const handleFavoriteToggle = async () => {
+    try {
+      await toggleFavorite(quiz);
+    } catch (err) {
+      if (!isAuthenticated) {
+        alert('Login to save favorites');
+      } else {
+        console.error('Failed to toggle favorite', err);
+      }
+    }
+  };
 
   const handleActivate = () => {
     if (onClick) {
@@ -32,8 +49,15 @@ function QuizCard({ quiz, onClick }) {
             }
           }}
       >
-        <div className="quiz-card__header">
-          <h3 className="quiz-card__title">{quiz.name}</h3>
+        <div className="quiz-card__header" style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+          <h3 className="quiz-card__title" style={{ margin: 0 }}>{quiz.name}</h3>
+          <StarButton
+            active={favoriteIds.has(quiz.id)}
+            onToggle={handleFavoriteToggle}
+            size={36}
+            title={favoriteIds.has(quiz.id) ? 'Remove from favorites' : 'Save to favorites'}
+            disabled={!isAuthenticated}
+          />
         </div>
         <div className="quiz-card__meta">
           <span className="quiz-card__author">by {quiz.author}</span>
@@ -52,7 +76,7 @@ function QuizCard({ quiz, onClick }) {
           </div>
 
           <div className="quiz-card__footer-right">
-            <span className="quiz-card__tag">{quiz.tags[0] || 'general'}</span>
+            <span className="quiz-card__tag">{quiz.tags?.[0] || 'general'}</span>
             <span className="quiz-card__icon">{quiz.icon || '📝'}</span>
           </div>
         </div>
