@@ -1,0 +1,61 @@
+.star-button {
+  border: none;
+  background: none;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+  font-size: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 50%;
+}
+
+.star-button--small {
+  width: 24px;
+  height: 24px;
+}
+
+.star-button--medium {
+  width: 32px;
+  height: 32px;
+  font-size: 24px;
+}
+
+.star-button--large {
+  width: 44px;
+  height: 44px;
+  font-size: 32px;
+}
+
+.star-button--outlined {
+  color: #ffc107;
+}
+
+.star-button--filled {
+  color: #ffc107;
+}
+
+.star-button__icon {
+  display: inline-block;
+}
+
+.star-button--outlined .star-button__icon {
+  -webkit-text-stroke: 1px #ffc107;
+  text-stroke: 1px #ffc107;
+  -webkit-text-fill-color: transparent;
+}
+
+.star-button--filled .star-button__icon {
+  text-shadow: 0 0 0 #ffc107;
+}
+
+.star-button:hover {
+  background-color: rgba(255, 193, 7, 0.1);
+  transform: scale(1.1);
+}
+
+.star-button:active {
+  transform: scale(0.95);
+}

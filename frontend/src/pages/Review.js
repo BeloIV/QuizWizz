@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuizDetail } from '../hooks/useQuizDetail';
+import StarButton from '../components/StarButton';
 
 function Review() {
   const { quizId } = useParams();
@@ -59,9 +60,12 @@ function Review() {
   return (
     <div>
       <h2 className="section-title">Quiz Review</h2>
-      <div className="card stack" style={{ marginBottom: '16px' }}>
-        <h3>{quiz.name}</h3>
-        <div className="muted">Review your answers and explanations</div>
+      <div className="card stack" style={{ marginBottom: '16px', display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div>
+          <h3 style={{ margin: 0, marginBottom: '4px' }}>{quiz.name}</h3>
+          <div className="muted">Review your answers and explanations</div>
+        </div>
+        <StarButton quizId={quiz.id} size="medium" />
       </div>
 
       {quiz.questions.map((question, qIndex) => {

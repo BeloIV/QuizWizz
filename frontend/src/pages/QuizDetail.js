@@ -7,6 +7,7 @@ import { useReactions } from "../context/ReactionsContext";
 import { useAuth } from '../context/AuthContext';
 import { IoMdShare, IoMdHome } from "react-icons/io";
 import ShareQuizModal from '../components/ShareQuizModal';
+import StarButton from '../components/StarButton';
 
 function QuizDetail() {
   const { quizId } = useParams();
@@ -81,16 +82,19 @@ function QuizDetail() {
             )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-            {isAuthenticated && (
-              <button
-                className="icon-btn"
-                onClick={() => setShowShareModal(true)}
-                aria-label="Share quiz"
-                style={{ width: '44px', height: '44px', fontSize: '22px' }}
-              >
-                <IoMdShare size={24} />
-              </button>
-            )}
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              {isAuthenticated && (
+                <button
+                  className="icon-btn"
+                  onClick={() => setShowShareModal(true)}
+                  aria-label="Share quiz"
+                  style={{ width: '44px', height: '44px', fontSize: '22px' }}
+                >
+                  <IoMdShare size={24} />
+                </button>
+              )}
+              <StarButton quizId={quiz.id} size="large" />
+            </div>
             <div className="quiz-card__reaction" style={{ fontSize: '20px', gap: '8px' }}>
               <span className={`quiz-card__reaction-number ${scoreClass}`} style={{ fontSize: '20px' }}>{score}</span>
               <span className="quiz-card__reaction-icon" style={{ fontSize: '22px' }}>{scoreIcon}</span>

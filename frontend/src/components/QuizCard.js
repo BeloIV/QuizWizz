@@ -1,4 +1,5 @@
 import { useReactions } from "../context/ReactionsContext";
+import StarButton from "./StarButton";
 
 function QuizCard({ quiz, onClick }) {
   const { reactions } = useReactions();
@@ -33,7 +34,10 @@ function QuizCard({ quiz, onClick }) {
           }}
       >
         <div className="quiz-card__header">
-          <h3 className="quiz-card__title">{quiz.name}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+            <h3 className="quiz-card__title">{quiz.name}</h3>
+            <StarButton quizId={quiz.id} size="small" />
+          </div>
         </div>
         <div className="quiz-card__meta">
           <span className="quiz-card__author">by {quiz.author}</span>

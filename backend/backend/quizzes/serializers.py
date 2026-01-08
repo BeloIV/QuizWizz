@@ -2,7 +2,7 @@ from rest_framework import serializers
 import uuid
 from django.contrib.auth.models import User
 
-from .models import Choice, Question, Quiz, Tag, Message, QuizShare
+from .models import Choice, Question, Quiz, Tag, Message, QuizShare, Favorite
 
 
 class ChoiceSerializer(serializers.ModelSerializer):
@@ -36,20 +36,34 @@ class QuizSerializer(serializers.ModelSerializer):
     tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
     questions = QuestionSerializer(many=True)
     author = serializers.CharField(source="author.username", read_only=True)
+    is_favorite = serializers.SerializerMethodField()
 
     class Meta:
         model = Quiz
-        fields = ("id", "name", "author", "tags", "questions", "icon" , "likes", "dislikes")
+        fields = ("id", "name", "author", "tags", "questions", "icon" , "likes", "dislikes", "is_favorite")
+
+    def get_is_favorite(self, obj):
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            return Favorite.objects.filter(user=request.user, quiz=obj).exists()
+        return False
 
 
 class QuizListSerializer(serializers.ModelSerializer):
     tags = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
     question_count = serializers.IntegerField(source="questions.count", read_only=True)
     author = serializers.CharField(source="author.username", read_only=True)
+    is_favorite = serializers.SerializerMethodField()
 
     class Meta:
         model = Quiz
-        fields = ("id", "name", "author", "icon", "tags", "question_count", "likes", "dislikes")
+        fields = ("id", "name", "author", "icon", "tags", "question_count", "likes", "dislikes", "is_favorite")
+
+    def get_is_favorite(self, obj):
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            return Favorite.objects.filter(user=request.user, quiz=obj).exists()
+        return False
 
 
 class ChoiceCreateSerializer(serializers.ModelSerializer):
@@ -204,4 +218,17 @@ class QuizShareSerializer(serializers.ModelSerializer):
         recipient = User.objects.get(id=recipient_id)
         validated_data['recipient'] = recipient
         # sender will be set in the view from request.user
+        return super().create(validated_data)
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    """Serializer for favorite quizzes"""
+    quiz_data = QuizListSerializer(source="quiz", read_only=True)
+    
+    class Meta:
+        model = Favorite
+        fields = ("id", "user", "quiz", "quiz_data", "created_at")
+        read_only_fields = ("id", "user", "created_at")
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
         return super().create(validated_data)

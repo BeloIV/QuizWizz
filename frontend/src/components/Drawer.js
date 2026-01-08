@@ -189,6 +189,12 @@ function Drawer({ isOpen, onClose }) {
                                 >
                                     My Quizzes
                                 </button>
+                                <button
+                                    className="drawer-menu-button"
+                                    onClick={() => navigateTo('/favorites')}
+                                >
+                                    ⭐ Favorites
+                                </button>
                             </div>
                             <div className="drawer-divider"></div>
                             <div className="drawer-section">

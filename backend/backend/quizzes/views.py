@@ -11,8 +11,8 @@ from django.utils.decorators import method_decorator
 import os
 import uuid
 
-from .models import Quiz
-from .serializers import QuizCreateSerializer, QuizListSerializer, QuizSerializer
+from .models import Quiz, Favorite
+from .serializers import QuizCreateSerializer, QuizListSerializer, QuizSerializer, FavoriteSerializer
 
 
 class QuizViewSet(
@@ -95,6 +95,41 @@ class QuizViewSet(
 
         quiz.save()
         return Response({"likes": quiz.likes, "dislikes": quiz.dislikes})
+
+    @action(detail=True, methods=["post"])
+    def favorite(self, request, id=None):
+        """Add or remove quiz from favorites"""
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        quiz = self.get_object()
+        favorite, created = Favorite.objects.get_or_create(
+            user=request.user,
+            quiz=quiz
+        )
+        
+        if created:
+            return Response({"is_favorite": True, "message": "Added to favorites"})
+        else:
+            favorite.delete()
+            return Response({"is_favorite": False, "message": "Removed from favorites"})
+
+    @action(detail=False, methods=["get"])
+    def favorites(self, request):
+        """Get user's favorite quizzes"""
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        favorites = Favorite.objects.filter(user=request.user).select_related("quiz").order_by("-created_at")
+        quizzes = [fav.quiz for fav in favorites]
+        serializer = QuizListSerializer(quizzes, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 class UploadImageView(APIView):

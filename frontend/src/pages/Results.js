@@ -8,6 +8,7 @@ import { useScores } from '../context/ScoresContext';
 import { useReactions } from '../context/ReactionsContext';
 import { useAuth } from '../context/AuthContext';
 import ShareQuizModal from '../components/ShareQuizModal';
+import StarButton from '../components/StarButton';
 
 function Results() {
   const { quizId } = useParams();
@@ -93,16 +94,19 @@ function Results() {
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-            {isAuthenticated && (
-              <button
-                className="btn btn-secondary"
-                onClick={() => setShowShareModal(true)}
-                aria-label="Share quiz"
-                style={{ width: '44px', height: '44px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <IoMdShare size={24} />
-              </button>
-            )}
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              {isAuthenticated && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowShareModal(true)}
+                  aria-label="Share quiz"
+                  style={{ width: '44px', height: '44px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <IoMdShare size={24} />
+                </button>
+              )}
+              <StarButton quizId={quiz.id} size="large" />
+            </div>
             <div className="reaction-buttons" style={{ alignSelf: 'flex-end' }}>
               <button className={"reaction-btn reaction-btn-like" + (currentReaction === "like" ? " active" : "")}
                       onClick={() => {const newValue = currentReaction === 'like' ? null : 'like';

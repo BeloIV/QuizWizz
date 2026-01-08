@@ -5,12 +5,14 @@ import QuizCard from '../components/QuizCard';
 import { useQuizList } from '../context/QuizContext';
 import { useScores } from '../context/ScoresContext';
 import { useSearch } from '../context/SearchContext';
+import { useFavorites } from '../context/FavoritesContext';
 
 function Home() {
   const navigate = useNavigate();
   const { quizzes, loading, error } = useQuizList();
   const { scores } = useScores();
   const { searchTerm } = useSearch();
+  const { favorites } = useFavorites();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -57,16 +59,24 @@ function Home() {
   }, [filteredQuizzes]);
 
   const recentToDisplay = useMemo(() => {
-    return recent.slice(0, 3);
+    return recent.slice(0, 2);
   }, [recent]);
 
   const recentIds = useMemo(() => {
     return new Set(recentToDisplay.map((quiz) => quiz.id));
   }, [recentToDisplay]);
 
+  const favoriteQuizzes = useMemo(() => {
+    return quizzesWithScores.filter(quiz => favorites.includes(quiz.id));
+  }, [quizzesWithScores, favorites]);
+
+  const favoritesToDisplay = useMemo(() => {
+    return favoriteQuizzes;
+  }, [favoriteQuizzes]);
+
   const remaining = useMemo(() => {
-    return quizzesWithScores.filter((quiz) => !recentIds.has(quiz.id));
-  }, [quizzesWithScores, recentIds]);
+    return quizzesWithScores;
+  }, [quizzesWithScores]);
 
   return (
     <div>
@@ -105,12 +115,25 @@ function Home() {
                 </>
               )}
 
+              {favoritesToDisplay.length > 0 && !searchTerm.trim() && (
+                <>
+                  <h2 className="section-title">Favorites</h2>
+                  <section className="cards" id="favorites-list">
+                    {favoritesToDisplay.map((quiz) => (
+                      <QuizCard
+                        key={quiz.id}
+                        quiz={quiz}
+                        onClick={() => navigate(`/quiz/${quiz.id}`)}
+                      />
+                    ))}
+                  </section>
+                </>
+              )}
+
               <h2 className="section-title">{searchTerm.trim() ? 'Search Results' : 'All'}</h2>
               <section className="cards" id="all-list">
                 {quizzesWithScores.length === 0 ? (
                   <div className="empty">No quizzes yet. Create one to get started!</div>
-                ) : remaining.length === 0 && !searchTerm.trim() ? (
-                  <div className="empty">All your quizzes are already in Recent.</div>
                 ) : searchTerm.trim() ? (
                   filteredQuizzes.map((quiz) => (
                     <QuizCard

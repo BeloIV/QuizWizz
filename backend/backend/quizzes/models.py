@@ -90,3 +90,17 @@ class QuizShare(models.Model):
 
     def __str__(self) -> str:
         return f"{self.sender.username} shared '{self.quiz.name}' with {self.recipient.username}"
+
+
+class Favorite(models.Model):
+    """Track favorite quizzes for users"""
+    user = models.ForeignKey(User, related_name="favorite_quizzes", on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, related_name="favorited_by", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("user", "quiz")
+
+    def __str__(self) -> str:
+        return f"{self.user.username} favorited '{self.quiz.name}'"
