@@ -30,6 +30,20 @@ function Play() {
     return checkIsFillGapQuestion(currentQuestion);
   }, [currentQuestion]);
 
+  // Check if current question has explanation
+  const hasExplanation = useMemo(() => {
+    if (!currentQuestion?.explanation) return false;
+    if (isFillGapQuestion) {
+      try {
+        const gapExplanations = JSON.parse(currentQuestion.explanation);
+        return Object.keys(gapExplanations).length > 0;
+      } catch {
+        return false;
+      }
+    }
+    return true;
+  }, [currentQuestion, isFillGapQuestion]);
+
   const playState = useQuizPlayState(quiz, currentQuestion, isFillGapQuestion);
   const {
     index,
@@ -128,31 +142,38 @@ function Play() {
 
         setReveal(true);
         setProcessing(true);
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-        timeoutRef.current = setTimeout(() => {
-          const nextIndex = index + 1;
-          if (nextIndex >= totalQuestions) {
-            const wrongIds = Array.from(initiallyWrongRef.current);
-            const wrongCount = wrongIds.length;
-            const score = totalQuestions
-              ? Math.round(((totalQuestions - wrongCount) / totalQuestions) * 100)
-              : 0;
-            const answersParam = encodeURIComponent(JSON.stringify(userAnswersRef.current));
-            const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
-            navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
-          } else {
-            resetQuestionState();
-            setIndex(nextIndex);
-          }
-          setGapSelections({});
-          setGapTempIncorrect([]);
-          setGapVerifiedCorrect([]);
-          setVerifiedCorrectIndices([]);
-          setReveal(false);
+        
+        // If there's an explanation, don't auto-advance
+        if (hasExplanation) {
           setProcessing(false);
-        }, 900);
+        } else {
+          // Auto-advance after delay if no explanation
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+          timeoutRef.current = setTimeout(() => {
+            const nextIndex = index + 1;
+            if (nextIndex >= totalQuestions) {
+              const wrongIds = Array.from(initiallyWrongRef.current);
+              const wrongCount = wrongIds.length;
+              const score = totalQuestions
+                ? Math.round(((totalQuestions - wrongCount) / totalQuestions) * 100)
+                : 0;
+              const answersParam = encodeURIComponent(JSON.stringify(userAnswersRef.current));
+              const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
+              navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
+            } else {
+              resetQuestionState();
+              setIndex(nextIndex);
+            }
+            setGapSelections({});
+            setGapTempIncorrect([]);
+            setGapVerifiedCorrect([]);
+            setVerifiedCorrectIndices([]);
+            setReveal(false);
+            setProcessing(false);
+          }, 900);
+        }
       } else {
         initiallyWrongRef.current.add(currentQuestion.id);
 
@@ -201,28 +222,35 @@ function Play() {
     if (isCorrect) {
       setReveal(true);
       setProcessing(true);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        const nextIndex = index + 1;
-        if (nextIndex >= totalQuestions) {
-          const wrongIds = Array.from(initiallyWrongRef.current);
-          const wrongCount = wrongIds.length;
-          const score = totalQuestions
-            ? Math.round(((totalQuestions - wrongCount) / totalQuestions) * 100)
-            : 0;
-          const answersParam = encodeURIComponent(JSON.stringify(userAnswersRef.current));
-          const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
-          navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
-        } else {
-          resetQuestionState();
-          setIndex(nextIndex);
-        }
-        setVerifiedCorrectIndices([]);
-        setReveal(false);
+      
+      // If there's an explanation, don't auto-advance
+      if (hasExplanation) {
         setProcessing(false);
-      }, 900);
+      } else {
+        // Auto-advance after delay if no explanation
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => {
+          const nextIndex = index + 1;
+          if (nextIndex >= totalQuestions) {
+            const wrongIds = Array.from(initiallyWrongRef.current);
+            const wrongCount = wrongIds.length;
+            const score = totalQuestions
+              ? Math.round(((totalQuestions - wrongCount) / totalQuestions) * 100)
+              : 0;
+            const answersParam = encodeURIComponent(JSON.stringify(userAnswersRef.current));
+            const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
+            navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
+          } else {
+            resetQuestionState();
+            setIndex(nextIndex);
+          }
+          setVerifiedCorrectIndices([]);
+          setReveal(false);
+          setProcessing(false);
+        }, 900);
+      }
     } else {
       initiallyWrongRef.current.add(currentQuestion.id);
 
@@ -269,6 +297,31 @@ function Play() {
 
   const handleGapSelectionChange = (gIdx, value) => {
     setGapSelections((prev) => ({ ...prev, [gIdx]: value }));
+  };
+
+  const handleContinueToNext = () => {
+    if (!reveal) return;
+    
+    const nextIndex = index + 1;
+    if (nextIndex >= totalQuestions) {
+      const wrongIds = Array.from(initiallyWrongRef.current);
+      const wrongCount = wrongIds.length;
+      const score = totalQuestions
+        ? Math.round(((totalQuestions - wrongCount) / totalQuestions) * 100)
+        : 0;
+      const answersParam = encodeURIComponent(JSON.stringify(userAnswersRef.current));
+      const incorrectParam = encodeURIComponent(JSON.stringify(incorrectAttemptsRef.current));
+      navigate(`/results/${quiz.id}?score=${score}&wrong=${wrongIds.join(',')}&answers=${answersParam}&incorrect=${incorrectParam}`);
+    } else {
+      resetQuestionState();
+      setIndex(nextIndex);
+      setGapSelections({});
+      setGapTempIncorrect([]);
+      setGapVerifiedCorrect([]);
+      setVerifiedCorrectIndices([]);
+      setReveal(false);
+      setProcessing(false);
+    }
   };
 
   if (loading) {
@@ -326,6 +379,14 @@ function Play() {
             className="btn primary"
             onClick={() => handleSubmit()}
             disabled={isSubmitDisabled}
+          >
+            Continue
+          </button>
+        ) : reveal && hasExplanation ? (
+          <button
+            type="button"
+            className="btn primary"
+            onClick={handleContinueToNext}
           >
             Continue
           </button>
