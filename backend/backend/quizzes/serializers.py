@@ -189,8 +189,6 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ("id", "user", "text", "created_at")
         read_only_fields = ("id", "user", "created_at")
 
-
-
 class QuizShareSerializer(serializers.ModelSerializer):
     """Serializer for sharing quizzes between users"""
     sender = UserSerializer(read_only=True)
