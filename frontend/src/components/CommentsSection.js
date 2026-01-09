@@ -32,7 +32,6 @@ const EMOJIS = ['🙂', '😍', '🎉', '🤔', '😡'];
 function CommentsSection({ quizId }) {
   const { user, isAuthenticated } = useAuth();
   const [comments, setComments] = useState([]);
-  const [page, setPage] = useState(1);
   const [nextPage, setNextPage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -58,7 +57,6 @@ function CommentsSection({ quizId }) {
       const data = await response.json();
       setComments((prev) => (targetPage === 1 ? data.results : [...prev, ...data.results]));
       setNextPage(data.next_page);
-      setPage(targetPage);
     } catch (err) {
       console.error('Failed to load comments', err);
       setError(err.message || 'Unable to load comments');
@@ -70,7 +68,6 @@ function CommentsSection({ quizId }) {
 
   useEffect(() => {
     setComments([]);
-    setPage(1);
     setNextPage(null);
     setInitialLoading(true);
     if (quizId) {
