@@ -102,6 +102,9 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["quiz", "-created_at"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.user.username} on {self.quiz_id}: {self.text[:30]}"
