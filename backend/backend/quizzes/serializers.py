@@ -2,7 +2,7 @@ from rest_framework import serializers
 import uuid
 from django.contrib.auth.models import User
 
-from .models import Choice, Question, Quiz, Tag, Message, QuizShare
+from .models import Choice, Question, Quiz, Tag, Message, QuizShare, Comment
 
 
 class ChoiceSerializer(serializers.ModelSerializer):
@@ -178,6 +178,16 @@ class MessageSerializer(serializers.ModelSerializer):
         # sender will be set in the view from request.user
         return super().create(validated_data)
 
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Serializer for quiz comments"""
+
+    user = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ("id", "user", "text", "created_at")
+        read_only_fields = ("id", "user", "created_at")
 
 class QuizShareSerializer(serializers.ModelSerializer):
     """Serializer for sharing quizzes between users"""
