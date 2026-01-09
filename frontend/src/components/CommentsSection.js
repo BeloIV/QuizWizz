@@ -191,7 +191,7 @@ function CommentsSection({ quizId }) {
                 className="comments-textarea"
               />
               <div className="comments-form__footer">
-                <div className="comments-form_emojis_container">
+                <div className="comments-form__emojis-container">
                   <div className="comments-form__emojis">
                     {EMOJIS.map((emoji) => (
                       <button

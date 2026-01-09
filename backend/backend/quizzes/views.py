@@ -80,6 +80,11 @@ class QuizViewSet(
             text = request.data.get("text", "").strip()
             if not text:
                 return Response({"detail": "Comment text is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if len(text) > 5000:
+                return Response(
+                    {"detail": "Comment text is too long (max 5000 characters)"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             comment = Comment.objects.create(quiz=quiz, user=request.user, text=text)
             data = CommentSerializer(comment).data

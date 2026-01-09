@@ -4690,7 +4690,7 @@ body.light .tag {
   gap: 8px;
 }
 
-.comments-form_emojis_container {
+.comments-form__emojis-container {
   display: flex;
   min-width: 0;
   flex: 1 1 auto;
