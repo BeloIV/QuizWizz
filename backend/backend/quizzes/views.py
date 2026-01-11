@@ -104,6 +104,12 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     lookup_field = "quiz_id"
     http_method_names = ["get", "post", "delete"]
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            from .serializers import FavoriteListSerializer
+            return FavoriteListSerializer
+        return FavoriteSerializer
+
     def get_queryset(self):
         user = self.request.user
         if not user or not user.is_authenticated:

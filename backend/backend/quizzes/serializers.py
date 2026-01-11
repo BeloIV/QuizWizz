@@ -209,13 +209,12 @@ class QuizShareSerializer(serializers.ModelSerializer):
 
 class FavoriteSerializer(serializers.ModelSerializer):
     """Serializer for user favorites"""
-    quiz = QuizListSerializer(read_only=True)
     quiz_id = serializers.CharField(write_only=True)
 
     class Meta:
         model = Favorite
-        fields = ("id", "quiz", "quiz_id", "created_at")
-        read_only_fields = ("id", "created_at")
+        fields = ("id", "quiz_id")
+        read_only_fields = ("id",)
 
     def create(self, validated_data):
         quiz_id = validated_data.pop("quiz_id")
@@ -223,3 +222,14 @@ class FavoriteSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         favorite, _ = Favorite.objects.get_or_create(user=user, quiz=quiz)
         return favorite
+
+
+class FavoriteListSerializer(serializers.ModelSerializer):
+    """Serializer for listing favorites with quiz data"""
+    quiz = QuizListSerializer(read_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ("id", "quiz")
+        read_only_fields = ("id", "quiz")
+
