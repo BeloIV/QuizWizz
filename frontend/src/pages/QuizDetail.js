@@ -5,6 +5,7 @@ import { useQuizDetail } from '../hooks/useQuizDetail';
 import { useScores } from '../context/ScoresContext';
 import { useReactions } from "../context/ReactionsContext";
 import { useAuth } from '../context/AuthContext';
+import CommentsSection from '../components/CommentsSection';
 import { IoMdShare, IoMdHome } from "react-icons/io";
 import ShareQuizModal from '../components/ShareQuizModal';
 import { useFavorites } from '../context/FavoritesContext';
@@ -134,6 +135,8 @@ function QuizDetail() {
           {hasMultiAnswer ? '⚠️ One or more answers can be correct' : '✓ Single answer per question'}
         </div>
       </div>
+
+      <CommentsSection quizId={quiz.id} />
 
       <div aria-hidden="true" style={{ flex: 1 }} />
 

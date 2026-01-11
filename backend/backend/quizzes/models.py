@@ -96,11 +96,20 @@ class Favorite(models.Model):
     """Favorite quizzes per user"""
     user = models.ForeignKey(User, related_name="favorites", on_delete=models.CASCADE)
     quiz = models.ForeignKey(Quiz, related_name="favorites", on_delete=models.CASCADE)
+class Comment(models.Model):
+    """User comments on quizzes"""
+
+    quiz = models.ForeignKey(Quiz, related_name="comments", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="quiz_comments", on_delete=models.CASCADE)
+    text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
         unique_together = ("user", "quiz")
+        indexes = [
+            models.Index(fields=["quiz", "-created_at"]),
+        ]
 
     def __str__(self) -> str:
-        return f"{self.user.username} -> {self.quiz_id}"
+        return f"{self.user.username} on {self.quiz_id}: {self.text[:30]}"
