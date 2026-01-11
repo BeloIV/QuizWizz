@@ -1,12 +1,14 @@
 import { useReactions } from "../context/ReactionsContext";
 import { useFavorites } from "../context/FavoritesContext";
 import { useAuth } from "../context/AuthContext";
+import { useAuthModal } from "../context/AuthModalContext";
 import StarButton from "./StarButton";
 
 function QuizCard({ quiz, onClick }) {
   const { reactions } = useReactions();
   const { favoriteIds, toggleFavorite } = useFavorites();
   const { isAuthenticated } = useAuth();
+  const { openLoginModal } = useAuthModal();
   const reactionInfo = reactions[quiz.id];
 
   const likes = reactionInfo?.likes ?? quiz.likes ?? 0;
@@ -19,14 +21,14 @@ function QuizCard({ quiz, onClick }) {
   const scoreIcon = score < 0 ? '👎' : '👍';
 
   const handleFavoriteToggle = async () => {
+    if (!isAuthenticated) {
+      openLoginModal();
+      return;
+    }
     try {
       await toggleFavorite(quiz);
     } catch (err) {
-      if (!isAuthenticated) {
-        alert('Login to save favorites');
-      } else {
-        console.error('Failed to toggle favorite', err);
-      }
+      console.error('Failed to toggle favorite', err);
     }
   };
 

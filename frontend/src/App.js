@@ -6,6 +6,7 @@ import { ScoresProvider } from './context/ScoresContext';
 import { SearchProvider } from './context/SearchContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
+import { AuthModalProvider } from './context/AuthModalContext';
 import { MessagesProvider } from './context/MessagesContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import CreateQuiz from './pages/create';
@@ -29,7 +30,8 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <MessagesProvider>
+        <AuthModalProvider>
+          <MessagesProvider>
           <ReactionsProvider>
             <ScoresProvider>
               <QuizProvider>
@@ -60,7 +62,8 @@ function App() {
               </QuizProvider>
             </ScoresProvider>
           </ReactionsProvider>
-        </MessagesProvider>
+          </MessagesProvider>
+        </AuthModalProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -6,6 +6,7 @@ import { useSearch } from '../context/SearchContext';
 import { useTheme } from '../context/ThemeContext';
 import { useMessages } from '../context/MessagesContext';
 import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
 import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 
@@ -17,8 +18,7 @@ function Header() {
   const { toggleTheme } = useTheme();
   const { unreadCount, unviewedQuizzesCount } = useMessages();
   const { isAuthenticated, logout, loading } = useAuth();
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const { showLoginModal, showRegisterModal, openLoginModal, openRegisterModal, closeModals } = useAuthModal();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const isHomePage = location.pathname === '/';
 
@@ -164,7 +164,7 @@ function Header() {
                 type="button"
                 className="icon-btn"
                 aria-label="Login"
-                onClick={() => setShowLoginModal(true)}
+                onClick={openLoginModal}
               >
                 <LuLogIn size={20} />
               </button>
@@ -175,20 +175,14 @@ function Header() {
 
       <LoginModal
         isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onSwitchToRegister={() => {
-          setShowLoginModal(false);
-          setShowRegisterModal(true);
-        }}
+        onClose={closeModals}
+        onSwitchToRegister={openRegisterModal}
       />
 
       <RegisterModal
         isOpen={showRegisterModal}
-        onClose={() => setShowRegisterModal(false)}
-        onSwitchToLogin={() => {
-          setShowRegisterModal(false);
-          setShowLoginModal(true);
-        }}
+        onClose={closeModals}
+        onSwitchToLogin={openLoginModal}
       />
 
       {showLogoutConfirm && (
