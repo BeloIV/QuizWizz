@@ -392,7 +392,7 @@ function Play() {
           </button>
         ) : <div />}
       </div>
-
+      
       {showTryAgain && (
         <div className="popup popup--danger popup--top" role="alert" aria-live="assertive">
           Try again
@@ -429,5 +429,4 @@ function Play() {
     </div>
   );
 }
-
 export default Play;
