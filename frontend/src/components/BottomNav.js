@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { IoMdHome, IoMdCreate, IoMdShare, IoMdMail, IoMdListBox } from 'react-icons/io';
+import { IoMdHome, IoMdShare, IoMdMail, IoMdListBox, IoMdStar } from 'react-icons/io';
 
 function BottomNav() {
   return (
@@ -20,9 +20,9 @@ function BottomNav() {
         <IoMdMail size={22} />
         <span>Messages</span>
       </NavLink>
-      <NavLink to="/create" className="bottom-nav__item">
-        <IoMdCreate size={22} />
-        <span>Create</span>
+      <NavLink to="/favorites" className="bottom-nav__item">
+        <IoMdStar size={22} />
+        <span>Favorites</span>
       </NavLink>
     </nav>
   );
