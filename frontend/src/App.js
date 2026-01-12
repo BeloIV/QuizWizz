@@ -6,7 +6,9 @@ import { ScoresProvider } from './context/ScoresContext';
 import { SearchProvider } from './context/SearchContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
+import { AuthModalProvider } from './context/AuthModalContext';
 import { MessagesProvider } from './context/MessagesContext';
+import { FavoritesProvider } from './context/FavoritesContext';
 import CreateQuiz from './pages/create';
 import MyQuizzes from './pages/MyQuizzes';
 import Home from './pages/Home';
@@ -20,40 +22,46 @@ import Messaging from './components/Messaging';
 import QuizSharing from './components/QuizSharing';
 import Login from './components/Login';
 import Register from './components/Register';
+import Favorites from './pages/Favorites';
 
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <MessagesProvider>
+        <AuthModalProvider>
+          <MessagesProvider>
           <ReactionsProvider>
             <ScoresProvider>
               <QuizProvider>
-                <SearchProvider>
-                  <HashRouter>
-                    <Layout>
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/create" element={<CreateQuiz />} />
-                        <Route path="/edit/:quizId" element={<CreateQuiz />} />
-                        <Route path="/my-quizzes" element={<MyQuizzes />} />
-                        <Route path="/quiz/:quizId" element={<QuizDetail />} />
-                        <Route path="/play/:quizId" element={<Play />} />
-                        <Route path="/results/:quizId" element={<Results />} />
-                        <Route path="/review/:quizId" element={<Review />} />
-                        <Route path="/messages" element={<Messaging />} />
-                        <Route path="/shared-quizzes" element={<QuizSharing />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Layout>
-                  </HashRouter>
-                </SearchProvider>
+                <FavoritesProvider>
+                  <SearchProvider>
+                    <HashRouter>
+                      <Layout>
+                        <Routes>
+                          <Route path="/" element={<Home />} />
+                          <Route path="/login" element={<Login />} />
+                          <Route path="/register" element={<Register />} />
+                          <Route path="/create" element={<CreateQuiz />} />
+                          <Route path="/edit/:quizId" element={<CreateQuiz />} />
+                          <Route path="/my-quizzes" element={<MyQuizzes />} />
+                          <Route path="/quiz/:quizId" element={<QuizDetail />} />
+                          <Route path="/play/:quizId" element={<Play />} />
+                          <Route path="/results/:quizId" element={<Results />} />
+                          <Route path="/review/:quizId" element={<Review />} />
+                          <Route path="/messages" element={<Messaging />} />
+                          <Route path="/shared-quizzes" element={<QuizSharing />} />
+                          <Route path="/favorites" element={<Favorites />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </Layout>
+                    </HashRouter>
+                  </SearchProvider>
+                </FavoritesProvider>
               </QuizProvider>
             </ScoresProvider>
           </ReactionsProvider>
-        </MessagesProvider>
+          </MessagesProvider>
+        </AuthModalProvider>
       </AuthProvider>
     </ThemeProvider>
   );
