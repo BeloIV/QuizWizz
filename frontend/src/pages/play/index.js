@@ -315,6 +315,14 @@ function Play() {
         <button type="button" className="btn" onClick={() => setShowQuitDialog(true)}>
           Quit
         </button>
+        <button
+          type="button"
+          className="btn primary"
+          disabled={isSubmitDisabled || reveal}
+          onClick={() => handleSubmit()}
+        >
+          {reveal ? 'Continue...' : 'Submit'}
+        </button>
       </div>
 
       {showTryAgain && (
