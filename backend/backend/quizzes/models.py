@@ -96,6 +96,14 @@ class Favorite(models.Model):
     """Favorite quizzes per user"""
     user = models.ForeignKey(User, related_name="favorites", on_delete=models.CASCADE)
     quiz = models.ForeignKey(Quiz, related_name="favorites", on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("user", "quiz")
+
+    def __str__(self) -> str:
+        return f"{self.user.username} favorited {self.quiz.name}"
+
+
 class Comment(models.Model):
     """User comments on quizzes"""
 
@@ -106,7 +114,6 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-        unique_together = ("user", "quiz")
         indexes = [
             models.Index(fields=["quiz", "-created_at"]),
         ]
