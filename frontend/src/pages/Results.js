@@ -9,6 +9,7 @@ import { useReactions } from '../context/ReactionsContext';
 import { useAuth } from '../context/AuthContext';
 import { useAuthModal } from '../context/AuthModalContext';
 import { useFavorites } from '../context/FavoritesContext';
+import CommentsSection from '../components/CommentsSection';
 import ShareQuizModal from '../components/ShareQuizModal';
 import StarButton from '../components/StarButton';
 
@@ -154,6 +155,8 @@ function Results() {
           </div>
         </div>
       </div>
+
+      <CommentsSection quizId={quiz.id} />
 
       <div aria-hidden="true" style={{ flex: 1 }} />
 

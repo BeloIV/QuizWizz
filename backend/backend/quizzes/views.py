@@ -11,9 +11,8 @@ from django.utils.decorators import method_decorator
 import os
 import uuid
 
-from .models import Quiz, Favorite
-from .serializers import QuizCreateSerializer, QuizListSerializer, QuizSerializer, FavoriteSerializer
-
+from .models import Quiz, Favorite, Comment
+from .serializers import QuizCreateSerializer, QuizListSerializer, QuizSerializer, FavoriteSerializer, CommentSerializer
 
 class QuizViewSet(
     mixins.ListModelMixin,
@@ -61,6 +60,63 @@ class QuizViewSet(
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("You can only delete your own quizzes.")
         instance.delete()
+
+    @action(detail=True, methods=["get", "post"], url_path="comments")
+    def comments(self, request, id=None):
+        """List or create comments for a quiz.
+
+        GET: return paginated comments for the quiz (newest first).
+             Query params: page (1-based), page_size (default 20).
+        POST: create a new comment for the quiz; requires authenticated user.
+        """
+
+        quiz = self.get_object()
+
+        if request.method.lower() == "post":
+            if not request.user or not request.user.is_authenticated:
+                return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            text = request.data.get("text", "").strip()
+            if not text:
+                return Response({"detail": "Comment text is required"}, status=status.HTTP_400_BAD_REQUEST)
+            if len(text) > 5000:
+                return Response(
+                    {"detail": "Comment text is too long (max 5000 characters)"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            comment = Comment.objects.create(quiz=quiz, user=request.user, text=text)
+            data = CommentSerializer(comment).data
+            return Response(data, status=status.HTTP_201_CREATED)
+
+        # GET: list comments with simple page-based pagination
+        try:
+            page = int(request.query_params.get("page", "1"))
+        except ValueError:
+            page = 1
+        try:
+            page_size = int(request.query_params.get("page_size", "20"))
+        except ValueError:
+            page_size = 20
+
+        page = max(page, 1)
+        page_size = max(min(page_size, 100), 1)
+
+        qs = Comment.objects.filter(quiz=quiz).select_related("user").order_by("-created_at")
+        start = (page - 1) * page_size
+        end = start + page_size + 1  # fetch one extra to detect next page
+        items = list(qs[start:end])
+
+        has_next = len(items) > page_size
+        results = items[:page_size]
+
+        serialized = CommentSerializer(results, many=True).data
+        next_page = page + 1 if has_next else None
+
+        return Response({
+            "results": serialized,
+            "next_page": next_page,
+        })
 
     @action(detail=True, methods=["post"])
     def like(self, request, id=None):
