@@ -360,7 +360,7 @@ def remove_test_data(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('quizzes', '0019_alter_favorite_id'),
+        ('quizzes', '0021_alter_favorite'),
     ]
 
     operations = [

@@ -106,7 +106,6 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-        unique_together = ("user", "quiz")
         indexes = [
             models.Index(fields=["quiz", "-created_at"]),
         ]
