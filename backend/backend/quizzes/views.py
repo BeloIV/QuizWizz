@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.conf import settings
 from django.db import models
 from django.views.decorators.csrf import csrf_exempt
@@ -11,8 +11,8 @@ from django.utils.decorators import method_decorator
 import os
 import uuid
 
-from .models import Quiz, Comment
-from .serializers import QuizCreateSerializer, QuizListSerializer, QuizSerializer, CommentSerializer
+from .models import Quiz, Favorite, Comment
+from .serializers import QuizCreateSerializer, QuizListSerializer, QuizSerializer, FavoriteSerializer, CommentSerializer
 
 
 class QuizViewSet(
@@ -154,6 +154,44 @@ class QuizViewSet(
         return Response({"likes": quiz.likes, "dislikes": quiz.dislikes})
 
 
+class FavoriteViewSet(viewsets.ModelViewSet):
+    """Manage user favorites"""
+    serializer_class = FavoriteSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "quiz_id"
+    http_method_names = ["get", "post", "delete"]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            from .serializers import FavoriteListSerializer
+            return FavoriteListSerializer
+        return FavoriteSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return Favorite.objects.none()
+        return (
+            Favorite.objects.filter(user=user)
+            .select_related("quiz", "quiz__author")
+            .prefetch_related("quiz__tags")
+        )
+
+    def get_object(self):
+        quiz_id = self.kwargs.get(self.lookup_field)
+        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            favorite = queryset.get(quiz__id=quiz_id)
+        except Favorite.DoesNotExist:
+            from rest_framework.exceptions import NotFound
+            raise NotFound("Favorite not found")
+        self.check_object_permissions(self.request, favorite)
+        return favorite
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
 class UploadImageView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     # Use Django's configured upload limit; fall back to 5 MB if not set
@@ -197,7 +235,7 @@ class UploadImageView(APIView):
 # Authentication and User Management Views
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny
 from .models import Message, QuizShare
 from .serializers import UserSerializer, MessageSerializer, QuizShareSerializer
 
