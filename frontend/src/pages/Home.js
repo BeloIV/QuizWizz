@@ -112,69 +112,26 @@ function Home() {
         borderRadius: '8px',
         border: '1px solid rgba(118, 139, 180, 0.25)',
       }}>
-        <span style={{ fontWeight: '500', fontSize: '0.85rem', color: 'var(--text)' }}>Sort by Rating:</span>
-        <button
-          onClick={() => setSortByRating(sortByRating === 'desc' ? null : 'desc')}
+        <label htmlFor="rating-sort" style={{ fontWeight: '500', fontSize: '0.85rem', color: 'var(--text)' }}>Sort by Rating:</label>
+        <select
+          id="rating-sort"
+          value={sortByRating || ''}
+          onChange={(e) => setSortByRating(e.target.value || null)}
           style={{
-            padding: '0.35rem 0.5rem',
-            border: sortByRating === 'desc' ? '1px solid rgba(110, 168, 255, 0.6)' : '1px solid rgba(118, 139, 180, 0.35)',
+            padding: '0.4rem 0.6rem',
             borderRadius: '6px',
-            background: sortByRating === 'desc' ? 'rgba(110, 168, 255, 0.28)' : 'rgba(20, 35, 66, 0.6)',
-            color: sortByRating === 'desc' ? 'var(--primary)' : 'var(--text)',
+            border: '1px solid rgba(118, 139, 180, 0.35)',
+            background: 'rgba(20, 35, 66, 0.6)',
+            color: 'var(--text)',
+            fontSize: '0.85rem',
             cursor: 'pointer',
-            fontSize: '1rem',
-            fontWeight: sortByRating === 'desc' ? '700' : '400',
-            transition: 'all 0.2s ease',
-            minWidth: '32px',
-            boxShadow: sortByRating === 'desc' ? '0 4px 12px rgba(10, 20, 42, 0.25)' : 'none',
-          }}
-          title="Sort highest rating first"
-          onMouseEnter={(e) => {
-            if (sortByRating !== 'desc') {
-              e.currentTarget.style.background = 'rgba(110, 168, 255, 0.15)';
-              e.currentTarget.style.borderColor = 'rgba(110, 168, 255, 0.4)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (sortByRating !== 'desc') {
-              e.currentTarget.style.background = 'rgba(20, 35, 66, 0.6)';
-              e.currentTarget.style.borderColor = 'rgba(118, 139, 180, 0.35)';
-            }
+            outline: 'none',
           }}
         >
-          ↓
-        </button>
-        <button
-          onClick={() => setSortByRating(sortByRating === 'asc' ? null : 'asc')}
-          style={{
-            padding: '0.35rem 0.5rem',
-            border: sortByRating === 'asc' ? '1px solid rgba(110, 168, 255, 0.6)' : '1px solid rgba(118, 139, 180, 0.35)',
-            borderRadius: '6px',
-            background: sortByRating === 'asc' ? 'rgba(110, 168, 255, 0.28)' : 'rgba(20, 35, 66, 0.6)',
-            color: sortByRating === 'asc' ? 'var(--primary)' : 'var(--text)',
-            cursor: 'pointer',
-            fontSize: '1rem',
-            fontWeight: sortByRating === 'asc' ? '700' : '400',
-            transition: 'all 0.2s ease',
-            minWidth: '32px',
-            boxShadow: sortByRating === 'asc' ? '0 4px 12px rgba(10, 20, 42, 0.25)' : 'none',
-          }}
-          title="Sort lowest rating first"
-          onMouseEnter={(e) => {
-            if (sortByRating !== 'asc') {
-              e.currentTarget.style.background = 'rgba(110, 168, 255, 0.15)';
-              e.currentTarget.style.borderColor = 'rgba(110, 168, 255, 0.4)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (sortByRating !== 'asc') {
-              e.currentTarget.style.background = 'rgba(20, 35, 66, 0.6)';
-              e.currentTarget.style.borderColor = 'rgba(118, 139, 180, 0.35)';
-            }
-          }}
-        >
-          ↑
-        </button>
+          <option value="">Default</option>
+          <option value="desc">Highest to Lowest</option>
+          <option value="asc">Lowest to Highest</option>
+        </select>
       </div>
 
       {loading && <div className="muted">Loading quizzes...</div>}
