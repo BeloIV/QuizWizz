@@ -16,6 +16,7 @@ function Home() {
   const { user, isAuthenticated } = useAuth();
   const { favorites: favoriteQuizzes, loading: favoritesLoading } = useFavorites();
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [sortByRating, setSortByRating] = useState(null); // null, 'asc', or 'desc'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,26 +34,41 @@ function Home() {
   const quizzesWithScores = useMemo(() => {
     return quizzes.map((quiz) => {
       const scoreEntry = scores[quiz.id];
+      const netRating = (quiz.likes || 0) - (quiz.dislikes || 0);
       return {
         ...quiz,
         lastScore: scoreEntry?.value,
         _takenAt: scoreEntry?.takenAt || 0,
+        netRating,
       };
     });
   }, [quizzes, scores]);
 
   const filteredQuizzes = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return quizzesWithScores;
+    let result = quizzesWithScores;
+    
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((quiz) => {
+        const nameMatch = quiz.name.toLowerCase().includes(term);
+        const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
+        const authorMatch = quiz.author?.toLowerCase().includes(term);
+        return nameMatch || tagMatch || authorMatch;
+      });
     }
-    const term = searchTerm.toLowerCase();
-    return quizzesWithScores.filter((quiz) => {
-      const nameMatch = quiz.name.toLowerCase().includes(term);
-      const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
-      const authorMatch = quiz.author?.toLowerCase().includes(term);
-      return nameMatch || tagMatch || authorMatch;
-    });
-  }, [quizzesWithScores, searchTerm]);
+    
+    // Sort by rating if enabled
+    if (sortByRating) {
+      result = [...result].sort((a, b) => {
+        return sortByRating === 'desc' 
+          ? b.netRating - a.netRating 
+          : a.netRating - b.netRating;
+      });
+    }
+    
+    return result;
+  }, [quizzesWithScores, searchTerm, sortByRating]);
 
   const filteredFavorites = useMemo(() => {
     if (!isAuthenticated) return [];
@@ -69,18 +85,26 @@ function Home() {
   }, [favoriteQuizzes, isAuthenticated, searchTerm]);
 
   const recent = useMemo(() => {
-    return filteredQuizzes
-      .filter((quiz) => quiz._takenAt)
-      .sort((a, b) => b._takenAt - a._takenAt);
-  }, [filteredQuizzes]);
+    const filtered = filteredQuizzes.filter((quiz) => quiz._takenAt);
+    // Only sort by _takenAt if not sorting by rating
+    if (sortByRating) {
+      return filtered; // Keep the rating sort from filteredQuizzes
+    }
+    return filtered.sort((a, b) => b._takenAt - a._takenAt);
+  }, [filteredQuizzes, sortByRating]);
 
   const recentToDisplay = useMemo(() => {
     return recent.slice(0, 2);
   }, [recent]);
 
+  const remaining = useMemo(() => {
+    const recentIds = new Set(recentToDisplay.map((quiz) => quiz.id));
+    return filteredQuizzes.filter((quiz) => !recentIds.has(quiz.id));
+  }, [filteredQuizzes, recentToDisplay]);
+
   const allList = useMemo(() => {
-    return searchTerm.trim() ? filteredQuizzes : quizzesWithScores;
-  }, [filteredQuizzes, quizzesWithScores, searchTerm]);
+    return searchTerm.trim() ? filteredQuizzes : remaining;
+  }, [filteredQuizzes, remaining, searchTerm]);
 
   return (
     <div>
@@ -105,6 +129,39 @@ function Home() {
       {error && !loading && <div className="empty">{error}</div>}
       {!loading && !error && (
         <>
+          {/* Sort by Rating */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.5rem 0.75rem',
+            marginBottom: '1rem',
+            background: 'rgba(22, 38, 72, 0.85)',
+            borderRadius: '8px',
+            border: '1px solid rgba(118, 139, 180, 0.25)',
+          }}>
+            <label htmlFor="rating-sort" style={{ fontWeight: '500', fontSize: '0.85rem', color: 'var(--text)' }}>Sort by Rating:</label>
+            <select
+              id="rating-sort"
+              value={sortByRating || ''}
+              onChange={(e) => setSortByRating(e.target.value || null)}
+              style={{
+                padding: '0.4rem 0.6rem',
+                borderRadius: '6px',
+                border: '1px solid rgba(118, 139, 180, 0.35)',
+                background: 'rgba(20, 35, 66, 0.6)',
+                color: 'var(--text)',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                outline: 'none',
+              }}
+            >
+              <option value="">Default</option>
+              <option value="desc">Highest to Lowest</option>
+              <option value="asc">Lowest to Highest</option>
+            </select>
+          </div>
+
           {searchTerm.trim() && allList.length === 0 && filteredFavorites.length === 0 ? (
             <div className="empty">No quizzes found matching "{searchTerm}"</div>
           ) : (
