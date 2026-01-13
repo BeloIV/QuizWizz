@@ -12,6 +12,7 @@ function Home() {
   const { scores } = useScores();
   const { searchTerm } = useSearch();
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [sortByRating, setSortByRating] = useState(null); // null, 'asc', or 'desc'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,32 +30,50 @@ function Home() {
   const quizzesWithScores = useMemo(() => {
     return quizzes.map((quiz) => {
       const scoreEntry = scores[quiz.id];
+      const netRating = (quiz.likes || 0) - (quiz.dislikes || 0);
       return {
         ...quiz,
         lastScore: scoreEntry?.value,
         _takenAt: scoreEntry?.takenAt || 0,
+        netRating,
       };
     });
   }, [quizzes, scores]);
 
   const filteredQuizzes = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return quizzesWithScores;
+    let result = quizzesWithScores;
+    
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((quiz) => {
+        const nameMatch = quiz.name.toLowerCase().includes(term);
+        const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
+        const authorMatch = quiz.author?.toLowerCase().includes(term);
+        return nameMatch || tagMatch || authorMatch;
+      });
     }
-    const term = searchTerm.toLowerCase();
-    return quizzesWithScores.filter((quiz) => {
-      const nameMatch = quiz.name.toLowerCase().includes(term);
-      const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
-      const authorMatch = quiz.author?.toLowerCase().includes(term);
-      return nameMatch || tagMatch || authorMatch;
-    });
-  }, [quizzesWithScores, searchTerm]);
+    
+    // Sort by rating if enabled
+    if (sortByRating) {
+      result = [...result].sort((a, b) => {
+        return sortByRating === 'desc' 
+          ? b.netRating - a.netRating 
+          : a.netRating - b.netRating;
+      });
+    }
+    
+    return result;
+  }, [quizzesWithScores, searchTerm, sortByRating]);
 
   const recent = useMemo(() => {
-    return filteredQuizzes
-      .filter((quiz) => quiz._takenAt)
-      .sort((a, b) => b._takenAt - a._takenAt);
-  }, [filteredQuizzes]);
+    const filtered = filteredQuizzes.filter((quiz) => quiz._takenAt);
+    // Only sort by _takenAt if not sorting by rating
+    if (sortByRating) {
+      return filtered; // Keep the rating sort from filteredQuizzes
+    }
+    return filtered.sort((a, b) => b._takenAt - a._takenAt);
+  }, [filteredQuizzes, sortByRating]);
 
   const recentToDisplay = useMemo(() => {
     return recent.slice(0, 3);
@@ -65,8 +84,8 @@ function Home() {
   }, [recentToDisplay]);
 
   const remaining = useMemo(() => {
-    return quizzesWithScores.filter((quiz) => !recentIds.has(quiz.id));
-  }, [quizzesWithScores, recentIds]);
+    return filteredQuizzes.filter((quiz) => !recentIds.has(quiz.id));
+  }, [filteredQuizzes, recentIds]);
 
   return (
     <div>
@@ -79,6 +98,82 @@ function Home() {
           aria-label="Create new quiz"
         >
           <span className="fab-icon">+</span>
+        </button>
+      </div>
+
+      {/* Sort by Rating */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        padding: '0.75rem 1rem',
+        marginBottom: '1rem',
+        background: 'rgba(22, 38, 72, 0.85)',
+        borderRadius: '12px',
+        border: '1px solid rgba(118, 139, 180, 0.25)',
+      }}>
+        <span style={{ fontWeight: '500', fontSize: '0.95rem', color: 'var(--text)' }}>Sort by Rating:</span>
+        <button
+          onClick={() => setSortByRating(sortByRating === 'desc' ? null : 'desc')}
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: sortByRating === 'desc' ? '1px solid rgba(110, 168, 255, 0.6)' : '1px solid rgba(118, 139, 180, 0.35)',
+            borderRadius: '10px',
+            background: sortByRating === 'desc' ? 'rgba(110, 168, 255, 0.28)' : 'rgba(20, 35, 66, 0.6)',
+            color: sortByRating === 'desc' ? 'var(--primary)' : 'var(--text)',
+            cursor: 'pointer',
+            fontSize: '1.2rem',
+            fontWeight: sortByRating === 'desc' ? '700' : '400',
+            transition: 'all 0.2s ease',
+            minWidth: '44px',
+            boxShadow: sortByRating === 'desc' ? '0 8px 18px rgba(10, 20, 42, 0.35)' : 'none',
+          }}
+          title="Sort highest rating first"
+          onMouseEnter={(e) => {
+            if (sortByRating !== 'desc') {
+              e.currentTarget.style.background = 'rgba(110, 168, 255, 0.15)';
+              e.currentTarget.style.borderColor = 'rgba(110, 168, 255, 0.4)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (sortByRating !== 'desc') {
+              e.currentTarget.style.background = 'rgba(20, 35, 66, 0.6)';
+              e.currentTarget.style.borderColor = 'rgba(118, 139, 180, 0.35)';
+            }
+          }}
+        >
+          ↓
+        </button>
+        <button
+          onClick={() => setSortByRating(sortByRating === 'asc' ? null : 'asc')}
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: sortByRating === 'asc' ? '1px solid rgba(110, 168, 255, 0.6)' : '1px solid rgba(118, 139, 180, 0.35)',
+            borderRadius: '10px',
+            background: sortByRating === 'asc' ? 'rgba(110, 168, 255, 0.28)' : 'rgba(20, 35, 66, 0.6)',
+            color: sortByRating === 'asc' ? 'var(--primary)' : 'var(--text)',
+            cursor: 'pointer',
+            fontSize: '1.2rem',
+            fontWeight: sortByRating === 'asc' ? '700' : '400',
+            transition: 'all 0.2s ease',
+            minWidth: '44px',
+            boxShadow: sortByRating === 'asc' ? '0 8px 18px rgba(10, 20, 42, 0.35)' : 'none',
+          }}
+          title="Sort lowest rating first"
+          onMouseEnter={(e) => {
+            if (sortByRating !== 'asc') {
+              e.currentTarget.style.background = 'rgba(110, 168, 255, 0.15)';
+              e.currentTarget.style.borderColor = 'rgba(110, 168, 255, 0.4)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (sortByRating !== 'asc') {
+              e.currentTarget.style.background = 'rgba(20, 35, 66, 0.6)';
+              e.currentTarget.style.borderColor = 'rgba(118, 139, 180, 0.35)';
+            }
+          }}
+        >
+          ↑
         </button>
       </div>
 
