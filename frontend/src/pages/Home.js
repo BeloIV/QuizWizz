@@ -105,28 +105,28 @@ function Home() {
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.75rem',
-        padding: '0.75rem 1rem',
+        gap: '0.5rem',
+        padding: '0.5rem 0.75rem',
         marginBottom: '1rem',
         background: 'rgba(22, 38, 72, 0.85)',
-        borderRadius: '12px',
+        borderRadius: '8px',
         border: '1px solid rgba(118, 139, 180, 0.25)',
       }}>
-        <span style={{ fontWeight: '500', fontSize: '0.95rem', color: 'var(--text)' }}>Sort by Rating:</span>
+        <span style={{ fontWeight: '500', fontSize: '0.85rem', color: 'var(--text)' }}>Sort by Rating:</span>
         <button
           onClick={() => setSortByRating(sortByRating === 'desc' ? null : 'desc')}
           style={{
-            padding: '0.5rem 0.75rem',
+            padding: '0.35rem 0.5rem',
             border: sortByRating === 'desc' ? '1px solid rgba(110, 168, 255, 0.6)' : '1px solid rgba(118, 139, 180, 0.35)',
-            borderRadius: '10px',
+            borderRadius: '6px',
             background: sortByRating === 'desc' ? 'rgba(110, 168, 255, 0.28)' : 'rgba(20, 35, 66, 0.6)',
             color: sortByRating === 'desc' ? 'var(--primary)' : 'var(--text)',
             cursor: 'pointer',
-            fontSize: '1.2rem',
+            fontSize: '1rem',
             fontWeight: sortByRating === 'desc' ? '700' : '400',
             transition: 'all 0.2s ease',
-            minWidth: '44px',
-            boxShadow: sortByRating === 'desc' ? '0 8px 18px rgba(10, 20, 42, 0.35)' : 'none',
+            minWidth: '32px',
+            boxShadow: sortByRating === 'desc' ? '0 4px 12px rgba(10, 20, 42, 0.25)' : 'none',
           }}
           title="Sort highest rating first"
           onMouseEnter={(e) => {
@@ -147,17 +147,17 @@ function Home() {
         <button
           onClick={() => setSortByRating(sortByRating === 'asc' ? null : 'asc')}
           style={{
-            padding: '0.5rem 0.75rem',
+            padding: '0.35rem 0.5rem',
             border: sortByRating === 'asc' ? '1px solid rgba(110, 168, 255, 0.6)' : '1px solid rgba(118, 139, 180, 0.35)',
-            borderRadius: '10px',
+            borderRadius: '6px',
             background: sortByRating === 'asc' ? 'rgba(110, 168, 255, 0.28)' : 'rgba(20, 35, 66, 0.6)',
             color: sortByRating === 'asc' ? 'var(--primary)' : 'var(--text)',
             cursor: 'pointer',
-            fontSize: '1.2rem',
+            fontSize: '1rem',
             fontWeight: sortByRating === 'asc' ? '700' : '400',
             transition: 'all 0.2s ease',
-            minWidth: '44px',
-            boxShadow: sortByRating === 'asc' ? '0 8px 18px rgba(10, 20, 42, 0.35)' : 'none',
+            minWidth: '32px',
+            boxShadow: sortByRating === 'asc' ? '0 4px 12px rgba(10, 20, 42, 0.25)' : 'none',
           }}
           title="Sort lowest rating first"
           onMouseEnter={(e) => {
