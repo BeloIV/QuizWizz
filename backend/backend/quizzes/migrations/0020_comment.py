@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('quizzes', '0017_rename_author_user_to_author'),
+        ('quizzes', '0019_alter_favorite_id'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

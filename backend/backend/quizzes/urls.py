@@ -11,12 +11,14 @@ from .views import (
     UserListView,
     MessageViewSet,
     QuizShareViewSet,
+    FavoriteViewSet,
 )
 
 router = DefaultRouter()
 router.register(r"quizzes", QuizViewSet, basename="quiz")
 router.register(r"messages", MessageViewSet, basename="message")
 router.register(r"quiz-shares", QuizShareViewSet, basename="quiz-share")
+router.register(r"favorites", FavoriteViewSet, basename="favorite")
 
 urlpatterns = [
     path("upload-image/", UploadImageView.as_view(), name="upload-image"),

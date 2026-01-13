@@ -2,8 +2,7 @@ from rest_framework import serializers
 import uuid
 from django.contrib.auth.models import User
 
-from .models import Choice, Question, Quiz, Tag, Message, QuizShare, Comment
-
+from .models import Choice, Question, Quiz, Tag, Message, QuizShare, Favorite, Comment
 
 class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -215,3 +214,31 @@ class QuizShareSerializer(serializers.ModelSerializer):
         validated_data['recipient'] = recipient
         # sender will be set in the view from request.user
         return super().create(validated_data)
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    """Serializer for user favorites"""
+    quiz_id = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ("id", "quiz_id")
+        read_only_fields = ("id",)
+
+    def create(self, validated_data):
+        quiz_id = validated_data.pop("quiz_id")
+        quiz = Quiz.objects.get(id=quiz_id)
+        user = self.context.get("request").user
+        favorite, _ = Favorite.objects.get_or_create(user=user, quiz=quiz)
+        return favorite
+
+
+class FavoriteListSerializer(serializers.ModelSerializer):
+    """Serializer for listing favorites with quiz data"""
+    quiz = QuizListSerializer(read_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ("id", "quiz")
+        read_only_fields = ("id", "quiz")
+

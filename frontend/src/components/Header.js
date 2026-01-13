@@ -5,6 +5,10 @@ import Drawer from './Drawer';
 import { useSearch } from '../context/SearchContext';
 import { useTheme } from '../context/ThemeContext';
 import { useMessages } from '../context/MessagesContext';
+import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
+import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
 
 function Header() {
   const containerRef = useRef(null);
@@ -13,6 +17,9 @@ function Header() {
   const { open: searchOpen, searchTerm, openSearch, closeSearch, setSearchTerm } = useSearch();
   const { toggleTheme } = useTheme();
   const { unreadCount, unviewedQuizzesCount } = useMessages();
+  const { isAuthenticated, logout, loading } = useAuth();
+  const { showLoginModal, showRegisterModal, openLoginModal, openRegisterModal, closeModals } = useAuthModal();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const isHomePage = location.pathname === '/';
 
@@ -41,6 +48,15 @@ function Header() {
     }
     return '/';
   }, [location.pathname]);
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutConfirm(false);
+    logout();
+  };
 
   const toggleMenu = () => {
     console.log('toggleMenu called, menuOpen will be:', !menuOpen);
@@ -164,6 +180,41 @@ function Header() {
       </div>
 
       <Drawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={closeModals}
+        onSwitchToRegister={openRegisterModal}
+      />
+
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={closeModals}
+        onSwitchToLogin={openLoginModal}
+      />
+
+      {showLogoutConfirm && (
+        <div className="modal-backdrop" onClick={() => setShowLogoutConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Confirm Logout</h2>
+            <p>Are you sure you want to logout?</p>
+            <div className="modal-buttons">
+              <button
+                className="btn secondary"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn primary"
+                onClick={confirmLogout}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

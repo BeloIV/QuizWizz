@@ -5,12 +5,16 @@ import QuizCard from '../components/QuizCard';
 import { useQuizList } from '../context/QuizContext';
 import { useScores } from '../context/ScoresContext';
 import { useSearch } from '../context/SearchContext';
+import { useAuth } from '../context/AuthContext';
+import { useFavorites } from '../context/FavoritesContext';
 
 function Home() {
   const navigate = useNavigate();
   const { quizzes, loading, error } = useQuizList();
   const { scores } = useScores();
   const { searchTerm } = useSearch();
+  const { user, isAuthenticated } = useAuth();
+  const { favorites: favoriteQuizzes, loading: favoritesLoading } = useFavorites();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sortByRating, setSortByRating] = useState(null); // null, 'asc', or 'desc'
 
@@ -66,6 +70,20 @@ function Home() {
     return result;
   }, [quizzesWithScores, searchTerm, sortByRating]);
 
+  const filteredFavorites = useMemo(() => {
+    if (!isAuthenticated) return [];
+    if (!searchTerm.trim()) {
+      return favoriteQuizzes || [];
+    }
+    const term = searchTerm.toLowerCase();
+    return (favoriteQuizzes || []).filter((quiz) => {
+      const nameMatch = quiz.name.toLowerCase().includes(term);
+      const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
+      const authorMatch = quiz.author?.toLowerCase().includes(term);
+      return nameMatch || tagMatch || authorMatch;
+    });
+  }, [favoriteQuizzes, isAuthenticated, searchTerm]);
+
   const recent = useMemo(() => {
     const filtered = filteredQuizzes.filter((quiz) => quiz._takenAt);
     // Only sort by _takenAt if not sorting by rating
@@ -76,7 +94,7 @@ function Home() {
   }, [filteredQuizzes, sortByRating]);
 
   const recentToDisplay = useMemo(() => {
-    return recent.slice(0, 3);
+    return recent.slice(0, 2);
   }, [recent]);
 
   const recentIds = useMemo(() => {
@@ -86,6 +104,7 @@ function Home() {
   const remaining = useMemo(() => {
     return filteredQuizzes.filter((quiz) => !recentIds.has(quiz.id));
   }, [filteredQuizzes, recentIds]);
+
 
   return (
     <div>
@@ -138,10 +157,25 @@ function Home() {
       {error && !loading && <div className="empty">{error}</div>}
       {!loading && !error && (
         <>
-          {searchTerm.trim() && filteredQuizzes.length === 0 ? (
+          {searchTerm.trim() && allList.length === 0 && filteredFavorites.length === 0 ? (
             <div className="empty">No quizzes found matching "{searchTerm}"</div>
           ) : (
             <>
+              {isAuthenticated && !favoritesLoading && filteredFavorites.length > 0 && (
+                <>
+                  <h2 className="section-title">Favorites</h2>
+                  <section className="cards" id="favorites-list">
+                    {filteredFavorites.map((quiz) => (
+                      <QuizCard
+                        key={quiz.id}
+                        quiz={quiz}
+                        onClick={() => navigate(`/quiz/${quiz.id}`)}
+                      />
+                    ))}
+                  </section>
+                </>
+              )}
+
               {recentToDisplay.length > 0 && !searchTerm.trim() && (
                 <>
                   <h2 className="section-title">Recent</h2>
@@ -159,20 +193,10 @@ function Home() {
 
               <h2 className="section-title">{searchTerm.trim() ? 'Search Results' : 'All'}</h2>
               <section className="cards" id="all-list">
-                {quizzesWithScores.length === 0 ? (
-                  <div className="empty">No quizzes yet. Create one to get started!</div>
-                ) : remaining.length === 0 && !searchTerm.trim() ? (
-                  <div className="empty">All your quizzes are already in Recent.</div>
-                ) : searchTerm.trim() ? (
-                  filteredQuizzes.map((quiz) => (
-                    <QuizCard
-                      key={quiz.id}
-                      quiz={quiz}
-                      onClick={() => navigate(`/quiz/${quiz.id}`)}
-                    />
-                  ))
+                {allList.length === 0 ? (
+                  <div className="empty">{searchTerm.trim() ? 'No quizzes found.' : 'No quizzes yet. Create one to get started!'}</div>
                 ) : (
-                  remaining.map((quiz) => (
+                  allList.map((quiz) => (
                     <QuizCard
                       key={quiz.id}
                       quiz={quiz}

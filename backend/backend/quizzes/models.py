@@ -92,6 +92,10 @@ class QuizShare(models.Model):
         return f"{self.sender.username} shared '{self.quiz.name}' with {self.recipient.username}"
 
 
+class Favorite(models.Model):
+    """Favorite quizzes per user"""
+    user = models.ForeignKey(User, related_name="favorites", on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, related_name="favorites", on_delete=models.CASCADE)
 class Comment(models.Model):
     """User comments on quizzes"""
 

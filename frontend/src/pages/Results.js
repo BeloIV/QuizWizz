@@ -7,8 +7,11 @@ import { useQuizList } from '../context/QuizContext';
 import { useScores } from '../context/ScoresContext';
 import { useReactions } from '../context/ReactionsContext';
 import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
+import { useFavorites } from '../context/FavoritesContext';
 import CommentsSection from '../components/CommentsSection';
 import ShareQuizModal from '../components/ShareQuizModal';
+import StarButton from '../components/StarButton';
 
 function Results() {
   const { quizId } = useParams();
@@ -19,6 +22,8 @@ function Results() {
   const { recordScore } = useScores();
   const { reactions, recordReaction } = useReactions();
   const { isAuthenticated } = useAuth();
+  const { openLoginModal } = useAuthModal();
+  const { favoriteIds, toggleFavorite } = useFavorites();
   const [showShareModal, setShowShareModal] = useState(false);
 
   const currentReaction = reactions[quizId]?.userReaction || null;
@@ -76,6 +81,18 @@ function Results() {
               : 'reaction-score-neutral';
   const reactionScoreIcon = reactionScore < 0 ? '👎' : '👍';
 
+  const handleFavoriteToggle = async () => {
+    if (!isAuthenticated) {
+      openLoginModal();
+      return;
+    }
+    try {
+      await toggleFavorite(quiz);
+    } catch (err) {
+      console.error('Failed to toggle favorite', err);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', gap: '16px', paddingBottom: '8px' }}>
       <h2 className="section-title">Your score</h2>
@@ -95,14 +112,22 @@ function Results() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
             {isAuthenticated && (
-              <button
-                className="btn btn-secondary"
-                onClick={() => setShowShareModal(true)}
-                aria-label="Share quiz"
-                style={{ width: '44px', height: '44px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <IoMdShare size={24} />
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <StarButton
+                  active={favoriteIds.has(quiz.id)}
+                  onToggle={handleFavoriteToggle}
+                  size={44}
+                  title={favoriteIds.has(quiz.id) ? 'Remove from favorites' : 'Save to favorites'}
+                />
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowShareModal(true)}
+                  aria-label="Share quiz"
+                  style={{ width: '44px', height: '44px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <IoMdShare size={24} />
+                </button>
+              </div>
             )}
             <div className="reaction-buttons" style={{ alignSelf: 'flex-end' }}>
               <button className={"reaction-btn reaction-btn-like" + (currentReaction === "like" ? " active" : "")}
