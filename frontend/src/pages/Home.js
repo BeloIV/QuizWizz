@@ -193,10 +193,10 @@ function Home() {
 
               <h2 className="section-title">{searchTerm.trim() ? 'Search Results' : 'All'}</h2>
               <section className="cards" id="all-list">
-                {allList.length === 0 ? (
+                {remaining.length === 0 ? (
                   <div className="empty">{searchTerm.trim() ? 'No quizzes found.' : 'No quizzes yet. Create one to get started!'}</div>
                 ) : (
-                  allList.map((quiz) => (
+                  remaining.map((quiz) => (
                     <QuizCard
                       key={quiz.id}
                       quiz={quiz}
