@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import QuizCard from '../components/QuizCard';
@@ -17,6 +17,8 @@ function Home() {
   const { favorites: favoriteQuizzes, loading: favoritesLoading } = useFavorites();
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sortByRating, setSortByRating] = useState(null); // null, 'asc', or 'desc'
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +27,18 @@ function Home() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const scrollToTop = () => {
@@ -121,36 +135,50 @@ function Home() {
       </div>
 
       {/* Sort by Rating */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.5rem 0.75rem',
-        marginBottom: '1rem',
-        background: 'rgba(22, 38, 72, 0.85)',
-        borderRadius: '8px',
-        border: '1px solid rgba(118, 139, 180, 0.25)',
-      }}>
-        <label htmlFor="rating-sort" style={{ fontWeight: '500', fontSize: '0.85rem', color: 'var(--text)' }}>Sort by Rating:</label>
-        <select
-          id="rating-sort"
-          value={sortByRating || ''}
-          onChange={(e) => setSortByRating(e.target.value || null)}
-          style={{
-            padding: '0.4rem 0.6rem',
-            borderRadius: '6px',
-            border: '1px solid rgba(118, 139, 180, 0.35)',
-            background: 'rgba(20, 35, 66, 0.6)',
-            color: 'var(--text)',
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            outline: 'none',
-          }}
-        >
-          <option value="">Default</option>
-          <option value="desc">Highest to Lowest</option>
-          <option value="asc">Lowest to Highest</option>
-        </select>
+      <div className="sort-by-rating-container">
+        <label className="sort-by-rating-label">Sort by Rating:</label>
+        <div className="custom-dropdown" ref={dropdownRef}>
+          <button
+            className="custom-dropdown-toggle"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            aria-haspopup="listbox"
+            aria-expanded={dropdownOpen}
+          >
+            {sortByRating === 'desc' ? 'Highest to Lowest' : sortByRating === 'asc' ? 'Lowest to Highest' : 'Default'}
+            <span className="dropdown-arrow">▼</span>
+          </button>
+          {dropdownOpen && (
+            <div className="custom-dropdown-menu">
+              <div
+                className={`custom-dropdown-item ${sortByRating === null ? 'active' : ''}`}
+                onClick={() => {
+                  setSortByRating(null);
+                  setDropdownOpen(false);
+                }}
+              >
+                Default
+              </div>
+              <div
+                className={`custom-dropdown-item ${sortByRating === 'desc' ? 'active' : ''}`}
+                onClick={() => {
+                  setSortByRating('desc');
+                  setDropdownOpen(false);
+                }}
+              >
+                Highest to Lowest
+              </div>
+              <div
+                className={`custom-dropdown-item ${sortByRating === 'asc' ? 'active' : ''}`}
+                onClick={() => {
+                  setSortByRating('asc');
+                  setDropdownOpen(false);
+                }}
+              >
+                Lowest to Highest
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {loading && <div className="muted">Loading quizzes...</div>}
