@@ -18,7 +18,7 @@ function Play() {
 
   // Need a temporary state to hold index before we get it from playState
   const [tempIndex, setTempIndex] = useState(0);
-  
+
   const currentQuestion = useMemo(() => {
     if (!quiz || !quiz.questions || quiz.questions.length === 0) {
       return null;
@@ -142,7 +142,7 @@ function Play() {
 
         setReveal(true);
         setProcessing(true);
-        
+
         // If there's an explanation, don't auto-advance
         if (hasExplanation) {
           setProcessing(false);
@@ -207,7 +207,7 @@ function Play() {
       const correctSet = new Set(correctIndices);
       isCorrect = selectedSet.size === correctSet.size &&
         [...selectedSet].every(idx => correctSet.has(idx));
-      
+
       userAnswersRef.current[currentQuestion.id] = [...selectedIndices];
     } else {
       const correctIndex = currentQuestion?.correct_index;
@@ -222,7 +222,7 @@ function Play() {
     if (isCorrect) {
       setReveal(true);
       setProcessing(true);
-      
+
       // If there's an explanation, don't auto-advance
       if (hasExplanation) {
         setProcessing(false);
@@ -301,7 +301,7 @@ function Play() {
 
   const handleContinueToNext = () => {
     if (!reveal) return;
-    
+
     const nextIndex = index + 1;
     if (nextIndex >= totalQuestions) {
       const wrongIds = Array.from(initiallyWrongRef.current);
@@ -340,7 +340,7 @@ function Play() {
   const progress = `${index + 1} / ${totalQuestions}`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)', gap: '16px', paddingBottom: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)', gap: '16px', paddingBottom: '70px' }}>
       <div className="row" style={{ justifyContent: 'space-between', marginBottom: '8px' }}>
         <span className="pill">{quiz.name}</span>
         <span className="muted">{progress}</span>
@@ -367,9 +367,7 @@ function Play() {
         onSubmit={handleSubmit}
       />
 
-      <div aria-hidden="true" style={{ flex: 1 }} />
-
-      <div className="footer-actions row" style={{ justifyContent: 'space-between', marginBottom: '12px' }}>
+      <div className="footer-actions row" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px', backgroundColor: 'var(--background, var(--bg, #fff))', borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))', justifyContent: 'space-between', zIndex: 10 }}>
         <button type="button" className="btn btn-secondary" onClick={() => setShowQuitDialog(true)}>
           Quit
         </button>
@@ -392,7 +390,7 @@ function Play() {
           </button>
         ) : <div />}
       </div>
-      
+
       {showTryAgain && (
         <div className="popup popup--danger popup--top" role="alert" aria-live="assertive">
           Try again
