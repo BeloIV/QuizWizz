@@ -185,7 +185,7 @@ function Home() {
       {error && !loading && <div className="empty">{error}</div>}
       {!loading && !error && (
         <>
-          {searchTerm.trim() && allList.length === 0 && filteredFavorites.length === 0 ? (
+          {searchTerm.trim() && remaining.length === 0 && filteredFavorites.length === 0 ? (
             <div className="empty">No quizzes found matching "{searchTerm}"</div>
           ) : (
             <>
