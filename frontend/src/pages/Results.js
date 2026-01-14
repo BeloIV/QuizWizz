@@ -76,9 +76,9 @@ function Results() {
   const dislikes = reactions[quizId]?.dislikes ?? quiz.dislikes ?? 0;
   const reactionScore = likes - dislikes;
   const reactionScoreClass =
-            reactionScore > 0 ? 'reaction-score-positive'
-          : reactionScore < 0 ? 'reaction-score-negative'
-              : 'reaction-score-neutral';
+    reactionScore > 0 ? 'reaction-score-positive'
+      : reactionScore < 0 ? 'reaction-score-negative'
+        : 'reaction-score-neutral';
   const reactionScoreIcon = reactionScore < 0 ? '👎' : '👍';
 
   const handleFavoriteToggle = async () => {
@@ -94,7 +94,7 @@ function Results() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', gap: '16px', paddingBottom: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', gap: '16px', paddingBottom: '70px' }}>
       <h2 className="section-title">Your score</h2>
 
       <div className="card stack" style={{ flex: '0 0 auto' }}>
@@ -131,11 +131,15 @@ function Results() {
             )}
             <div className="reaction-buttons" style={{ alignSelf: 'flex-end' }}>
               <button className={"reaction-btn reaction-btn-like" + (currentReaction === "like" ? " active" : "")}
-                      onClick={() => {const newValue = currentReaction === 'like' ? null : 'like';
-                                            recordReaction(quizId, newValue, currentReaction);}}>👍</button>
+                onClick={() => {
+                  const newValue = currentReaction === 'like' ? null : 'like';
+                  recordReaction(quizId, newValue, currentReaction);
+                }}>👍</button>
               <button className={"reaction-btn reaction-btn-dislike" + (currentReaction === "dislike" ? " active" : "")}
-                      onClick={() => {const newValue = currentReaction === 'dislike' ? null : 'dislike';
-                                            recordReaction(quizId, newValue, currentReaction);}}>👎</button>
+                onClick={() => {
+                  const newValue = currentReaction === 'dislike' ? null : 'dislike';
+                  recordReaction(quizId, newValue, currentReaction);
+                }}>👎</button>
             </div>
             <div className="quiz-card__reaction" style={{ marginTop: '6px', fontSize: '20px' }}>
               <span className={`quiz-card__reaction-number ${reactionScoreClass}`}>{reactionScore}</span>
@@ -145,7 +149,7 @@ function Results() {
         </div>
 
 
-        
+
 
         <div className="quiz-card__footer" style={{ alignItems: 'flex-end', marginTop: '6px' }}>
           <div className="quiz-card__footer-left" aria-hidden="true" />
@@ -158,18 +162,17 @@ function Results() {
 
       <CommentsSection quizId={quiz.id} />
 
-      <div aria-hidden="true" style={{ flex: 1 }} />
-
-      <div className="row" style={{ justifyContent: 'space-between', alignSelf: 'stretch', marginBottom: '8px' }}>
+      <div className="row" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px', backgroundColor: 'var(--background, var(--bg, #fff))', borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))', justifyContent: 'space-between', zIndex: 10 }}>
         <div className="row" style={{ gap: '8px' }}>
-          <Link className="btn btn-secondary" to="/">
+          <Link className="btn btn-secondary" to="/ " style={{ textAlign: 'center' }}>
             🏠 Home
           </Link>
-          <Link 
+          <Link
             className="btn btn-secondary"
             to={`/review/${quizId}?score=${score}&wrong=${wrongAnswers.join(',')}&answers=${searchParams.get('answers') || '{}'}&incorrect=${searchParams.get('incorrect') || '{}'}`}
+            style={{ textAlign: 'center' }}
           >
-            📊 Review Answers
+            Review Answers
           </Link>
         </div>
         {wrongCount ? (
@@ -180,9 +183,9 @@ function Results() {
       </div>
 
       {showShareModal && (
-        <ShareQuizModal 
-          quiz={quiz} 
-          onClose={() => setShowShareModal(false)} 
+        <ShareQuizModal
+          quiz={quiz}
+          onClose={() => setShowShareModal(false)}
         />
       )}
     </div>
