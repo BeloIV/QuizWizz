@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import QuizCard from '../components/QuizCard';
 import { useFavorites } from '../context/FavoritesContext';
 import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
 
 function Favorites() {
   const navigate = useNavigate();
   const { favorites, loading, error, refresh } = useFavorites();
   const { isAuthenticated } = useAuth();
+  const { openLoginModal } = useAuthModal();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -17,7 +19,14 @@ function Favorites() {
   }, [isAuthenticated, refresh]);
 
   if (!isAuthenticated) {
-    return <div className="empty">Log in to view your favorites.</div>;
+    return (
+      <div className="empty">
+        <p>Log in to view your favorites.</p>
+        <button className="btn primary" onClick={openLoginModal} style={{ marginTop: '16px' }}>
+          Log In
+        </button>
+      </div>
+    );
   }
 
   return (
