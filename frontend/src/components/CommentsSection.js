@@ -208,7 +208,7 @@ function CommentsSection({ quizId }) {
                   className="btn primary comments-submit-btn"
                   disabled={posting || !inputValue.trim()}
                 >
-                  ➤
+                  {posting ? 'Posting...' : 'Post'}
                 </button>
               </div>
             </div>

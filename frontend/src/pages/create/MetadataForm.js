@@ -32,7 +32,7 @@ function MetadataForm({
   }, [onAddTag]);
 
   return (
-    <div style={{ paddingBottom: '70px' }}>
+    <div>
       <div className="screen-header">
         <h1 className="page-title">{isEditMode ? 'Edit Quiz' : 'Create New Quiz'}</h1>
       </div>

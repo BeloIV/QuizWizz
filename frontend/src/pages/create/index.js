@@ -68,7 +68,7 @@ function CreateQuiz() {
   const [waitingForAuth, setWaitingForAuth] = useState(false);
   const loginCanceledRef = useRef(false);
 
-  const { hasUnsavedQuestion, validateQuestion, validateMetadata, syncGapOptionsWithText } =
+  const { hasUnsavedQuestion, validateQuestion, validateMetadata, syncGapOptionsWithText } = 
     useQuestionValidation(currentQuestion, selectedQuestionType);
 
   // Show login modal if not authenticated (only after auth check is complete)
@@ -96,7 +96,7 @@ function CreateQuiz() {
         try {
           setLoading(true);
           const quiz = await getQuiz(quizId);
-
+          
           // Transform quiz data to form format
           setFormData({
             name: quiz.name || '',
@@ -280,7 +280,7 @@ function CreateQuiz() {
       if (field === 'text' && typeof nextValue === 'string') {
         nextValue = nextValue.replace(/_/g, '-');
       }
-      const updatedOption = field === 'is_correct'
+      const updatedOption = field === 'is_correct' 
         ? { ...existing, is_correct: value }
         : { ...existing, [field]: nextValue };
       options[optionIndex] = updatedOption;
@@ -617,7 +617,7 @@ function CreateQuiz() {
         ...formData,
         tags: formData.tags.map((tag) => tag),
       };
-
+      
       if (isEditMode) {
         // Update existing quiz
         const updatedQuiz = await updateQuiz(quizId, quizData);
@@ -687,7 +687,7 @@ function CreateQuiz() {
           tagInput={tagInput}
           setTagInput={setTagInput}
           loading={loading}
-          isAuthenticated={isAuthenticated}
+            isAuthenticated={isAuthenticated}
           isEditMode={isEditMode}
           onQuizChange={handleQuizChange}
           onAddTag={addTag}
@@ -742,7 +742,7 @@ function CreateQuiz() {
             </div>
           </div>
 
-          <div className="footer-actions row" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px', backgroundColor: 'var(--background, var(--bg, #fff))', borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))', justifyContent: 'space-between', zIndex: 10 }}>
+          <div className="footer-actions row" style={{ justifyContent: 'space-between', marginTop: '24px' }}>
             <div className="row" style={{ gap: '8px' }}>
               <button
                 type="button"
