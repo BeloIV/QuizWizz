@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
+function LoginModal({ isOpen, onClose, onSwitchToRegister, onSuccess }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -19,6 +19,9 @@ function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
             setUsername('');
             setPassword('');
             onClose();
+            if (onSuccess) {
+                onSuccess();
+            }
         } else {
             setError(result.error);
         }
