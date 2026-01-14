@@ -32,7 +32,7 @@ function MetadataForm({
   }, [onAddTag]);
 
   return (
-    <div>
+    <div style={{ paddingBottom: '80px' }}>
       <div className="screen-header">
         <h1 className="page-title">{isEditMode ? 'Edit Quiz' : 'Create New Quiz'}</h1>
       </div>
@@ -141,10 +141,14 @@ function MetadataForm({
       <div
         className="footer-actions row"
         style={{
+          position: 'fixed',
+          bottom: '70px',
+          left: 0,
+          right: 0,
+          padding: '16px',
+          backgroundColor: 'var(--background, var(--bg, #fff))',
+          borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))',
           justifyContent: 'space-between',
-          marginTop: '24px',
-          position: 'sticky',
-          padding: '12px 0',
           zIndex: 10,
         }}
       >
