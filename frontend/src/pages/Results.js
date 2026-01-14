@@ -94,7 +94,7 @@ function Results() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 100px)', gap: '16px', paddingBottom: '80px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '80px' }}>
       <h2 className="section-title">Your score</h2>
 
       <div className="card stack" style={{ flex: '0 0 auto' }}>
@@ -158,9 +158,7 @@ function Results() {
 
       <CommentsSection quizId={quiz.id} />
 
-      <div aria-hidden="true" style={{ flex: 1 }} />
-
-      <div className="row" style={{ justifyContent: 'space-between', alignSelf: 'stretch', marginBottom: '8px' }}>
+      <div className="row" style={{ position: 'fixed', bottom: '70px', left: 0, right: 0, padding: '16px', backgroundColor: 'var(--background, var(--bg, #fff))', borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))', justifyContent: 'space-between', zIndex: 10 }}>
         <div className="row" style={{ gap: '8px' }}>
           <Link className="btn btn-secondary" to="/">
             🏠 Home

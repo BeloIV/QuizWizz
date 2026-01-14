@@ -88,7 +88,7 @@ function QuizDetail() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)', gap: '16px', paddingBottom: '80px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '80px' }}>
       <div className="card stack" style={{ flex: '0 0 auto' }}>
         <div className="quiz-card__header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -140,9 +140,7 @@ function QuizDetail() {
 
       <CommentsSection quizId={quiz.id} />
 
-      <div aria-hidden="true" style={{ flex: 1 }} />
-
-      <div className="footer-actions row" style={{ justifyContent: 'space-between', alignSelf: 'stretch', marginBottom: '8px' }}>
+      <div className="footer-actions row" style={{ position: 'fixed', bottom: '70px', left: 0, right: 0, padding: '16px', backgroundColor: 'var(--background, var(--bg, #fff))', borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))', justifyContent: 'space-between', zIndex: 10 }}>
         <Link className="btn btn-secondary" to="/">
           🏠 Home
         </Link>
