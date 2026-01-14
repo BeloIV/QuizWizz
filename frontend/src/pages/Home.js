@@ -58,6 +58,7 @@ function Home() {
     });
   }, [quizzes, scores]);
 
+  // Apply only filtering, NOT sorting
   const filteredQuizzes = useMemo(() => {
     let result = quizzesWithScores;
     
@@ -72,37 +73,44 @@ function Home() {
       });
     }
     
-    // Sort by rating if enabled
-    if (sortByRating) {
-      result = [...result].sort((a, b) => {
-        return sortByRating === 'desc' 
-          ? b.netRating - a.netRating 
-          : a.netRating - b.netRating;
-      });
-    }
-    
     return result;
-  }, [quizzesWithScores, searchTerm, sortByRating]);
+  }, [quizzesWithScores, searchTerm]);
+
+  // Helper function to sort quizzes
+  const sortQuizzes = (quizzesToSort) => {
+    if (!sortByRating) return quizzesToSort;
+    return [...quizzesToSort].sort((a, b) => {
+      return sortByRating === 'desc' 
+        ? b.netRating - a.netRating 
+        : a.netRating - b.netRating;
+    });
+  };
 
   const filteredFavorites = useMemo(() => {
     if (!isAuthenticated) return [];
-    if (!searchTerm.trim()) {
-      return favoriteQuizzes || [];
+    let result = favoriteQuizzes || [];
+    
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((quiz) => {
+        const nameMatch = quiz.name.toLowerCase().includes(term);
+        const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
+        const authorMatch = quiz.author?.toLowerCase().includes(term);
+        return nameMatch || tagMatch || authorMatch;
+      });
     }
-    const term = searchTerm.toLowerCase();
-    return (favoriteQuizzes || []).filter((quiz) => {
-      const nameMatch = quiz.name.toLowerCase().includes(term);
-      const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
-      const authorMatch = quiz.author?.toLowerCase().includes(term);
-      return nameMatch || tagMatch || authorMatch;
-    });
-  }, [favoriteQuizzes, isAuthenticated, searchTerm]);
+    
+    // Apply sorting
+    return sortQuizzes(result);
+  }, [favoriteQuizzes, isAuthenticated, searchTerm, sortByRating]);
 
   const recent = useMemo(() => {
     const filtered = filteredQuizzes.filter((quiz) => quiz._takenAt);
-    // Don't show recent section when sorting by rating
+    
+    // Sort by rating if enabled, otherwise by _takenAt
     if (sortByRating) {
-      return []; // Return empty when sorting by rating
+      return sortQuizzes(filtered);
     }
     return filtered.sort((a, b) => b._takenAt - a._takenAt);
   }, [filteredQuizzes, sortByRating]);
@@ -113,12 +121,18 @@ function Home() {
 
   const remaining = useMemo(() => {
     const recentIds = new Set(recentToDisplay.map((quiz) => quiz.id));
-    return filteredQuizzes.filter((quiz) => !recentIds.has(quiz.id));
-  }, [filteredQuizzes, recentToDisplay]);
+    const filtered = filteredQuizzes.filter((quiz) => !recentIds.has(quiz.id));
+    
+    // Apply sorting
+    return sortQuizzes(filtered);
+  }, [filteredQuizzes, recentToDisplay, sortByRating]);
 
   const allList = useMemo(() => {
-    return searchTerm.trim() ? filteredQuizzes : remaining;
-  }, [filteredQuizzes, remaining, searchTerm]);
+    if (searchTerm.trim()) {
+      return sortQuizzes(filteredQuizzes);
+    }
+    return remaining;
+  }, [filteredQuizzes, remaining, searchTerm, sortByRating]);
 
   return (
     <div>
