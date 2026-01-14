@@ -16,7 +16,7 @@ function Home() {
   const { user, isAuthenticated } = useAuth();
   const { favorites: favoriteQuizzes, loading: favoritesLoading } = useFavorites();
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [sortByRating, setSortByRating] = useState(null); // null, 'asc', or 'desc'
+  const [sortByRating, setSortByRating] = useState('alpha'); // 'alpha' (default A-Z), 'desc', or 'asc'
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -58,6 +58,7 @@ function Home() {
     });
   }, [quizzes, scores]);
 
+  // Apply only filtering, NOT sorting
   const filteredQuizzes = useMemo(() => {
     let result = quizzesWithScores;
     
@@ -72,58 +73,68 @@ function Home() {
       });
     }
     
-    // Sort by rating if enabled
-    if (sortByRating) {
-      result = [...result].sort((a, b) => {
-        return sortByRating === 'desc' 
-          ? b.netRating - a.netRating 
-          : a.netRating - b.netRating;
-      });
-    }
-    
     return result;
-  }, [quizzesWithScores, searchTerm, sortByRating]);
+  }, [quizzesWithScores, searchTerm]);
+
+  // Helper function to sort quizzes
+  const sortQuizzes = (quizzesToSort) => {
+    return [...quizzesToSort].sort((a, b) => {
+      if (sortByRating === 'alpha') {
+        return a.name.localeCompare(b.name);
+      } else if (sortByRating === 'desc') {
+        return b.netRating - a.netRating;
+      } else if (sortByRating === 'asc') {
+        return a.netRating - b.netRating;
+      }
+      return 0;
+    });
+  };
 
   const filteredFavorites = useMemo(() => {
     if (!isAuthenticated) return [];
-    if (!searchTerm.trim()) {
-      return favoriteQuizzes || [];
+    let result = favoriteQuizzes || [];
+    
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((quiz) => {
+        const nameMatch = quiz.name.toLowerCase().includes(term);
+        const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
+        const authorMatch = quiz.author?.toLowerCase().includes(term);
+        return nameMatch || tagMatch || authorMatch;
+      });
     }
-    const term = searchTerm.toLowerCase();
-    return (favoriteQuizzes || []).filter((quiz) => {
-      const nameMatch = quiz.name.toLowerCase().includes(term);
-      const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
-      const authorMatch = quiz.author?.toLowerCase().includes(term);
-      return nameMatch || tagMatch || authorMatch;
-    });
+    
+    // No sorting applied - favorites are not affected by sort
+    return result;
   }, [favoriteQuizzes, isAuthenticated, searchTerm]);
 
   const recent = useMemo(() => {
     const filtered = filteredQuizzes.filter((quiz) => quiz._takenAt);
-    // Only sort by _takenAt if not sorting by rating
-    if (sortByRating) {
-      return filtered; // Keep the rating sort from filteredQuizzes
-    }
+    
+    // Recent are not affected by sort - always sorted by _takenAt
     return filtered.sort((a, b) => b._takenAt - a._takenAt);
-  }, [filteredQuizzes, sortByRating]);
+  }, [filteredQuizzes]);
 
   const recentToDisplay = useMemo(() => {
     return recent.slice(0, 2);
   }, [recent]);
 
-  const recentIds = useMemo(() => {
-    return new Set(recentToDisplay.map((quiz) => quiz.id));
-  }, [recentToDisplay]);
-
-  const remaining = useMemo(() => {
-    return filteredQuizzes.filter((quiz) => !recentIds.has(quiz.id));
-  }, [filteredQuizzes, recentIds]);
-
+  // All quizzes with sorting applied - no exclusions
+  const allList = useMemo(() => {
+    // Apply sorting to all filtered quizzes
+    return sortQuizzes(filteredQuizzes);
+  }, [filteredQuizzes, sortByRating]);
 
   return (
     <div>
       <div className="home-header">
-        <h1 className="page-title">QuizWizz</h1>
+        <div>
+          <h1 className="page-title">QuizWizz</h1>
+          {isAuthenticated && user && (
+            <p className="muted" style={{ margin: '4px 0 0 0', fontSize: '14px' }}>Hi {user.username} 🎉</p>
+          )}
+        </div>
         <button
           className="btn primary fab"
           onClick={() => navigate('/create')}
@@ -134,58 +145,11 @@ function Home() {
         </button>
       </div>
 
-      {/* Sort by Rating */}
-      <div className="sort-by-rating-container">
-        <label className="sort-by-rating-label">Sort by Rating:</label>
-        <div className="custom-dropdown" ref={dropdownRef}>
-          <button
-            className="custom-dropdown-toggle"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            aria-haspopup="listbox"
-            aria-expanded={dropdownOpen}
-          >
-            {sortByRating === 'desc' ? 'Highest to Lowest' : sortByRating === 'asc' ? 'Lowest to Highest' : 'Default'}
-            <span className="dropdown-arrow">▼</span>
-          </button>
-          {dropdownOpen && (
-            <div className="custom-dropdown-menu">
-              <div
-                className={`custom-dropdown-item ${sortByRating === null ? 'active' : ''}`}
-                onClick={() => {
-                  setSortByRating(null);
-                  setDropdownOpen(false);
-                }}
-              >
-                Default
-              </div>
-              <div
-                className={`custom-dropdown-item ${sortByRating === 'desc' ? 'active' : ''}`}
-                onClick={() => {
-                  setSortByRating('desc');
-                  setDropdownOpen(false);
-                }}
-              >
-                Highest to Lowest
-              </div>
-              <div
-                className={`custom-dropdown-item ${sortByRating === 'asc' ? 'active' : ''}`}
-                onClick={() => {
-                  setSortByRating('asc');
-                  setDropdownOpen(false);
-                }}
-              >
-                Lowest to Highest
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {loading && <div className="muted">Loading quizzes...</div>}
       {error && !loading && <div className="empty">{error}</div>}
       {!loading && !error && (
         <>
-          {searchTerm.trim() && remaining.length === 0 && filteredFavorites.length === 0 ? (
+          {searchTerm.trim() && allList.length === 0 && filteredFavorites.length === 0 ? (
             <div className="empty">No quizzes found matching "{searchTerm}"</div>
           ) : (
             <>
@@ -204,7 +168,7 @@ function Home() {
                 </>
               )}
 
-              {recentToDisplay.length > 0 && !searchTerm.trim() && (
+              {recentToDisplay.length > 0 && (
                 <>
                   <h2 className="section-title">Recent</h2>
                   <section className="cards" id="recent-list">
@@ -220,11 +184,57 @@ function Home() {
               )}
 
               <h2 className="section-title">{searchTerm.trim() ? 'Search Results' : 'All'}</h2>
+              {/* Sort by Rating - only affects "All" section */}
+              <div className="sort-by-rating-container">
+                <label className="sort-by-rating-label">Sort by Rating:</label>
+                <div className="custom-dropdown" ref={dropdownRef}>
+                  <button
+                    className="custom-dropdown-toggle"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    aria-haspopup="listbox"
+                    aria-expanded={dropdownOpen}
+                  >
+                    {sortByRating === 'alpha' ? 'A to Z' : sortByRating === 'desc' ? 'Highest to Lowest' : sortByRating === 'asc' ? 'Lowest to Highest' : 'A to Z'}
+                    <span className="dropdown-arrow">▼</span>
+                  </button>
+                  {dropdownOpen && (
+                    <div className="custom-dropdown-menu">
+                      <div
+                        className={`custom-dropdown-item ${sortByRating === 'alpha' ? 'active' : ''}`}
+                        onClick={() => {
+                          setSortByRating('alpha');
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        A to Z
+                      </div>
+                      <div
+                        className={`custom-dropdown-item ${sortByRating === 'desc' ? 'active' : ''}`}
+                        onClick={() => {
+                          setSortByRating('desc');
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        Highest to Lowest
+                      </div>
+                      <div
+                        className={`custom-dropdown-item ${sortByRating === 'asc' ? 'active' : ''}`}
+                        onClick={() => {
+                          setSortByRating('asc');
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        Lowest to Highest
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
               <section className="cards" id="all-list">
-                {remaining.length === 0 ? (
+                {allList.length === 0 ? (
                   <div className="empty">{searchTerm.trim() ? 'No quizzes found.' : 'No quizzes yet. Create one to get started!'}</div>
                 ) : (
-                  remaining.map((quiz) => (
+                  allList.map((quiz) => (
                     <QuizCard
                       key={quiz.id}
                       quiz={quiz}

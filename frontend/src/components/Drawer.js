@@ -250,6 +250,9 @@ function Drawer({ isOpen, onClose }) {
             <LoginModal
                 isOpen={showLoginModal}
                 onClose={() => setShowLoginModal(false)}
+                onSuccess={() => {
+                    closeDrawer();
+                }}
                 onSwitchToRegister={() => {
                     setShowLoginModal(false);
                     setShowRegisterModal(true);
