@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LuLogOut, LuLogIn } from 'react-icons/lu';
+import { LuLogOut, LuUser } from 'react-icons/lu';
 
 import { useSearch } from '../context/SearchContext';
 import { useTheme } from '../context/ThemeContext';
@@ -166,7 +166,7 @@ function Header() {
                 aria-label="Login"
                 onClick={openLoginModal}
               >
-                <LuLogIn size={20} />
+                <LuUser size={20} />
               </button>
             )
           )}
