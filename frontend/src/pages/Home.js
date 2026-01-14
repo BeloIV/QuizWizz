@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import QuizCard from '../components/QuizCard';
@@ -16,6 +16,9 @@ function Home() {
   const { user, isAuthenticated } = useAuth();
   const { favorites: favoriteQuizzes, loading: favoritesLoading } = useFavorites();
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [sortByRating, setSortByRating] = useState(null); // null, 'asc', or 'desc'
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +29,18 @@ function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -33,26 +48,41 @@ function Home() {
   const quizzesWithScores = useMemo(() => {
     return quizzes.map((quiz) => {
       const scoreEntry = scores[quiz.id];
+      const netRating = (quiz.likes || 0) - (quiz.dislikes || 0);
       return {
         ...quiz,
         lastScore: scoreEntry?.value,
         _takenAt: scoreEntry?.takenAt || 0,
+        netRating,
       };
     });
   }, [quizzes, scores]);
 
   const filteredQuizzes = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return quizzesWithScores;
+    let result = quizzesWithScores;
+    
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((quiz) => {
+        const nameMatch = quiz.name.toLowerCase().includes(term);
+        const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
+        const authorMatch = quiz.author?.toLowerCase().includes(term);
+        return nameMatch || tagMatch || authorMatch;
+      });
     }
-    const term = searchTerm.toLowerCase();
-    return quizzesWithScores.filter((quiz) => {
-      const nameMatch = quiz.name.toLowerCase().includes(term);
-      const tagMatch = quiz.tags?.some((tag) => tag.toLowerCase().includes(term));
-      const authorMatch = quiz.author?.toLowerCase().includes(term);
-      return nameMatch || tagMatch || authorMatch;
-    });
-  }, [quizzesWithScores, searchTerm]);
+    
+    // Sort by rating if enabled
+    if (sortByRating) {
+      result = [...result].sort((a, b) => {
+        return sortByRating === 'desc' 
+          ? b.netRating - a.netRating 
+          : a.netRating - b.netRating;
+      });
+    }
+    
+    return result;
+  }, [quizzesWithScores, searchTerm, sortByRating]);
 
   const filteredFavorites = useMemo(() => {
     if (!isAuthenticated) return [];
@@ -69,18 +99,26 @@ function Home() {
   }, [favoriteQuizzes, isAuthenticated, searchTerm]);
 
   const recent = useMemo(() => {
-    return filteredQuizzes
-      .filter((quiz) => quiz._takenAt)
-      .sort((a, b) => b._takenAt - a._takenAt);
-  }, [filteredQuizzes]);
+    const filtered = filteredQuizzes.filter((quiz) => quiz._takenAt);
+    // Only sort by _takenAt if not sorting by rating
+    if (sortByRating) {
+      return filtered; // Keep the rating sort from filteredQuizzes
+    }
+    return filtered.sort((a, b) => b._takenAt - a._takenAt);
+  }, [filteredQuizzes, sortByRating]);
 
   const recentToDisplay = useMemo(() => {
     return recent.slice(0, 2);
   }, [recent]);
 
-  const allList = useMemo(() => {
-    return searchTerm.trim() ? filteredQuizzes : quizzesWithScores;
-  }, [filteredQuizzes, quizzesWithScores, searchTerm]);
+  const recentIds = useMemo(() => {
+    return new Set(recentToDisplay.map((quiz) => quiz.id));
+  }, [recentToDisplay]);
+
+  const remaining = useMemo(() => {
+    return filteredQuizzes.filter((quiz) => !recentIds.has(quiz.id));
+  }, [filteredQuizzes, recentIds]);
+
 
   return (
     <div>
@@ -96,11 +134,58 @@ function Home() {
         </button>
       </div>
 
+      {/* Sort by Rating */}
+      <div className="sort-by-rating-container">
+        <label className="sort-by-rating-label">Sort by Rating:</label>
+        <div className="custom-dropdown" ref={dropdownRef}>
+          <button
+            className="custom-dropdown-toggle"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            aria-haspopup="listbox"
+            aria-expanded={dropdownOpen}
+          >
+            {sortByRating === 'desc' ? 'Highest to Lowest' : sortByRating === 'asc' ? 'Lowest to Highest' : 'Default'}
+            <span className="dropdown-arrow">▼</span>
+          </button>
+          {dropdownOpen && (
+            <div className="custom-dropdown-menu">
+              <div
+                className={`custom-dropdown-item ${sortByRating === null ? 'active' : ''}`}
+                onClick={() => {
+                  setSortByRating(null);
+                  setDropdownOpen(false);
+                }}
+              >
+                Default
+              </div>
+              <div
+                className={`custom-dropdown-item ${sortByRating === 'desc' ? 'active' : ''}`}
+                onClick={() => {
+                  setSortByRating('desc');
+                  setDropdownOpen(false);
+                }}
+              >
+                Highest to Lowest
+              </div>
+              <div
+                className={`custom-dropdown-item ${sortByRating === 'asc' ? 'active' : ''}`}
+                onClick={() => {
+                  setSortByRating('asc');
+                  setDropdownOpen(false);
+                }}
+              >
+                Lowest to Highest
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {loading && <div className="muted">Loading quizzes...</div>}
       {error && !loading && <div className="empty">{error}</div>}
       {!loading && !error && (
         <>
-          {searchTerm.trim() && allList.length === 0 && filteredFavorites.length === 0 ? (
+          {searchTerm.trim() && remaining.length === 0 && filteredFavorites.length === 0 ? (
             <div className="empty">No quizzes found matching "{searchTerm}"</div>
           ) : (
             <>
@@ -136,10 +221,10 @@ function Home() {
 
               <h2 className="section-title">{searchTerm.trim() ? 'Search Results' : 'All'}</h2>
               <section className="cards" id="all-list">
-                {allList.length === 0 ? (
+                {remaining.length === 0 ? (
                   <div className="empty">{searchTerm.trim() ? 'No quizzes found.' : 'No quizzes yet. Create one to get started!'}</div>
                 ) : (
-                  allList.map((quiz) => (
+                  remaining.map((quiz) => (
                     <QuizCard
                       key={quiz.id}
                       quiz={quiz}

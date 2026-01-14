@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useQuizList } from '../context/QuizContext';
@@ -16,6 +16,7 @@ function MyQuizzes() {
   const [myQuizzes, setMyQuizzes] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [popup, setPopup] = useState(null);
+  const [sortByRating, setSortByRating] = useState(null); // null, 'asc', or 'desc'
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -40,6 +41,18 @@ function MyQuizzes() {
       setMyQuizzes(userQuizzes);
     }
   }, [user, quizzes, isAuthenticated, navigate]);
+
+  const sortedQuizzes = useMemo(() => {
+    if (!sortByRating) return myQuizzes;
+    
+    return [...myQuizzes].sort((a, b) => {
+      const netRatingA = (a.likes || 0) - (a.dislikes || 0);
+      const netRatingB = (b.likes || 0) - (b.dislikes || 0);
+      return sortByRating === 'desc' 
+        ? netRatingB - netRatingA 
+        : netRatingA - netRatingB;
+    });
+  }, [myQuizzes, sortByRating]);
 
   const handleEdit = (quizId) => {
     navigate(`/edit/${quizId}`);
@@ -95,8 +108,42 @@ function MyQuizzes() {
           </button>
         </div>
       ) : (
-        <div className="quizzes-grid">
-          {myQuizzes.map((quiz) => (
+        <>
+          {/* Sort by Rating */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.5rem 0.75rem',
+            marginBottom: '1rem',
+            background: 'rgba(22, 38, 72, 0.85)',
+            borderRadius: '8px',
+            border: '1px solid rgba(118, 139, 180, 0.25)',
+          }}>
+            <label htmlFor="rating-sort" style={{ fontWeight: '500', fontSize: '0.85rem', color: 'var(--text)' }}>Sort by Rating:</label>
+            <select
+              id="rating-sort"
+              value={sortByRating || ''}
+              onChange={(e) => setSortByRating(e.target.value || null)}
+              style={{
+                padding: '0.4rem 0.6rem',
+                borderRadius: '6px',
+                border: '1px solid rgba(118, 139, 180, 0.35)',
+                background: 'rgba(20, 35, 66, 0.6)',
+                color: 'var(--text)',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                outline: 'none',
+              }}
+            >
+              <option value="">Default</option>
+              <option value="desc">Highest to Lowest</option>
+              <option value="asc">Lowest to Highest</option>
+            </select>
+          </div>
+
+          <div className="quizzes-grid">
+            {sortedQuizzes.map((quiz) => (
             <div key={quiz.id} className="quiz-card">
               <div className="quiz-card-header">
                 <div className="quiz-icon">{quiz.icon || '📝'}</div>
@@ -144,6 +191,7 @@ function MyQuizzes() {
             </div>
           ))}
         </div>
+        </>
       )}
 
       {/* Delete Confirmation Dialog */}
