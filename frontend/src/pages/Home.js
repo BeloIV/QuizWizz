@@ -16,7 +16,7 @@ function Home() {
   const { user, isAuthenticated } = useAuth();
   const { favorites: favoriteQuizzes, loading: favoritesLoading } = useFavorites();
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [sortByRating, setSortByRating] = useState(null); // null, 'asc', or 'desc'
+  const [sortByRating, setSortByRating] = useState('alpha'); // 'alpha' (default A-Z), 'desc', or 'asc'
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -78,11 +78,15 @@ function Home() {
 
   // Helper function to sort quizzes
   const sortQuizzes = (quizzesToSort) => {
-    if (!sortByRating) return quizzesToSort;
     return [...quizzesToSort].sort((a, b) => {
-      return sortByRating === 'desc' 
-        ? b.netRating - a.netRating 
-        : a.netRating - b.netRating;
+      if (sortByRating === 'alpha') {
+        return a.name.localeCompare(b.name);
+      } else if (sortByRating === 'desc') {
+        return b.netRating - a.netRating;
+      } else if (sortByRating === 'asc') {
+        return a.netRating - b.netRating;
+      }
+      return 0;
     });
   };
 
@@ -101,38 +105,26 @@ function Home() {
       });
     }
     
-    // Apply sorting
-    return sortQuizzes(result);
-  }, [favoriteQuizzes, isAuthenticated, searchTerm, sortByRating]);
+    // No sorting applied - favorites are not affected by sort
+    return result;
+  }, [favoriteQuizzes, isAuthenticated, searchTerm]);
 
   const recent = useMemo(() => {
     const filtered = filteredQuizzes.filter((quiz) => quiz._takenAt);
     
-    // Sort by rating if enabled, otherwise by _takenAt
-    if (sortByRating) {
-      return sortQuizzes(filtered);
-    }
+    // Recent are not affected by sort - always sorted by _takenAt
     return filtered.sort((a, b) => b._takenAt - a._takenAt);
-  }, [filteredQuizzes, sortByRating]);
+  }, [filteredQuizzes]);
 
   const recentToDisplay = useMemo(() => {
     return recent.slice(0, 2);
   }, [recent]);
 
-  const remaining = useMemo(() => {
-    const recentIds = new Set(recentToDisplay.map((quiz) => quiz.id));
-    const filtered = filteredQuizzes.filter((quiz) => !recentIds.has(quiz.id));
-    
-    // Apply sorting
-    return sortQuizzes(filtered);
-  }, [filteredQuizzes, recentToDisplay, sortByRating]);
-
+  // All quizzes with sorting applied - no exclusions
   const allList = useMemo(() => {
-    if (searchTerm.trim()) {
-      return sortQuizzes(filteredQuizzes);
-    }
-    return remaining;
-  }, [filteredQuizzes, remaining, searchTerm, sortByRating]);
+    // Apply sorting to all filtered quizzes
+    return sortQuizzes(filteredQuizzes);
+  }, [filteredQuizzes, sortByRating]);
 
   return (
     <div>
@@ -157,53 +149,6 @@ function Home() {
       {error && !loading && <div className="empty">{error}</div>}
       {!loading && !error && (
         <>
-          {/* Sort by Rating */}
-          <div className="sort-by-rating-container">
-            <label className="sort-by-rating-label">Sort by Rating:</label>
-            <div className="custom-dropdown" ref={dropdownRef}>
-              <button
-                className="custom-dropdown-toggle"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                aria-haspopup="listbox"
-                aria-expanded={dropdownOpen}
-              >
-                {sortByRating === 'desc' ? 'Highest to Lowest' : sortByRating === 'asc' ? 'Lowest to Highest' : 'Default'}
-                <span className="dropdown-arrow">▼</span>
-              </button>
-              {dropdownOpen && (
-                <div className="custom-dropdown-menu">
-                  <div
-                    className={`custom-dropdown-item ${sortByRating === null ? 'active' : ''}`}
-                    onClick={() => {
-                      setSortByRating(null);
-                      setDropdownOpen(false);
-                    }}
-                  >
-                    Default
-                  </div>
-                  <div
-                    className={`custom-dropdown-item ${sortByRating === 'desc' ? 'active' : ''}`}
-                    onClick={() => {
-                      setSortByRating('desc');
-                      setDropdownOpen(false);
-                    }}
-                  >
-                    Highest to Lowest
-                  </div>
-                  <div
-                    className={`custom-dropdown-item ${sortByRating === 'asc' ? 'active' : ''}`}
-                    onClick={() => {
-                      setSortByRating('asc');
-                      setDropdownOpen(false);
-                    }}
-                  >
-                    Lowest to Highest
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
           {searchTerm.trim() && allList.length === 0 && filteredFavorites.length === 0 ? (
             <div className="empty">No quizzes found matching "{searchTerm}"</div>
           ) : (
@@ -239,6 +184,52 @@ function Home() {
               )}
 
               <h2 className="section-title">{searchTerm.trim() ? 'Search Results' : 'All'}</h2>
+              {/* Sort by Rating - only affects "All" section */}
+              <div className="sort-by-rating-container">
+                <label className="sort-by-rating-label">Sort by Rating:</label>
+                <div className="custom-dropdown" ref={dropdownRef}>
+                  <button
+                    className="custom-dropdown-toggle"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    aria-haspopup="listbox"
+                    aria-expanded={dropdownOpen}
+                  >
+                    {sortByRating === 'alpha' ? 'A to Z' : sortByRating === 'desc' ? 'Highest to Lowest' : sortByRating === 'asc' ? 'Lowest to Highest' : 'A to Z'}
+                    <span className="dropdown-arrow">▼</span>
+                  </button>
+                  {dropdownOpen && (
+                    <div className="custom-dropdown-menu">
+                      <div
+                        className={`custom-dropdown-item ${sortByRating === 'alpha' ? 'active' : ''}`}
+                        onClick={() => {
+                          setSortByRating('alpha');
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        A to Z
+                      </div>
+                      <div
+                        className={`custom-dropdown-item ${sortByRating === 'desc' ? 'active' : ''}`}
+                        onClick={() => {
+                          setSortByRating('desc');
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        Highest to Lowest
+                      </div>
+                      <div
+                        className={`custom-dropdown-item ${sortByRating === 'asc' ? 'active' : ''}`}
+                        onClick={() => {
+                          setSortByRating('asc');
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        Lowest to Highest
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
               <section className="cards" id="all-list">
                 {allList.length === 0 ? (
                   <div className="empty">{searchTerm.trim() ? 'No quizzes found.' : 'No quizzes yet. Create one to get started!'}</div>

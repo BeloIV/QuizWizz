@@ -1,7 +1,27 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { IoMdHome, IoMdShare, IoMdMail, IoMdListBox, IoMdStar } from 'react-icons/io';
+import { useAuth } from '../context/AuthContext';
+import { useAuthModal } from '../context/AuthModalContext';
 
 function BottomNav() {
+  const { isAuthenticated } = useAuth();
+  const { openLoginModal } = useAuthModal();
+  const navigate = useNavigate();
+
+  const handleFavoritesClick = (e) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      openLoginModal();
+    }
+  };
+
+  const handleSharedClick = (e) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      openLoginModal();
+    }
+  };
+
   return (
     <nav className="bottom-nav" aria-label="Primary">
       <NavLink to="/" className="bottom-nav__item">
@@ -12,7 +32,7 @@ function BottomNav() {
         <IoMdListBox size={22} />
         <span>Created</span>
       </NavLink>
-      <NavLink to="/shared-quizzes" className="bottom-nav__item">
+      <NavLink to="/shared-quizzes" className="bottom-nav__item" onClick={handleSharedClick}>
         <IoMdShare size={22} />
         <span>Shared</span>
       </NavLink>
@@ -20,7 +40,7 @@ function BottomNav() {
         <IoMdMail size={22} />
         <span>Messages</span>
       </NavLink>
-      <NavLink to="/favorites" className="bottom-nav__item">
+      <NavLink to="/favorites" className="bottom-nav__item" onClick={handleFavoritesClick}>
         <IoMdStar size={22} />
         <span>Favorites</span>
       </NavLink>
