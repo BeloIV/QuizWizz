@@ -160,14 +160,15 @@ function Results() {
 
       <div className="row" style={{ position: 'fixed', bottom: '70px', left: 0, right: 0, padding: '16px', backgroundColor: 'var(--background, var(--bg, #fff))', borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))', justifyContent: 'space-between', zIndex: 10 }}>
         <div className="row" style={{ gap: '8px' }}>
-          <Link className="btn btn-secondary" to="/">
+          <Link className="btn btn-secondary" to="/ " style={{ textAlign: 'center' }}>
             🏠 Home
           </Link>
           <Link 
             className="btn btn-secondary"
             to={`/review/${quizId}?score=${score}&wrong=${wrongAnswers.join(',')}&answers=${searchParams.get('answers') || '{}'}&incorrect=${searchParams.get('incorrect') || '{}'}`}
+            style={{ textAlign: 'center' }}
           >
-            📊 Review Answers
+            Review Answers
           </Link>
         </div>
         {wrongCount ? (
