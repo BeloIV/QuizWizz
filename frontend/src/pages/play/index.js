@@ -367,7 +367,7 @@ function Play() {
         onSubmit={handleSubmit}
       />
 
-      <div className="footer-actions row" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px', backgroundColor: 'var(--background, var(--bg, #fff))', borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))', justifyContent: 'space-between', zIndex: 10 }}>
+      <div className="footer-actions row" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '16px', backgroundColor: 'var(--background, var(--bg, #fff))', borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))', justifyContent: 'center', zIndex: 10 }}>
         <button type="button" className="btn btn-secondary" onClick={() => setShowQuitDialog(true)}>
           Quit
         </button>
