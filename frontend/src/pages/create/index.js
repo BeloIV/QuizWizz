@@ -745,10 +745,14 @@ function CreateQuiz() {
           <div
             className="footer-actions row"
             style={{
+              position: 'fixed',
+              bottom: '70px',
+              left: 0,
+              right: 0,
+              padding: '16px',
+              backgroundColor: 'var(--background, var(--bg, #fff))',
+              borderTop: '1px solid var(--border, rgba(0, 0, 0, 0.1))',
               justifyContent: 'space-between',
-              marginTop: '24px',
-              position: 'sticky',
-              padding: '8px 0',
               zIndex: 10,
             }}
           >
