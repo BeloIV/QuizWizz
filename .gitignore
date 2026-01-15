@@ -3,8 +3,20 @@ frontend.log
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Environment files
 frontend/.env
+backend/.env
+.env
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Media files
 backend/media/*
+
+# Dependencies
 package-lock.json
 node_modules/
 .venv/

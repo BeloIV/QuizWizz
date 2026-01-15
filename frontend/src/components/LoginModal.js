@@ -29,13 +29,7 @@ function LoginModal({ isOpen, onClose, onSwitchToRegister, onSuccess }) {
         setLoading(false);
     };
 
-    useEffect(() => {
-        console.log('LoginModal: isOpen =>', isOpen);
-    }, [isOpen]);
-
     if (!isOpen) return null;
-
-    console.log('LoginModal rendering, isOpen:', isOpen);
 
     return (
         <div className="modal-overlay" onClick={onClose}>

@@ -17,6 +17,10 @@ The easiest way to run QuizWizz is using Docker Compose, which handles both back
 git clone git@github.com:BeloIV/QuizWizz.git
 cd QuizWizz
 
+# Backend .env file should already exist with default development settings
+# If not, copy from .env.example:
+# cp backend/.env.example backend/.env
+
 # Build and start all services
 sudo docker compose up --build -d
 
@@ -33,12 +37,6 @@ The application will be available at:
 
 The backend automatically runs migrations on startup, so the database is ready to use immediately.
 
-**Note:** The frontend requires a `.env` file in the `frontend/` directory with:
-```
-VITE_API_BASE_URL=http://localhost:8080/api
-```
-This tells the frontend where to find the backend API.
-
 API endpoints:
 - `GET /api/quizzes` – list quizzes with basic metadata
 - `GET /api/quizzes/<quiz_id>/` – retrieve one quiz with questions and options
@@ -48,7 +46,7 @@ API endpoints:
 If you prefer to run the services manually:
 
 #### Prerequisites
-- Python 3.10+ (needed for Django 5.2)
+- Python 3.10+ (needed for Django 5.0)
 - Node.js 18+ and npm
 - Git Bash, WSL, or another POSIX shell if you plan to use `run.sh` on Windows
 
@@ -72,14 +70,11 @@ Open a second terminal:
 ```bash
 cd frontend
 
-# Create .env file
-echo "VITE_API_BASE_URL=http://localhost:8000/api" > .env
-
 npm install
 npm start
 ```
 
-**Note:** For manual setup, the backend runs on port 8000, so use `http://localhost:8000/api` in the `.env` file.
+**Note:** For manual setup, the backend runs on port 8000. The frontend proxies API requests through Vite config.
 
 #### 3. Using run.sh script (Docker alternative)
 
@@ -96,6 +91,8 @@ This script will build and start all services using Docker Compose and display l
 
 ```
 backend/
+  .env             # Environment variables (create from .env.example)
+  .env.example     # Template for environment configuration
   Dockerfile       # Backend container configuration
   backend/         # Django project (manage.py lives here)
     quizzes/       # Quiz models, serializers, API viewset, migrations
@@ -105,6 +102,25 @@ frontend/
 docker-compose.yml # Multi-container orchestration
 run.sh             # Convenience script to start backend + frontend 
 ```
+
+## Configuration
+
+The backend uses environment variables for configuration. A `.env` file should exist in `backend/` directory (created from `.env.example`):
+
+```bash
+# Django Settings
+SECRET_KEY=your-secret-key-here
+DEBUG=True  # Set to False in production
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# CORS Settings
+CORS_ORIGIN_WHITELIST=http://localhost:3000
+
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS=http://localhost:3000
+```
+
+**For production:** Generate a new SECRET_KEY and update all security settings accordingly.
 
 ## Development Tips
 
@@ -118,9 +134,14 @@ run.sh             # Convenience script to start backend + frontend
 
 ## Deployment Notes
 
-- Replace SQLite with a production-ready database (e.g., PostgreSQL) by updating `DATABASES` in `backend/backend/settings.py` and applying migrations.
-- Configure CORS (`CORS_ALLOW_ALL_ORIGINS`) more securely for public deployments.
-- Build the frontend with `npm run build` and serve the static files via a web server or your Django setup.
-- Update `docker-compose.yml` for production use (remove exposed ports, add environment variables, etc.)
+- **Database:** Replace SQLite with PostgreSQL or another production database by updating `DATABASES` in settings.py
+- **Security:** Generate a new SECRET_KEY for production:
+  ```bash
+  python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+  ```
+- **Environment:** Set `DEBUG=False`, `SESSION_COOKIE_SECURE=True`, and `CSRF_COOKIE_SECURE=True` in production .env
+- **CORS:** Update `CORS_ORIGIN_WHITELIST` and `CSRF_TRUSTED_ORIGINS` with your production domain
+- **Static files:** Build frontend with `npm run build` and serve via nginx or Django static files
+- **Docker:** Update docker-compose.yml for production (remove exposed ports, add secrets management)
 
 You now have everything needed to run Quizwizz with Docker. Happy quizzing!

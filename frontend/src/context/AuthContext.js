@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }) => {
 
     const checkCurrentUser = async () => {
         try {
-            console.log('AuthContext: checking current user');
             const response = await axios.get(`${API_BASE_URL}/auth/current-user/`);
             setUser(response.data.user);
         } catch (error) {
@@ -93,7 +92,15 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post(`${API_BASE_URL}/auth/logout/`);
+            // Get CSRF token from cookie
+            const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+            
+            await axios.post(`${API_BASE_URL}/auth/logout/`, {}, {
+                withCredentials: true,
+                headers: {
+                    ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
+                }
+            });
             setUser(null);
         } catch (error) {
             console.error('Logout error:', error);
