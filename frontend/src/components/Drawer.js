@@ -41,8 +41,6 @@ function Drawer({ isOpen, onClose }) {
         return null; // or return a spinner element if you want
     }
 
-    console.log('Drawer rendering, isOpen:', isOpen, 'loading:', loading, 'showLoginModal:', showLoginModal);
-
     const handleLogout = async () => {
         await logout();
     };
@@ -126,7 +124,6 @@ function Drawer({ isOpen, onClose }) {
                                     className="drawer-menu-button"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        console.log('Login button clicked');
                                         setShowLoginModal(true);
                                     }}
                                 >
@@ -152,7 +149,6 @@ function Drawer({ isOpen, onClose }) {
                                     className="drawer-menu-button"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        console.log('Register button clicked');
                                         setShowRegisterModal(true);
                                     }}
                                 >

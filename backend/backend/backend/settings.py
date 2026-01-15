@@ -12,21 +12,34 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+load_dotenv(BASE_DIR.parent / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-u!zs&2%ss2bs#k+u6t6bkq_q!t5837x@p@%++c2qe&l@7)6df&"
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', '0') == '1'
 
-ALLOWED_HOSTS = ["*"]
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        # Allow insecure default only in development mode
+        SECRET_KEY = 'django-insecure-dev-key-only-for-local-development'
+    else:
+        raise ValueError(
+            'SECRET_KEY environment variable is not set. '
+            'This is required for production. Please set SECRET_KEY in your .env file.'
+        )
+
+# Parse ALLOWED_HOSTS from comma-separated string
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
 
 # Application definition
@@ -62,18 +75,8 @@ CORS_ALLOW_ALL_ORIGINS = cors_allow_all == '1' or cors_allow_all.lower() == 'tru
 CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', '1') == '1'
 
 # Read CORS origins from environment or use defaults
-cors_whitelist = os.getenv('CORS_ORIGIN_WHITELIST', '')
-if cors_whitelist:
-    CORS_ALLOWED_ORIGINS = cors_whitelist.split(',')
-else:
-    CORS_ALLOWED_ORIGINS = [
-        "https://quiz.bytboyzserver.xyz",
-        "http://quiz.bytboyzserver.xyz",
-        "http://localhost:3000",
-        "http://192.168.1.250:3000",
-        "http://localhost:80",
-        "http://localhost",
-    ]
+cors_whitelist = os.getenv('CORS_ORIGIN_WHITELIST', 'http://localhost:3000')
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_whitelist.split(',') if origin.strip()]
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -99,12 +102,8 @@ CORS_PREFLIGHT_MAX_AGE = 86400
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
 # CSRF settings for cross-origin requests
-CSRF_TRUSTED_ORIGINS = [
-    "https://quiz.bytboyzserver.xyz",
-    "https://quiz.bytboyzserver.xyz",
-    "http://localhost:3000",
-    "http://192.168.1.250:3000",
-]
+csrf_trusted = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000')
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted.split(',') if origin.strip()]
 
 CSRF_EXEMPT_PATHS = [
     '/api/messages/',
@@ -203,11 +202,11 @@ REST_FRAMEWORK = {
 
 # Session settings for cross-origin requests
 SESSION_COOKIE_SAMESITE = None
-SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', '0') == '1'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
 # CSRF settings
 CSRF_COOKIE_SAMESITE = None
-CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', '0') == '1'
 CSRF_COOKIE_HTTPONLY = False  # Must be False to allow JS to read it

@@ -5,6 +5,27 @@ Quizwizz is a full-stack quiz application with a Django REST API backend and a R
 ## Prerequisites
 
 - Docker and Docker Compose
+- For manual setup: Python 3.11+, Node.js 18+
+
+## Configuration
+
+Before running the application, configure the backend environment:
+
+1. Copy the example environment file:
+   ```bash
+   cp backend/.env.example backend/.env
+   ```
+
+2. Edit `backend/.env` and update the following settings:
+   - `SECRET_KEY`: Change to a unique secret key for production
+   - `DEBUG`: Set to `0` in production
+   - `ALLOWED_HOSTS`: Add your production domain(s)
+   - `CORS_ORIGIN_WHITELIST`: Add allowed frontend URLs
+   - `CSRF_TRUSTED_ORIGINS`: Add trusted origins for CSRF
+   - `SESSION_COOKIE_SECURE`: Set to `1` in production with HTTPS
+   - `CSRF_COOKIE_SECURE`: Set to `1` in production with HTTPS
+
+**Security Note**: Never commit the `.env` file to version control. The `.env.example` file is provided as a template only.
 
 ## Getting Started
 
@@ -16,6 +37,10 @@ The easiest way to run QuizWizz is using Docker Compose, which handles both back
 # Clone the repository
 git clone git@github.com:BeloIV/QuizWizz.git
 cd QuizWizz
+
+# Configure backend environment (see Configuration section above)
+cp backend/.env.example backend/.env
+# Edit backend/.env with your settings
 
 # Build and start all services
 sudo docker compose up --build -d
@@ -31,13 +56,7 @@ The application will be available at:
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:8080/api`
 
-The backend automatically runs migrations on startup, so the database is ready to use immediately.
-
-**Note:** The frontend requires a `.env` file in the `frontend/` directory with:
-```
-VITE_API_BASE_URL=http://localhost:8080/api
-```
-This tells the frontend where to find the backend API.
+The backend automatically runs migrations on startup, so the database is ready to use immediately. Environment variables are loaded from `backend/.env` via the `env_file` directive in `docker-compose.yml`.
 
 API endpoints:
 - `GET /api/quizzes` – list quizzes with basic metadata
@@ -48,7 +67,7 @@ API endpoints:
 If you prefer to run the services manually:
 
 #### Prerequisites
-- Python 3.10+ (needed for Django 5.2)
+- Python 3.11+ (required for Django 5.0)
 - Node.js 18+ and npm
 - Git Bash, WSL, or another POSIX shell if you plan to use `run.sh` on Windows
 
@@ -56,6 +75,11 @@ If you prefer to run the services manually:
 
 ```bash
 cd backend
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 pip install --upgrade pip
@@ -71,15 +95,11 @@ Open a second terminal:
 
 ```bash
 cd frontend
-
-# Create .env file
-echo "VITE_API_BASE_URL=http://localhost:8000/api" > .env
-
 npm install
 npm start
 ```
 
-**Note:** For manual setup, the backend runs on port 8000, so use `http://localhost:8000/api` in the `.env` file.
+**Note:** For manual setup, the backend runs on port 8000. The frontend is configured to use the appropriate backend URL automatically.
 
 #### 3. Using run.sh script (Docker alternative)
 
@@ -118,9 +138,22 @@ run.sh             # Convenience script to start backend + frontend
 
 ## Deployment Notes
 
-- Replace SQLite with a production-ready database (e.g., PostgreSQL) by updating `DATABASES` in `backend/backend/settings.py` and applying migrations.
-- Configure CORS (`CORS_ALLOW_ALL_ORIGINS`) more securely for public deployments.
-- Build the frontend with `npm run build` and serve the static files via a web server or your Django setup.
-- Update `docker-compose.yml` for production use (remove exposed ports, add environment variables, etc.)
+### Production Security Checklist
+
+1. **Environment Variables**: Update `backend/.env` for production:
+   - Generate a new `SECRET_KEY` (use `python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'`)
+   - Set `DEBUG=0`
+   - Configure `ALLOWED_HOSTS` with your domain
+   - Set `SESSION_COOKIE_SECURE=1` and `CSRF_COOKIE_SECURE=1` for HTTPS
+   - Restrict `CORS_ORIGIN_WHITELIST` to your frontend domain only
+   - Update `CSRF_TRUSTED_ORIGINS` with your HTTPS domain
+
+2. **Database**: Replace SQLite with a production-ready database (e.g., PostgreSQL) by updating `DATABASES` in `backend/backend/settings.py` and applying migrations.
+
+3. **Static Files**: Build the frontend with `npm run build` and serve the static files via a web server (nginx, Apache) or through Django's static file serving.
+
+4. **Docker**: Update `docker-compose.yml` for production use (remove exposed development ports, use production images, etc.).
+
+5. **HTTPS**: Always use HTTPS in production to protect session cookies and CSRF tokens.
 
 You now have everything needed to run Quizwizz with Docker. Happy quizzing!

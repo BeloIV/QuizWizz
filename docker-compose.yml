@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   frontend:
     container_name: quizwizz-frontend
@@ -25,12 +23,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    environment:
-      - DEBUG=1
-      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,backend,quizwizzapi.bytboyzserver.xyz
-      - CORS_ALLOW_ALL_ORIGINS=0
-      - CORS_ALLOW_CREDENTIALS=1
-      - CORS_ORIGIN_WHITELIST=http://localhost:3000,http://192.168.1.250:3000,http://frontend:3000,https://quiz.bytboyzserver.xyz,http://quiz.bytboyzserver.xyz
+    env_file:
+      - ./backend/.env
     volumes:
       - ./backend/backend:/app
     networks:

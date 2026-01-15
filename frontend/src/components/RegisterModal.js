@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
@@ -30,7 +30,6 @@ function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
         }
 
         setLoading(true);
-        console.debug('RegisterModal: submit', { username });
         const result = await register(username, password);
         
         if (result.success) {
@@ -45,13 +44,7 @@ function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
         setLoading(false);
     };
 
-    useEffect(() => {
-        console.log('RegisterModal: isOpen =>', isOpen);
-    }, [isOpen]);
-
     if (!isOpen) return null;
-
-    console.log('RegisterModal rendering, isOpen:', isOpen);
 
     return (
         <div className="modal-overlay" onClick={onClose}>

@@ -122,8 +122,6 @@ function Messaging() {
                 withCredentials: true,
             });
             
-            console.log('All messages:', response.data);
-            
             // Create a map of user ID -> last message timestamp
             const userLastMessage = {};
             
@@ -137,14 +135,11 @@ function Messaging() {
                 }
             });
             
-            console.log('User last message times:', userLastMessage);
-            
             // Filter allUsers to only include users with conversations and sort by last message
             const usersWithConversations = allUsers
                 .filter(u => userLastMessage[u.id])
                 .sort((a, b) => userLastMessage[b.id] - userLastMessage[a.id]);
             
-            console.log('Users with conversations (sorted):', usersWithConversations);
             setConversationUsers(usersWithConversations);
         } catch (error) {
             console.error('Error loading conversation users:', error);
