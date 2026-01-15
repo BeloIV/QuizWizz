@@ -20,11 +20,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-u!zs&2%ss2bs#k+u6t6bkq_q!t5837x@p@%++c2qe&l@7)6df&')
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        # Only use a default SECRET_KEY in development
+        SECRET_KEY = 'django-insecure-u!zs&2%ss2bs#k+u6t6bkq_q!t5837x@p@%++c2qe&l@7)6df&'
+    else:
+        raise ValueError(
+            'SECRET_KEY environment variable is not set. '
+            'Generate a secret key using: '
+            'python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"'
+        )
 
 # Read allowed hosts from environment
 allowed_hosts_str = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
@@ -107,7 +117,6 @@ CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_str.split(',')
 CSRF_EXEMPT_PATHS = [
     '/api/messages/',
     '/api/quiz-shares/',
-    '/api/auth/logout/',
 ]
 
 ROOT_URLCONF = "backend.urls"
