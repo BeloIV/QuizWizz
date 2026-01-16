@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 
 import Drawer from './Drawer';
 import { useSearch } from '../context/SearchContext';
@@ -14,6 +15,7 @@ function Header() {
   const containerRef = useRef(null);
   const searchInputRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const { open: searchOpen, searchTerm, openSearch, closeSearch, setSearchTerm } = useSearch();
   const { toggleTheme } = useTheme();
   const { unreadCount, unviewedQuizzesCount } = useMessages();
@@ -21,13 +23,17 @@ function Header() {
   const { showLoginModal, showRegisterModal, openLoginModal, openRegisterModal, closeModals } = useAuthModal();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showPlayLeaveConfirm, setShowPlayLeaveConfirm] = useState(false);
+
   const isHomePage = location.pathname === '/';
+  const isPlayRoute = location.pathname.startsWith('/play');
 
   const totalNotifications = unreadCount + unviewedQuizzesCount;
 
   useEffect(() => {
     setMenuOpen(false);
     closeSearch();
+    setShowPlayLeaveConfirm(false);
   }, [location, closeSearch]);
 
   useEffect(() => {
@@ -82,6 +88,19 @@ function Header() {
     }
   };
 
+  const handleHomeClick = () => {
+    if (isPlayRoute) {
+      setShowPlayLeaveConfirm(true);
+      return;
+    }
+    navigate('/');
+  };
+
+  const confirmLeavePlayToHome = () => {
+    setShowPlayLeaveConfirm(false);
+    navigate('/');
+  };
+
   return (
     <>
       <div className={`app-header__inner${searchOpen ? ' search-active' : ''}`} ref={containerRef}>
@@ -122,12 +141,13 @@ function Header() {
             />
           </div>
         ) : (
-          <Link
-            to="/"
+          <button
+            type={"button"}
             className={`header-brand${route === '/' ? ' active' : ''}`}
+            onClick={handleHomeClick}
           >
             QuizWizz
-          </Link>
+          </button>
         )}
         <div className="app-header__section app-header__section--right">
           {isHomePage && (
@@ -213,6 +233,35 @@ function Header() {
             </div>
           </div>
         </div>
+      )}
+
+      {showPlayLeaveConfirm && createPortal(
+          <div className="dialog-overlay" role="presentation" onClick={() => setShowQuitDialog(false)}>
+            <div
+                className="dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="quit-title"
+                onClick={(e) => e.stopPropagation()}
+            >
+              <h3 id="quit-title" className="dialog__title">Are you sure you want to quit?</h3>
+              <p className="dialog__body">You will lose your answers.</p>
+              <div className="dialog__actions">
+                <button type="button" className="btn" onClick={() => setShowPlayLeaveConfirm(false)}>
+                  Cancel
+                </button>
+                <button
+                    type="button"
+                    className="btn danger"
+                    onClick={() => navigate('/')}
+                    autoFocus
+                >
+                  Quit
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
       )}
     </>
   );
