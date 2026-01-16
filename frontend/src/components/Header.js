@@ -206,7 +206,7 @@ function Header() {
         onSwitchToLogin={openLoginModal}
       />
 
-      {showLogoutConfirm && (
+      {showLogoutConfirm && createPortal(
         <div className="modal-backdrop" onClick={() => setShowLogoutConfirm(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Confirm Logout</h2>
@@ -226,7 +226,8 @@ function Header() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {showPlayLeaveConfirm && createPortal(
