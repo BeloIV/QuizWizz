@@ -4,6 +4,7 @@ import { useMessages } from '../context/MessagesContext';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
+import { LuLogOut, LuUser } from 'react-icons/lu';
 
 function Drawer({ isOpen, onClose }) {
     const drawerRef = useRef(null);
@@ -100,21 +101,7 @@ function Drawer({ isOpen, onClose }) {
                                     className="drawer-menu-button"
                                     onClick={handleLogout}
                                 >
-                                    <svg
-                                        className="text-icon"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    >
-                                        <path d="M9 3H6a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h3" />
-                                        <path d="M14 7l5 5-5 5" />
-                                        <path d="M19 12H7" />
-                                    </svg>
-
+                                    <LuLogOut size={20} />
                                     <span> Logout</span>
                                 </button>
                             </>
@@ -127,22 +114,7 @@ function Drawer({ isOpen, onClose }) {
                                         setShowLoginModal(true);
                                     }}
                                 >
-                                    <svg
-                                        className="text-icon"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    >
-                                        <path d="M15 3h3a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3h-3" />
-                                        <path d="M10 17l5-5-5-5" />
-                                        <path d="M15 12H3" />
-                                    </svg>
-
-
+                                    <LuUser size={20} />
                                     <span>  Login</span>
                                 </button>
                                 <button
