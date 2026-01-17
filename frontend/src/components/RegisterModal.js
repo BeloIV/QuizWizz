@@ -45,13 +45,7 @@ function RegisterModal({ isOpen, onClose, onSwitchToLogin }) {
         setLoading(false);
     };
 
-    useEffect(() => {
-        console.log('RegisterModal: isOpen =>', isOpen);
-    }, [isOpen]);
-
     if (!isOpen) return null;
-
-    console.log('RegisterModal rendering, isOpen:', isOpen);
 
     return (
         <div className="modal-overlay" onClick={onClose}>

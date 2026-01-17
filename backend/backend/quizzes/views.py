@@ -357,7 +357,6 @@ class MessageViewSet(viewsets.ModelViewSet):
         ).select_related("sender", "recipient").order_by("-created_at")
 
     def perform_create(self, serializer):
-        print(f"Message create: User authenticated: {self.request.user.is_authenticated}, user: {self.request.user}")
         # Set sender from request user, or allow anonymous for demo
         if self.request.user.is_authenticated:
             serializer.save(sender=self.request.user)
@@ -431,7 +430,6 @@ class QuizShareViewSet(viewsets.ModelViewSet):
         ).select_related("sender", "recipient", "quiz").order_by("-created_at")
 
     def perform_create(self, serializer):
-        print(f"QuizShare create: User authenticated: {self.request.user.is_authenticated}, user: {self.request.user}")
         # Set sender from request user, or allow for demo
         if self.request.user.is_authenticated:
             serializer.save(sender=self.request.user)

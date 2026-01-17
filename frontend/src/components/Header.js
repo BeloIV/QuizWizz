@@ -59,7 +59,6 @@ function Header() {
   };
 
   const toggleMenu = () => {
-    console.log('toggleMenu called, menuOpen will be:', !menuOpen);
     setMenuOpen((prev) => !prev);
   };
 

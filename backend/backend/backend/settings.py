@@ -20,13 +20,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-u!zs&2%ss2bs#k+u6t6bkq_q!t5837x@p@%++c2qe&l@7)6df&"
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ["*"]
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        # Only use a default SECRET_KEY in development
+        SECRET_KEY = 'django-insecure-u!zs&2%ss2bs#k+u6t6bkq_q!t5837x@p@%++c2qe&l@7)6df&'
+    else:
+        raise ValueError(
+            'SECRET_KEY environment variable is not set. '
+            'Generate a secret key using: '
+            'python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"'
+        )
+
+# Read allowed hosts from environment
+allowed_hosts_str = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(',')]
 
 
 # Application definition
@@ -99,12 +111,8 @@ CORS_PREFLIGHT_MAX_AGE = 86400
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
 # CSRF settings for cross-origin requests
-CSRF_TRUSTED_ORIGINS = [
-    "https://quiz.bytboyzserver.xyz",
-    "https://quiz.bytboyzserver.xyz",
-    "http://localhost:3000",
-    "http://192.168.1.250:3000",
-]
+csrf_origins_str = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins_str.split(',')]
 
 CSRF_EXEMPT_PATHS = [
     '/api/messages/',
@@ -203,11 +211,11 @@ REST_FRAMEWORK = {
 
 # Session settings for cross-origin requests
 SESSION_COOKIE_SAMESITE = None
-SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1', 'yes')
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
 # CSRF settings
 CSRF_COOKIE_SAMESITE = None
-CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() in ('true', '1', 'yes')
 CSRF_COOKIE_HTTPONLY = False  # Must be False to allow JS to read it
