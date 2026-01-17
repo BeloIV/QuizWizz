@@ -60,6 +60,7 @@ function ShareQuizModal({ quiz, onClose }) {
         setSending(true);
         setError('');
         try {
+            // Share the quiz
             await axios.post(
                 `${API_BASE_URL}/quiz-shares/`,
                 {
@@ -69,6 +70,26 @@ function ShareQuizModal({ quiz, onClose }) {
                 },
                 { withCredentials: true }
             );
+
+            // Auto-create a message about the quiz share
+            const shareMessage = message 
+                ? `I shared a quiz "${quiz.name}" with you! ${message}`
+                : `I shared a quiz "${quiz.name}" with you!`;
+            
+            try {
+                await axios.post(
+                    `${API_BASE_URL}/messages/`,
+                    {
+                        recipient_id: parseInt(selectedUserId),
+                        content: shareMessage,
+                    },
+                    { withCredentials: true }
+                );
+            } catch (msgError) {
+                console.error('Error creating message:', msgError);
+                // Don't fail the whole operation if message creation fails
+            }
+
             setSuccess(true);
             setTimeout(() => {
                 onClose();
@@ -86,10 +107,15 @@ function ShareQuizModal({ quiz, onClose }) {
 
     const otherUsers = allUsers.filter(u => !user || u.id !== user.id);
     
-    // Filter users based on search term
-    const filteredUsers = searchTerm 
-        ? otherUsers.filter(u => u.username.toLowerCase().includes(searchTerm.toLowerCase()))
-        : recentUsers;
+    // Get the selected user object if one is selected
+    const selectedUser = selectedUserId ? otherUsers.find(u => u.id.toString() === selectedUserId) : null;
+    
+    // Filter users based on search term, or show selected user, or show recent users
+    const filteredUsers = selectedUserId && selectedUser
+        ? [selectedUser] // Show only the selected user
+        : searchTerm 
+            ? otherUsers.filter(u => u.username.toLowerCase().includes(searchTerm.toLowerCase()))
+            : recentUsers;
 
     const selectUser = (userId) => {
         setSelectedUserId(userId.toString());
@@ -142,7 +168,7 @@ function ShareQuizModal({ quiz, onClose }) {
 
                         <div className="form-group">
                             <label>
-                                {searchTerm ? 'Search results:' : 'Recent contacts:'}
+                                {selectedUserId ? 'Selected:' : searchTerm ? 'Search results:' : 'Recent contacts:'}
                             </label>
                             <div className="user-selection-list">
                                 {filteredUsers.length === 0 ? (

@@ -16,7 +16,9 @@ function MyQuizzes() {
   const [myQuizzes, setMyQuizzes] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [popup, setPopup] = useState(null);
-  const [sortByRating, setSortByRating] = useState(null); // null, 'asc', or 'desc'
+  const [sortByRating, setSortByRating] = useState('alpha'); // 'alpha' (default A-Z), 'desc', or 'asc'
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -34,6 +36,18 @@ function MyQuizzes() {
     }
   }, [waitingForAuth, authLoading, isAuthenticated, navigate]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     // Filter quizzes authored by current user
     if (user && quizzes) {
@@ -43,9 +57,10 @@ function MyQuizzes() {
   }, [user, quizzes, isAuthenticated, navigate]);
 
   const sortedQuizzes = useMemo(() => {
-    if (!sortByRating) return myQuizzes;
-    
     return [...myQuizzes].sort((a, b) => {
+      if (sortByRating === 'alpha') {
+        return a.name.localeCompare(b.name);
+      }
       const netRatingA = (a.likes || 0) - (a.dislikes || 0);
       const netRatingB = (b.likes || 0) - (b.dislikes || 0);
       return sortByRating === 'desc' 
@@ -110,36 +125,50 @@ function MyQuizzes() {
       ) : (
         <>
           {/* Sort by Rating */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.5rem 0.75rem',
-            marginBottom: '1rem',
-            background: 'rgba(22, 38, 72, 0.85)',
-            borderRadius: '8px',
-            border: '1px solid rgba(118, 139, 180, 0.25)',
-          }}>
-            <label htmlFor="rating-sort" style={{ fontWeight: '500', fontSize: '0.85rem', color: 'var(--text)' }}>Sort by Rating:</label>
-            <select
-              id="rating-sort"
-              value={sortByRating || ''}
-              onChange={(e) => setSortByRating(e.target.value || null)}
-              style={{
-                padding: '0.4rem 0.6rem',
-                borderRadius: '6px',
-                border: '1px solid rgba(118, 139, 180, 0.35)',
-                background: 'rgba(20, 35, 66, 0.6)',
-                color: 'var(--text)',
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                outline: 'none',
-              }}
-            >
-              <option value="">Default</option>
-              <option value="desc">Highest to Lowest</option>
-              <option value="asc">Lowest to Highest</option>
-            </select>
+          <div className="sort-by-rating-container">
+            <label className="sort-by-rating-label">Sort by Rating:</label>
+            <div className="custom-dropdown" ref={dropdownRef}>
+              <button
+                className="custom-dropdown-toggle"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                aria-haspopup="listbox"
+                aria-expanded={dropdownOpen}
+              >
+                {sortByRating === 'alpha' ? 'A to Z' : sortByRating === 'desc' ? 'Highest to Lowest' : 'Lowest to Highest'}
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              {dropdownOpen && (
+                <div className="custom-dropdown-menu">
+                  <div
+                    className={`custom-dropdown-item ${sortByRating === 'alpha' ? 'active' : ''}`}
+                    onClick={() => {
+                      setSortByRating('alpha');
+                      setDropdownOpen(false);
+                    }}
+                  >
+                    A to Z
+                  </div>
+                  <div
+                    className={`custom-dropdown-item ${sortByRating === 'desc' ? 'active' : ''}`}
+                    onClick={() => {
+                      setSortByRating('desc');
+                      setDropdownOpen(false);
+                    }}
+                  >
+                    Highest to Lowest
+                  </div>
+                  <div
+                    className={`custom-dropdown-item ${sortByRating === 'asc' ? 'active' : ''}`}
+                    onClick={() => {
+                      setSortByRating('asc');
+                      setDropdownOpen(false);
+                    }}
+                  >
+                    Lowest to Highest
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="quizzes-grid">
