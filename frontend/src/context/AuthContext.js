@@ -31,6 +31,15 @@ export const AuthProvider = ({ children }) => {
         })();
     }, []);
 
+    // Refresh users list whenever authentication status changes
+    useEffect(() => {
+        if (user) {
+            fetchAllUsers();
+        } else {
+            setAllUsers([]);
+        }
+    }, [user]);
+
     const checkCurrentUser = async () => {
         try {
             const response = await axios.get(`${API_BASE_URL}/auth/current-user/`);
@@ -61,6 +70,7 @@ export const AuthProvider = ({ children }) => {
             });
             console.debug('AuthContext.login response', response.data);
             setUser(response.data.user);
+            await fetchAllUsers();
             return { success: true, user: response.data.user };
         } catch (error) {
             console.error('Login error:', error);
@@ -80,6 +90,7 @@ export const AuthProvider = ({ children }) => {
             });
             console.debug('AuthContext.register response', response.data);
             setUser(response.data.user);
+            await fetchAllUsers();
             return { success: true, user: response.data.user };
         } catch (error) {
             console.error('Registration error:', error);
@@ -102,10 +113,12 @@ export const AuthProvider = ({ children }) => {
                 }
             });
             setUser(null);
+            setAllUsers([]);
         } catch (error) {
             console.error('Logout error:', error);
             // Still clear user on client side even if request fails
             setUser(null);
+            setAllUsers([]);
         }
     };
 
