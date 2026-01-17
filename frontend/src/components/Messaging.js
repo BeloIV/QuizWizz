@@ -90,12 +90,20 @@ function Messaging() {
         if (user && allUsers.length > 0) {
             loadConversationUsers();
             
-            // Poll for new conversations every 10 seconds
+            // Load again after a short delay to catch any race conditions
+            const initialTimeout = setTimeout(() => {
+                loadConversationUsers();
+            }, 1000);
+            
+            // Poll for new conversations every 5 seconds
             const interval = setInterval(() => {
                 loadConversationUsers();
-            }, 10000);
+            }, 5000);
             
-            return () => clearInterval(interval);
+            return () => {
+                clearTimeout(initialTimeout);
+                clearInterval(interval);
+            };
         }
     }, [user, allUsers]);
 
