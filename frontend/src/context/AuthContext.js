@@ -59,6 +59,8 @@ export const AuthProvider = ({ children }) => {
                 password,
             });
             setUser(response.data.user);
+            // Refresh user list after login
+            await fetchAllUsers();
             return { success: true, user: response.data.user };
         } catch (error) {
             console.error('Login error:', error);
@@ -76,6 +78,8 @@ export const AuthProvider = ({ children }) => {
                 password,
             });
             setUser(response.data.user);
+            // Refresh user list after registration
+            await fetchAllUsers();
             return { success: true, user: response.data.user };
         } catch (error) {
             console.error('Registration error:', error);
