@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }) => {
 
     const checkCurrentUser = async () => {
         try {
-            console.log('AuthContext: checking current user');
             const response = await axios.get(`${API_BASE_URL}/auth/current-user/`);
             setUser(response.data.user);
         } catch (error) {
@@ -55,12 +54,10 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         try {
-            console.debug('AuthContext.login called', { username });
             const response = await axios.post(`${API_BASE_URL}/auth/login/`, {
                 username,
                 password,
             });
-            console.debug('AuthContext.login response', response.data);
             setUser(response.data.user);
             return { success: true, user: response.data.user };
         } catch (error) {
@@ -74,12 +71,10 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (username, password) => {
         try {
-            console.debug('AuthContext.register called', { username });
             const response = await axios.post(`${API_BASE_URL}/auth/register/`, {
                 username,
                 password,
             });
-            console.debug('AuthContext.register response', response.data);
             setUser(response.data.user);
             return { success: true, user: response.data.user };
         } catch (error) {
@@ -93,7 +88,15 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post(`${API_BASE_URL}/auth/logout/`);
+            // Get CSRF token from cookie
+            const token = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+            
+            await axios.post(`${API_BASE_URL}/auth/logout/`, {}, {
+                headers: {
+                    'X-CSRFToken': token || ''
+                },
+                withCredentials: true
+            });
             setUser(null);
         } catch (error) {
             console.error('Logout error:', error);

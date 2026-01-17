@@ -73,8 +73,6 @@ export function QuizProvider({ children }) {
 
   const createQuiz = useCallback(
     async (quizData) => {
-      console.log('Creating quiz with data:', quizData);
-      
       // Get CSRF token from cookie
       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
       
@@ -119,8 +117,6 @@ export function QuizProvider({ children }) {
 
   const updateQuiz = useCallback(
     async (quizId, quizData) => {
-      console.log('Updating quiz with data:', quizData);
-      
       // Get CSRF token from cookie
       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
       
@@ -163,8 +159,6 @@ export function QuizProvider({ children }) {
 
   const deleteQuiz = useCallback(
     async (quizId) => {
-      console.log('Deleting quiz:', quizId);
-      
       // Get CSRF token from cookie
       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
       
